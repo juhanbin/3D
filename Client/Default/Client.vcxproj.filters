@@ -1,0 +1,94 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="99.Defines">
+      <UniqueIdentifier>{7aa2cf62-6ed3-40ac-8805-9ee09729bdbb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="98.Default">
+      <UniqueIdentifier>{6d5ec687-677b-4977-bb88-b7f9efcaa511}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="00.MainApp">
+      <UniqueIdentifier>{c63a6ee7-b489-4d81-aba4-7ddf5b8337ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Levels">
+      <UniqueIdentifier>{ccf6878b-78ca-4842-ae64-0a877924ff47}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Levels\Loading">
+      <UniqueIdentifier>{7a99902d-21e3-45e9-8b26-4bd13c2c8d7a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Levels\Logo">
+      <UniqueIdentifier>{3b48192d-e33f-4d1d-b0c2-1a87fd3b50f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Levels\GamePlay">
+      <UniqueIdentifier>{4c028a6b-0d86-4e59-9833-8ebd1556de8b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Levels\Loading\Loader">
+      <UniqueIdentifier>{2791bcc1-bc3d-498f-8eca-63a1bae0259d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Client.h">
+      <Filter>98.Default</Filter>
+    </ClInclude>
+    <ClInclude Include="framework.h">
+      <Filter>98.Default</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>98.Default</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>98.Default</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Client_Defines.h">
+      <Filter>99.Defines</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\MainApp.h">
+      <Filter>00.MainApp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Level_GamePlay.h">
+      <Filter>01.Levels\GamePlay</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Level_Loading.h">
+      <Filter>01.Levels\Loading</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Level_Logo.h">
+      <Filter>01.Levels\Logo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Loader.h">
+      <Filter>01.Levels\Loading\Loader</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Client.ico">
+      <Filter>98.Default</Filter>
+    </Image>
+    <Image Include="small.ico">
+      <Filter>98.Default</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Client.rc">
+      <Filter>98.Default</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Client.cpp">
+      <Filter>98.Default</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\MainApp.cpp">
+      <Filter>00.MainApp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Level_GamePlay.cpp">
+      <Filter>01.Levels\GamePlay</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Level_Loading.cpp">
+      <Filter>01.Levels\Loading</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Level_Logo.cpp">
+      <Filter>01.Levels\Logo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Loader.cpp">
+      <Filter>01.Levels\Loading\Loader</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
