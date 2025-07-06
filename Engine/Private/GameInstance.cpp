@@ -76,8 +76,12 @@ HRESULT CGameInstance::Clear_Resources(_uint iClearLevelID)
 
 void CGameInstance::Render_Begin(const _float4* pClearColor)
 {
-	/*if (nullptr != m_pGraphic_Device)
-		m_pGraphic_Device->Render_NS_BEGIN(Color);*/
+	if (nullptr == m_pGraphic_Device)
+		return;
+	
+	m_pGraphic_Device->Clear_BackBuffer_View(pClearColor);
+	
+	m_pGraphic_Device->Clear_DepthStencil_View();		
 }
 
 HRESULT CGameInstance::Draw()
@@ -86,18 +90,23 @@ HRESULT CGameInstance::Draw()
 		nullptr == m_pRenderer*/)
 		return E_FAIL;
 
-	//m_pRenderer->Draw();
+	/* 백버퍼에 그릴것들을 그린다. */
+	// m_pRenderer->Draw();
 
 	if (FAILED(m_pLevel_Manager->Render()))
 		return E_FAIL;
+
+
 
 	return S_OK;
 }
 
 void CGameInstance::Render_End(HWND hWnd)
 {
-	/*if (nullptr != m_pGraphic_Device)
-		m_pGraphic_Device->Render_End(hWnd);*/
+	if (nullptr == m_pGraphic_Device)
+		return;
+
+	m_pGraphic_Device->Present();
 }
 
 _float CGameInstance::Rand_Normal()

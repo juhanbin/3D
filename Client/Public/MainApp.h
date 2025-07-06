@@ -2,7 +2,7 @@
 
 #include "Client_Defines.h"
 #include "Base.h"
-//test
+
 NS_BEGIN(Engine)
 class CGameInstance;
 NS_END
@@ -26,7 +26,6 @@ private:
 	ID3D11DeviceContext*	m_pContext = { nullptr };
 
 private:
-	HRESULT Ready_Default_Setting();
 	HRESULT Ready_Prototype_ForStatic();
 	HRESULT Start_Level(LEVEL eStartLevelID);
 

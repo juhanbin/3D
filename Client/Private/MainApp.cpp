@@ -7,20 +7,14 @@
 CMainApp::CMainApp()
 	: m_pGameInstance{ CGameInstance::GetInstance() }
 {
-
-	/*D3DDECLUSAGE*/
-
-	/*D3DXIntersectTri()*/
-
 	Safe_AddRef(m_pGameInstance);
 }
 
 HRESULT CMainApp::Initialize()
 {
-
-
 	ENGINE_DESC		EngineDesc{};
 
+	EngineDesc.hInst = g_hInst;
 	EngineDesc.hWnd = g_hWnd;
 	EngineDesc.eWinMode = WINMODE::WIN;
 	EngineDesc.iWinSizeX = g_iWinSizeX;
@@ -29,9 +23,6 @@ HRESULT CMainApp::Initialize()
 
 	if(FAILED(m_pGameInstance->Initialize_Engine(EngineDesc, &m_pDevice, &m_pContext)))
 		return E_FAIL;
-
-	if (FAILED(Ready_Default_Setting()))
-		return E_FAIL;	
 
 	if (FAILED(Ready_Prototype_ForStatic()))
 		return E_FAIL;
@@ -49,21 +40,17 @@ void CMainApp::Update(_float fTimeDelta)
 
 HRESULT CMainApp::Render()
 {
-//	m_pGameInstance->Render_Begin(D3DXCOLOR(0.f, 0.f, 1.f, 1.f));
+	_float4		vClearColor = _float4(0.f, 0.f, 1.f, 1.f);
+
+	m_pGameInstance->Render_Begin(&vClearColor);
 
 	m_pGameInstance->Draw();
 
-//	m_pGameInstance->Render_End();
+	m_pGameInstance->Render_End();
 
 	return S_OK;
 }
 
-HRESULT CMainApp::Ready_Default_Setting()
-{
-	
-
-	return S_OK;
-}
 
 HRESULT CMainApp::Ready_Prototype_ForStatic()
 {

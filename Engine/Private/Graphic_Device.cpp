@@ -68,7 +68,7 @@ HRESULT CGraphic_Device::Initialize(HWND hWnd, WINMODE isWindowed, _uint iWinSiz
 	return S_OK;
 }
 
-HRESULT CGraphic_Device::Clear_BackBuffer_View(_float4 vClearColor)
+HRESULT CGraphic_Device::Clear_BackBuffer_View(const _float4* pClearColor)
 {
 	if (nullptr == m_pDeviceContext)
 		return E_FAIL;
@@ -77,7 +77,7 @@ HRESULT CGraphic_Device::Clear_BackBuffer_View(_float4 vClearColor)
 	// m_pGraphic_Device->Clear(어떤 영역만큼 지울까, 어떤 것들을 지울까? , 뭘로 지울가. );	
 
 	/* 백버퍼를 초기화한다.  */
-	m_pDeviceContext->ClearRenderTargetView(m_pBackBufferRTV, (_float*)&vClearColor);
+	m_pDeviceContext->ClearRenderTargetView(m_pBackBufferRTV,(_float*)&pClearColor);
 
  	return S_OK;
 }

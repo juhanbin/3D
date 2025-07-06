@@ -14,15 +14,15 @@ class CGraphic_Device final : public CBase
 private:
 	CGraphic_Device();
 	virtual ~CGraphic_Device() = default;
-
 public:
-
 	/* 그래픽 디바이스의 초기화. */
 	HRESULT Initialize(HWND hWnd, WINMODE isWindowed, _uint iWinSizeX, _uint iWinSizeY,
 		_Inout_ ID3D11Device** ppDevice, _Inout_ ID3D11DeviceContext** ppContext);
 
+
+	
 	/* 백버퍼를 지운다. */
-	HRESULT Clear_BackBuffer_View(_float4 vClearColor);
+	HRESULT Clear_BackBuffer_View(const _float4* pClearColor);
 
 	/* 깊이버퍼 + 스텐실버퍼를 지운다. */
 	HRESULT Clear_DepthStencil_View();

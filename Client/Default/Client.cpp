@@ -4,11 +4,14 @@
 #include "framework.h"
 #include "Client.h"
 
+#include "MainApp.h"
+#include "GameInstance.h"
+
 #define MAX_LOADSTRING 100
 
 // 전역 변수:
 HWND g_hWnd;
-HINSTANCE hInst;                                // 현재 인스턴스입니다.
+HINSTANCE g_hInst;                                // 현재 인스턴스입니다.
 WCHAR szTitle[MAX_LOADSTRING];                  // 제목 표시줄 텍스트입니다.
 WCHAR szWindowClass[MAX_LOADSTRING];            // 기본 창 클래스 이름입니다.
 
@@ -23,10 +26,16 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_ LPWSTR    lpCmdLine,
                      _In_ int       nCmdShow)
 {
+
+#ifdef _DEBUG
+    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif
+
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
     // TODO: 여기에 코드를 입력합니다.
+    CMainApp* pMainApp = { nullptr };
 
     // 전역 문자열을 초기화합니다.
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
@@ -39,19 +48,55 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
     }
 
+    pMainApp = CMainApp::Create();
+    if (nullptr == pMainApp)
+        return FALSE;
+
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_CLIENT));
 
     MSG msg;
 
+    CGameInstance* pGameInstance = CGameInstance::GetInstance();
+    Safe_AddRef(pGameInstance);
+
+    if (FAILED(pGameInstance->Add_Timer(TEXT("Timer_Default"))))
+        return FALSE;
+    if (FAILED(pGameInstance->Add_Timer(TEXT("Timer_60"))))
+        return FALSE;
+
+    _float          fTimeAcc = {};
+
     // 기본 메시지 루프입니다:
-    while (GetMessage(&msg, nullptr, 0, 0))
+    while (true)
     {
-        if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
+        if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
         {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
+            if (WM_QUIT == msg.message)
+                break;
+            if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
+            {
+                TranslateMessage(&msg);
+                DispatchMessage(&msg);
+            }
         }
+
+        pGameInstance->Compute_TimeDelta(TEXT("Timer_Default"));
+
+        fTimeAcc += pGameInstance->Get_TimeDelta(TEXT("Timer_Default"));
+
+        if (fTimeAcc >= 1.f / 60.0f)
+        {
+            pGameInstance->Compute_TimeDelta(TEXT("Timer_60"));
+
+            pMainApp->Update(pGameInstance->Get_TimeDelta(TEXT("Timer_60")));
+            pMainApp->Render();
+
+            fTimeAcc = 0.f;
+        }        
     }
+    
+    Safe_Release(pGameInstance);
+    Safe_Release(pMainApp);
 
     return (int) msg.wParam;
 }
@@ -96,10 +141,13 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 //
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
-   hInst = hInstance; // 인스턴스 핸들을 전역 변수에 저장합니다.
+    g_hInst = hInstance; // 인스턴스 핸들을 전역 변수에 저장합니다.
+
+   RECT     rcWindow = { 0, 0, g_iWinSizeX, g_iWinSizeY };
+   AdjustWindowRect(&rcWindow, WS_OVERLAPPEDWINDOW, true);
 
    HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
+      CW_USEDEFAULT, 0, rcWindow.right - rcWindow.left, rcWindow.bottom - rcWindow.top, nullptr, nullptr, hInstance, nullptr);
 
    if (!hWnd)
    {
@@ -135,7 +183,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             switch (wmId)
             {
             case IDM_ABOUT:
-                DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
+                DialogBox(g_hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
                 break;
             case IDM_EXIT:
                 DestroyWindow(hWnd);
