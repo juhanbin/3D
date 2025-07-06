@@ -20,14 +20,25 @@ namespace Engine
 	typedef		signed long					_long;
 	typedef		unsigned long				_ulong;
 
-	typedef		float						_float;
+	typedef		float						_float;	
 	typedef		double						_double;
 
+	/* 저장용 벡터와 행렬 */
 	typedef		XMFLOAT2					_float2;
 	typedef		XMFLOAT3					_float3;
 	typedef		XMFLOAT4					_float4;
-
 	typedef		XMFLOAT4X4					_float4x4;
+
+	/* 연산용 벡터와 행렬 64비트 환경에서 SIMD(병렬)연산 */
+	typedef		XMVECTOR					_vector;
+	typedef		FXMVECTOR					_fvector;
+	typedef		GXMVECTOR					_gvector;
+	typedef		HXMVECTOR					_hvector;
+	typedef		CXMVECTOR					_cvector;
+
+	typedef		XMMATRIX					_matrix;
+	typedef		FXMMATRIX					_fmatrix;
+	typedef		CXMMATRIX					_cmatrix;
 	
 
 

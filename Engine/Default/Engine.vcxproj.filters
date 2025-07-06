@@ -52,6 +52,12 @@
     <Filter Include="01.Utility\04.Prototypes">
       <UniqueIdentifier>{ed302dd2-ef7d-4d86-a247-b9658d5f090c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01.Utility\02.GameObject\UIObject">
+      <UniqueIdentifier>{5c88d794-9383-4a8a-8347-680051d0a38c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Utility\03.Component\Transform">
+      <UniqueIdentifier>{8bf04c38-7325-4a7a-8f27-7272b9148467}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Private\Timer.cpp">
@@ -92,6 +98,12 @@
     </ClCompile>
     <ClCompile Include="..\Private\Prototype_Manager.cpp">
       <Filter>01.Utility\04.Prototypes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\UIObject.cpp">
+      <Filter>01.Utility\02.GameObject\UIObject</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\Transform.cpp">
+      <Filter>01.Utility\03.Component\Transform</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -151,6 +163,12 @@
     </ClInclude>
     <ClInclude Include="..\Public\Prototype_Manager.h">
       <Filter>01.Utility\04.Prototypes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\UIObject.h">
+      <Filter>01.Utility\02.GameObject\UIObject</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\Transform.h">
+      <Filter>01.Utility\03.Component\Transform</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
