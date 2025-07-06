@@ -16,6 +16,7 @@ private:
 	virtual ~CGraphic_Device() = default;
 public:
 	/* 그래픽 디바이스의 초기화. */
+	/* 장치객체를 생성한다. */
 	HRESULT Initialize(HWND hWnd, WINMODE isWindowed, _uint iWinSizeX, _uint iWinSizeY,
 		_Inout_ ID3D11Device** ppDevice, _Inout_ ID3D11DeviceContext** ppContext);
 
@@ -59,7 +60,7 @@ private:
 	IDXGISwapChain*				m_pSwapChain = { nullptr };
 
 
-	/* IDirect3DTexture9 */
+	/* IDirect3DTexture9 == LPDIRECT3DTEXTURE9 */
 	/* ID3D11Texture2D : 텍스쳐를 표현하는 사전객체 타입이다. 실제 이 타입으로는 아무 역할도 못함. 
 	why? 용도에 맞는 실질적으로 사용하기 위한 텍스쳐객체를 만들어내기위해.  */	
 	/* ID3D11Texture2D를 통해 픽셀의 락언락을 통해 색을 강제로 바꾸거나 파일로 출력하거나 등등의 일은 가능 */

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Base.h"
+#include "Prototype_Manager.h"
 
 NS_BEGIN(Engine)
 
@@ -30,19 +30,19 @@ public:
 public:
 	HRESULT Open_Level(_uint iLevelID, class CLevel* pNewLevel);
 #pragma endregion
-//
-//#pragma region PROTOTYPE_MANAGER
-//public:
-//	HRESULT Add_Prototype(_uint iPrototpyeLevelIndex, const _wstring& strPrototypeTag, class CBase* pPrototype);
-//	class CBase* Clone_Prototype(PROTOTYPE ePrototype, _uint iPrototpyeLevelIndex, const _wstring& strPrototypeTag, void* pArg = nullptr);
-//#pragma endregion
-//
-//#pragma region OBJECT_MANAGER
-//public:
-//	class CComponent* Find_Component(_uint iLayerLevelIndex, const _wstring& strLayerTag, const _wstring& strComponentTag, _uint iIndex = 0);
-//	HRESULT Add_GameObject_ToLayer(_uint iLayerLevelIndex, const _wstring& strLayerTag, _uint iPrototypeLevelIndex, const _wstring& strPrototypeTag, void* pArg = nullptr);
-//#pragma endregion
-//
+
+#pragma region PROTOTYPE_MANAGER
+public:
+	HRESULT Add_Prototype(_uint iPrototpyeLevelIndex, const _wstring& strPrototypeTag, class CBase* pPrototype);
+	class CBase* Clone_Prototype(PROTOTYPE ePrototype, _uint iPrototpyeLevelIndex, const _wstring& strPrototypeTag, void* pArg = nullptr);
+#pragma endregion
+
+#pragma region OBJECT_MANAGER
+public:
+	class CComponent* Find_Component(_uint iLayerLevelIndex, const _wstring& strLayerTag, const _wstring& strComponentTag, _uint iIndex = 0);
+	HRESULT Add_GameObject_ToLayer(_uint iLayerLevelIndex, const _wstring& strLayerTag, _uint iPrototypeLevelIndex, const _wstring& strPrototypeTag, void* pArg = nullptr);
+#pragma endregion
+
 #pragma region RENDERER
 public:
 	HRESULT Add_RenderGroup(RENDERGROUP eRenderGroup, class CGameObject* pRenderObject);
