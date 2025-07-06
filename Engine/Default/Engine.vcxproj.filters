@@ -64,6 +64,9 @@
     <Filter Include="01.Utility\03.Component\VIBuffer\Rect">
       <UniqueIdentifier>{53ce68de-377e-448c-b69e-23c3d305e190}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01.Utility\03.Component\Shader">
+      <UniqueIdentifier>{e739e434-8c33-41c4-a3ef-ee49c6ed7cf2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Private\Timer.cpp">
@@ -93,9 +96,6 @@
     <ClCompile Include="..\Private\GameObject.cpp">
       <Filter>01.Utility\02.GameObject</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\Component.cpp">
-      <Filter>01.Utility\03.Component</Filter>
-    </ClCompile>
     <ClCompile Include="..\Private\Object_Manager.cpp">
       <Filter>01.Utility\02.GameObject\Manager</Filter>
     </ClCompile>
@@ -116,6 +116,12 @@
     </ClCompile>
     <ClCompile Include="..\private\VIBuffer_Rect.cpp">
       <Filter>01.Utility\03.Component\VIBuffer\Rect</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Component.cpp">
+      <Filter>01.Utility\03.Component</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\Shader.cpp">
+      <Filter>01.Utility\03.Component\Shader</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -187,6 +193,9 @@
     </ClInclude>
     <ClInclude Include="..\public\VIBuffer_Rect.h">
       <Filter>01.Utility\03.Component\VIBuffer\Rect</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\Shader.h">
+      <Filter>01.Utility\03.Component\Shader</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

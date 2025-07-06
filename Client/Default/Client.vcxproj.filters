@@ -100,4 +100,9 @@
       <Filter>02.GameObject</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxPosTex.hlsl">
+      <Filter>98.Default</Filter>
+    </FxCompile>
+  </ItemGroup>
 </Project>

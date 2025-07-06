@@ -4,6 +4,9 @@
 
 #include <d3d11.h>
 #include <DirectXMath.h>
+
+#include "Fx11/d3dx11effect.h"
+
 using namespace DirectX;
 
 #include <vector>
