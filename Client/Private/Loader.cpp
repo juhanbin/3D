@@ -3,6 +3,7 @@
 #include "GameInstance.h"
 
 #include "BackGround.h"
+#include "Logo_Logo.h"
 //#include "Terrain.h"
 //#include "Monster.h"
 //#include "Camera.h"
@@ -81,10 +82,13 @@ HRESULT CLoader::Loading_For_Logo_Level()
 
 	lstrcpy(m_szLoadingText, TEXT("텍스쳐를 로딩중입니다."));
 	/* Prototype_Component_Texture_BackGround */
-	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::LOGO), TEXT("Prototype_Component_Texture_BackGround"),
-		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Default%d.jpg"), 2))))
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::LOGO), TEXT("Prototype_Component_Texture_Logo"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Blood_Spear/Textures/Logo_bg%d.png"), 1))))
 		return E_FAIL;
 
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::LOGO), TEXT("Prototype_Component_Texture_Logo_Logo"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Blood_Spear/Textures/Logo_Logo%d.png"), 1))))
+		return E_FAIL;
 
 	lstrcpy(m_szLoadingText, TEXT("모델을 로딩중입니다."));
 
@@ -97,6 +101,9 @@ HRESULT CLoader::Loading_For_Logo_Level()
 		CBackGround::Create(m_pDevice, m_pContext))))
 		return E_FAIL;	
 
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::LOGO), TEXT("Prototype_GameObject_Logo"),
+		CLogo_Logo::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
 	lstrcpy(m_szLoadingText, TEXT("로딩이 완료되었습니다."));
 	
 	m_isFinished = true;

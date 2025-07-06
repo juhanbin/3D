@@ -28,6 +28,12 @@
     <Filter Include="02.GameObject">
       <UniqueIdentifier>{85081ef4-12c5-4457-a79f-32e32125ccd1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02.GameObject\BackGround">
+      <UniqueIdentifier>{37c227c4-f40a-4ef0-8cd7-85db06228293}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObject\Logo_Logo">
+      <UniqueIdentifier>{abc29366-0889-4f8d-b23a-8caf9c6f2195}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h">
@@ -61,7 +67,10 @@
       <Filter>01.Levels\Loading\Loader</Filter>
     </ClInclude>
     <ClInclude Include="..\public\BackGround.h">
-      <Filter>02.GameObject</Filter>
+      <Filter>02.GameObject\BackGround</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Logo_Logo.h">
+      <Filter>02.GameObject\Logo_Logo</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -97,7 +106,10 @@
       <Filter>01.Levels\Loading\Loader</Filter>
     </ClCompile>
     <ClCompile Include="..\private\BackGround.cpp">
-      <Filter>02.GameObject</Filter>
+      <Filter>02.GameObject\BackGround</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Logo_Logo.cpp">
+      <Filter>02.GameObject\Logo_Logo</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

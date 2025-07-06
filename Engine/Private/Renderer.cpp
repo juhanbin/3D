@@ -12,6 +12,16 @@ CRenderer::CRenderer(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 
 HRESULT CRenderer::Initialize()
 {
+    D3D11_DEPTH_STENCIL_DESC dsDesc = {};
+    dsDesc.DepthEnable = FALSE; // 깊이테스트 OFF
+    dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+    dsDesc.DepthFunc = D3D11_COMPARISON_ALWAYS;
+    dsDesc.StencilEnable = FALSE; // 스텐실은 여기선 OFF지만 필요하면 ON으로
+
+    HRESULT hr = m_pDevice->CreateDepthStencilState(&dsDesc, &m_pUIDepthStencilState);
+    if (FAILED(hr))
+        return hr;
+
     return S_OK;
 }
 
@@ -93,6 +103,15 @@ HRESULT CRenderer::Render_Blend()
 
 HRESULT CRenderer::Render_UI()
 {
+    // 1. 기존 상태 저장
+    ID3D11DepthStencilState* pPrevDSState = nullptr;
+    UINT prevStencilRef = 0;
+    m_pContext->OMGetDepthStencilState(&pPrevDSState, &prevStencilRef);
+
+    // 2. UI용(깊이 꺼짐) 상태 적용
+    m_pContext->OMSetDepthStencilState(m_pUIDepthStencilState, 0);
+
+    // --- UI 오브젝트 렌더링 ---
     for (auto& pRenderObject : m_RenderObjects[ENUM_CLASS(RENDERGROUP::UI)])
     {
         if (nullptr != pRenderObject)
@@ -100,11 +119,15 @@ HRESULT CRenderer::Render_UI()
 
         Safe_Release(pRenderObject);
     }
-
     m_RenderObjects[ENUM_CLASS(RENDERGROUP::UI)].clear();
+
+    // 3. 원래 상태로 복원 (꼭 해야 함!)
+    m_pContext->OMSetDepthStencilState(pPrevDSState, prevStencilRef);
+    Safe_Release(pPrevDSState);
 
     return S_OK;
 }
+
 
 CRenderer* CRenderer::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 {

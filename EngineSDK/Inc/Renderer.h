@@ -24,7 +24,7 @@ private:
 	ID3D11DeviceContext*					m_pContext = { nullptr };
 
 	list<class CGameObject*>				m_RenderObjects[ENUM_CLASS(RENDERGROUP::END)];
-
+	ID3D11DepthStencilState* m_pUIDepthStencilState = nullptr;
 private:
 	HRESULT Render_Priority();
 	HRESULT Render_NonBlend();

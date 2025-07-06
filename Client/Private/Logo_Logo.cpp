@@ -1,28 +1,28 @@
-#include "BackGround.h"
+#include "Logo_Logo.h"
 #include "GameInstance.h"
 
-CBackGround::CBackGround(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
-    : CUIObject { pDevice, pContext }
+CLogo_Logo::CLogo_Logo(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
+    : CUIObject{ pDevice, pContext }
 {
 }
 
-CBackGround::CBackGround(const CBackGround& Prototype)
+CLogo_Logo::CLogo_Logo(const CLogo_Logo& Prototype)
     : CUIObject{ Prototype }
 {
 }
 
-HRESULT CBackGround::Initialize_Prototype()
+HRESULT CLogo_Logo::Initialize_Prototype()
 {
     return S_OK;
 }
 
-HRESULT CBackGround::Initialize(void* pArg)
+HRESULT CLogo_Logo::Initialize(void* pArg)
 {
     UIOBJECT_DESC               Desc{};
     Desc.fX = g_iWinSizeX >> 1;
-    Desc.fY = g_iWinSizeY >> 1;
-    Desc.fSizeX = g_iWinSizeX;
-    Desc.fSizeY = g_iWinSizeY;
+    Desc.fY = (g_iWinSizeY >> 1) - 30;
+    Desc.fSizeX = (g_iWinSizeX >>1) - 50;
+    Desc.fSizeY = (g_iWinSizeY >>1) + 100;
 
     if (FAILED(__super::Initialize(&Desc)))
         return E_FAIL;
@@ -33,23 +33,23 @@ HRESULT CBackGround::Initialize(void* pArg)
     return S_OK;
 }
 
-void CBackGround::Priority_Update(_float fTimeDelta)
+void CLogo_Logo::Priority_Update(_float fTimeDelta)
 {
     int a = 10;
 }
 
-void CBackGround::Update(_float fTimeDelta)
+void CLogo_Logo::Update(_float fTimeDelta)
 {
     int a = 10;
 }
 
-void CBackGround::Late_Update(_float fTimeDelta)
+void CLogo_Logo::Late_Update(_float fTimeDelta)
 {
     if (FAILED(m_pGameInstance->Add_RenderGroup(RENDERGROUP::UI, this)))
         return;
 }
 
-HRESULT CBackGround::Render()
+HRESULT CLogo_Logo::Render()
 {
     /*
     m_pShaderCom->Bind_Texture();*/
@@ -67,16 +67,17 @@ HRESULT CBackGround::Render()
     if (FAILED(m_pTextureCom->Bind_Shader_Resource(m_pShaderCom, "g_Texture", 0)))
         return E_FAIL;
 
-    m_pShaderCom->Begin(0);    
+    m_pShaderCom->Begin(0);
 
     m_pVIBufferCom->Bind_Resources();
+
 
     m_pVIBufferCom->Render();
 
     return S_OK;
 }
 
-HRESULT CBackGround::Ready_Components()
+HRESULT CLogo_Logo::Ready_Components()
 {
     if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_Component_Shader_VtxPosTex"),
         TEXT("Com_Shader"), reinterpret_cast<CComponent**>(&m_pShaderCom), nullptr)))
@@ -86,43 +87,43 @@ HRESULT CBackGround::Ready_Components()
         TEXT("Com_VIBuffer"), reinterpret_cast<CComponent**>(&m_pVIBufferCom), nullptr)))
         return E_FAIL;
 
-    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::LOGO), TEXT("Prototype_Component_Texture_Logo"),
+    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::LOGO), TEXT("Prototype_Component_Texture_Logo_Logo"),
         TEXT("Com_Texture"), reinterpret_cast<CComponent**>(&m_pTextureCom), nullptr)))
         return E_FAIL;
 
 
-    
+
 
     return S_OK;
 }
 
-CBackGround* CBackGround::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
+CLogo_Logo* CLogo_Logo::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 {
-    CBackGround* pInstance = new CBackGround(pDevice, pContext);
+    CLogo_Logo* pInstance = new CLogo_Logo(pDevice, pContext);
 
     if (FAILED(pInstance->Initialize_Prototype()))
     {
-        MSG_BOX(TEXT("Failed to Created : CBackGround"));
+        MSG_BOX(TEXT("Failed to Created : CLogo_Logo"));
         Safe_Release(pInstance);
     }
 
     return pInstance;
 }
 
-CGameObject* CBackGround::Clone(void* pArg)
+CGameObject* CLogo_Logo::Clone(void* pArg)
 {
-    CBackGround* pInstance = new CBackGround(*this);
+    CLogo_Logo* pInstance = new CLogo_Logo(*this);
 
     if (FAILED(pInstance->Initialize(pArg)))
     {
-        MSG_BOX(TEXT("Failed to Created : CBackGround"));
+        MSG_BOX(TEXT("Failed to Created : CLogo_Logo"));
         Safe_Release(pInstance);
     }
 
     return pInstance;
 }
 
-void CBackGround::Free()
+void CLogo_Logo::Free()
 {
     __super::Free();
 
