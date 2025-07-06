@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Base.h"
+#include "Transform.h"
 
 /* 게임오브젝트들의 부모가 되는 클래스. */
 
@@ -8,6 +8,11 @@ NS_BEGIN(Engine)
 
 class ENGINE_DLL CGameObject abstract : public CBase
 {
+public:
+	typedef struct tagGameObject : public CTransform::TRANSFORM_DESC
+	{
+
+	}GAMEOBJECT_DESC;
 protected:
 	CGameObject(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	CGameObject(const CGameObject& Prototype);

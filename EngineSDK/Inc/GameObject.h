@@ -28,6 +28,7 @@ protected:
 	ID3D11Device*				m_pDevice = { nullptr };
 	ID3D11DeviceContext*		m_pContext = { nullptr };
 	class CGameInstance*		m_pGameInstance = { nullptr };
+	class CTransform*			m_pTransformCom = { nullptr };
 
 	map<const _wstring, class CComponent*>		m_Components;
 

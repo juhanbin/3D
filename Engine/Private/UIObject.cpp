@@ -1,4 +1,5 @@
 #include "UIObject.h"
+#include "Transform.h"
 
 CUIObject::CUIObject(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	: CGameObject { pDevice, pContext }
@@ -39,12 +40,10 @@ HRESULT CUIObject::Initialize(void* pArg)
 
 	_uint			iNumViewports = { 1 };
 
-	m_pContext->RSGetViewports(&iNumViewports, &Viewport);		
+	m_pContext->RSGetViewports(&iNumViewports, &Viewport);	
 
-
-
-	XMStoreFloat4x4(&m_ViewMatrix, XMMatrixLookAtLH(XMLoadFloat4(&pDesc->vEye), XMLoadFloat4(&pDesc->vAt), XMVectorSet(0.f, 1.f, 0.f, 0.f)));
-    XMStoreFloat4x4(&m_ProjMatrix, XMMatrixOrthographicLH(Viewport.Width, Viewport.Height, pDesc->fNear, pDesc->fFar));
+	XMStoreFloat4x4(&m_ViewMatrix, XMMatrixIdentity());
+    XMStoreFloat4x4(&m_ProjMatrix, XMMatrixOrthographicLH(Viewport.Width, Viewport.Height, 0.0f, 1.f));
 
 	return S_OK;
 }
@@ -61,10 +60,27 @@ void CUIObject::Late_Update(_float fTimeDelta)
 {
 }
 
-HRESULT CUIObject::Render(){
+HRESULT CUIObject::Render()
+{
 	return S_OK;
 }
 
+
+
+
+
+
+
+HRESULT CUIObject::Bind_ShaderResources(CShader* pShaderCom)
+{
+	/* 트랜스폼이 들고 있는 월드 행렬이 fx, fy, fsizex, fsizey로 뷰포트상에  그려질 수 있도록 보정한다. */
+	m_pTransformCom->Scale(_float3(m_fSizeX, m_fSizeY, 1.f));
+	m_pTransformCom->Set_State(STATE::POSITION, XMVectorSet(m_fX - m_iWinSizeX * 0.5f, -m_fY + m_iWinSizeY * 0.5f, 0.f, 1.f));
+
+	/* 쉐이더에 월드를 던지고, 뷰를 던지고, 투영을 던진다. */
+
+	return S_OK;
+}
 
 void CUIObject::Free()
 {

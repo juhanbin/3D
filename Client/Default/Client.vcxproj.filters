@@ -25,6 +25,9 @@
     <Filter Include="01.Levels\Loading\Loader">
       <UniqueIdentifier>{2791bcc1-bc3d-498f-8eca-63a1bae0259d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02.GameObject">
+      <UniqueIdentifier>{85081ef4-12c5-4457-a79f-32e32125ccd1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h">
@@ -57,6 +60,7 @@
     <ClInclude Include="..\Public\Loader.h">
       <Filter>01.Levels\Loading\Loader</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\BackGround.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Client.ico">
@@ -90,5 +94,6 @@
     <ClCompile Include="..\Private\Loader.cpp">
       <Filter>01.Levels\Loading\Loader</Filter>
     </ClCompile>
+    <ClCompile Include="..\private\BackGround.cpp" />
   </ItemGroup>
 </Project>
