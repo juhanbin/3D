@@ -21,8 +21,8 @@ HRESULT CBackGround::Initialize(void* pArg)
     UIOBJECT_DESC               Desc{};
     Desc.fX = g_iWinSizeX >> 1;
     Desc.fY = g_iWinSizeY >> 1;
-    Desc.fSizeX = g_iWinSizeX;
-    Desc.fSizeY = g_iWinSizeY;
+    Desc.fSizeX = 200.0f;
+    Desc.fSizeY = 200.0f;
 
     if (FAILED(__super::Initialize(&Desc)))
         return E_FAIL;
@@ -51,12 +51,37 @@ void CBackGround::Late_Update(_float fTimeDelta)
 
 HRESULT CBackGround::Render()
 {
+    /*
+    m_pShaderCom->Bind_Texture();*/
+
+    __super::Begin();
+
+    if (FAILED(m_pTransformCom->Bind_Shader_Resource(m_pShaderCom, "g_WorldMatrix")))
+        return E_FAIL;
+
+    if (FAILED(m_pShaderCom->Bind_Matrix("g_ViewMatrix", &m_ViewMatrix)))
+        return E_FAIL;
+    if (FAILED(m_pShaderCom->Bind_Matrix("g_ProjMatrix", &m_ProjMatrix)))
+        return E_FAIL;
+
+    m_pShaderCom->Begin(0);    
+
+    m_pVIBufferCom->Bind_Resources();
+
+    m_pVIBufferCom->Render();
+
     return S_OK;
 }
 
 HRESULT CBackGround::Ready_Components()
 {
-    /*CGameObject::Add_Component();*/
+    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_Component_Shader_VtxPosTex"),
+        TEXT("Com_Shader"), reinterpret_cast<CComponent**>(&m_pShaderCom), nullptr)))
+        return E_FAIL;
+
+    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_Component_VIBuffer_Rect"),
+        TEXT("Com_VIBuffer"), reinterpret_cast<CComponent**>(&m_pVIBufferCom), nullptr)))
+        return E_FAIL;
 
     return S_OK;
 }
@@ -91,4 +116,7 @@ void CBackGround::Free()
 {
     __super::Free();
 
+    Safe_Release(m_pVIBufferCom);
+
+    Safe_Release(m_pShaderCom);
 }

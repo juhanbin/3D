@@ -37,6 +37,8 @@ HRESULT CLoader::Initialize(LEVEL eNextLevelID)
 
 	InitializeCriticalSection(&m_CriticalSection);
 
+	
+
 	/* 스레드를 생성하고 */
 	/* 생성한 스레드가 로딩을 할 수 있도록 처리한다. */
 
@@ -51,6 +53,8 @@ HRESULT CLoader::Initialize(LEVEL eNextLevelID)
 HRESULT CLoader::Loading()
 {
 	EnterCriticalSection(&m_CriticalSection);
+
+	CoInitializeEx(nullptr, 0);
 
 	HRESULT			hr = {};
 

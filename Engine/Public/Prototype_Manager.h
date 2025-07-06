@@ -2,11 +2,11 @@
 
 /* 원형으로 추가될 클래스 타입을 확인할 수 있도록 모든 종류의 원형 클래스 헤더를 인클루드 해놓는다. */
 //#include "VIBuffer_Terrain.h"
-//#include "VIBuffer_Rect.h"
+#include "VIBuffer_Rect.h"
 //#include "VIBuffer_Cube.h"
-//#include "Transform.h"
+#include "Transform.h"
 //#include "Texture.h"
-#include "Component.h"
+#include "Shader.h"
 
 /* 원형객체(게임오브젝트, 컴포넌트)를 레벨별로 구분하여 보관한다. */
 /* 복제하여 만들어진 사본객체를 리턴. */

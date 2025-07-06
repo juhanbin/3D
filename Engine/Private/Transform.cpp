@@ -1,13 +1,17 @@
 #include "Transform.h"
+#include "Shader.h"
 
 CTransform::CTransform(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	: CComponent { pDevice, pContext }
+	
 {
 
 }
 
 HRESULT CTransform::Initialize_Prototype()
 {
+	XMStoreFloat4x4(&m_WorldMatrix, XMMatrixIdentity());
+
 	return S_OK;
 }
 
@@ -22,6 +26,11 @@ HRESULT CTransform::Initialize(void* pArg)
 	m_fRotationPerSec = pDesc->fRotationPerSec;
 
 	return S_OK;
+}
+
+HRESULT CTransform::Bind_Shader_Resource(CShader* pShader, const _char* pConstantName)
+{
+	return pShader->Bind_Matrix(pConstantName, &m_WorldMatrix);
 }
 
 void CTransform::Scale(_float3 vScale)

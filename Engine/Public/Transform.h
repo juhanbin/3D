@@ -18,14 +18,14 @@ private:
 	CTransform(const CTransform& Prototype) = delete;
 	virtual ~CTransform() = default;
 
-public:	
+public:
 	_vector Get_State(STATE eState) const {
 		return XMLoadFloat4(reinterpret_cast<const _float4*>(&m_WorldMatrix.m[ENUM_CLASS(eState)]));
-	}	
+	}
 
 	_float3 Get_Scaled() const {
 		return _float3(
-			XMVectorGetX(XMVector3Length(Get_State(STATE::RIGHT))), 
+			XMVectorGetX(XMVector3Length(Get_State(STATE::RIGHT))),
 			XMVectorGetX(XMVector3Length(Get_State(STATE::UP))),
 			XMVectorGetX(XMVector3Length(Get_State(STATE::LOOK)))
 		);
@@ -38,6 +38,9 @@ public:
 public:
 	virtual HRESULT Initialize_Prototype();
 	virtual HRESULT Initialize(void* pArg);
+
+public:
+	HRESULT Bind_Shader_Resource(class CShader* pShader, const _char* pConstantName);
 
 public:
 	void Scale(_float3 vScale);
