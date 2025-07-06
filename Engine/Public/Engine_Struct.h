@@ -13,6 +13,12 @@ namespace Engine
 		unsigned int	iWinSizeX, iWinSizeY;
 		unsigned int	iNumLevels;
 	}ENGINE_DESC;	
+
+	typedef struct tagVertexPositionTexcoord
+	{
+		XMFLOAT3		vPosition;
+		XMFLOAT2		vTexcoord;
+	}VTXPOSTEX;
 	
 }
 

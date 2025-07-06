@@ -3,6 +3,12 @@
 #include "Client_Defines.h"
 #include "UIObject.h"
 
+NS_BEGIN(Engine)
+class CShader;
+class CTexture;
+class CVIBuffer_Rect;
+NS_END
+
 NS_BEGIN(Client)
 
 class CBackGround final : public CUIObject
@@ -19,6 +25,9 @@ public:
 	virtual void Update(_float fTimeDelta);
 	virtual void Late_Update(_float fTimeDelta);
 	virtual HRESULT Render();
+
+private:
+	HRESULT Ready_Components();
 
 public:
 	static CBackGround* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);

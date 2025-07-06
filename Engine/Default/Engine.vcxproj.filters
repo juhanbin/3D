@@ -58,6 +58,12 @@
     <Filter Include="01.Utility\03.Component\Transform">
       <UniqueIdentifier>{8bf04c38-7325-4a7a-8f27-7272b9148467}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01.Utility\03.Component\VIBuffer">
+      <UniqueIdentifier>{80bfd4f0-7a0f-41fd-aaab-4c88527e942d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Utility\03.Component\VIBuffer\Rect">
+      <UniqueIdentifier>{53ce68de-377e-448c-b69e-23c3d305e190}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Private\Timer.cpp">
@@ -104,6 +110,12 @@
     </ClCompile>
     <ClCompile Include="..\private\Transform.cpp">
       <Filter>01.Utility\03.Component\Transform</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\VIBuffer.cpp">
+      <Filter>01.Utility\03.Component\VIBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\VIBuffer_Rect.cpp">
+      <Filter>01.Utility\03.Component\VIBuffer\Rect</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -169,6 +181,12 @@
     </ClInclude>
     <ClInclude Include="..\public\Transform.h">
       <Filter>01.Utility\03.Component\Transform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\VIBuffer.h">
+      <Filter>01.Utility\03.Component\VIBuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\VIBuffer_Rect.h">
+      <Filter>01.Utility\03.Component\VIBuffer\Rect</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
