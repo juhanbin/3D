@@ -14,7 +14,8 @@ CShader::CShader(const CShader& Prototype)
 
 HRESULT CShader::Initialize_Prototype(const _tchar* pShaderFilePath, const D3D11_INPUT_ELEMENT_DESC* pElements, _uint iNumElements)
 {
-	/*D3DX11CompileEffectFromFile();*/
+	
+	D3DX11CompileEffectFromFile();
 
 	return S_OK;
 }
