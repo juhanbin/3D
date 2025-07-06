@@ -116,14 +116,17 @@ HRESULT CShader::Bind_Matrix(const _char* pConstantName, const _float4x4* pMatri
 
 HRESULT CShader::Bind_SRV(const _char* pConstantName, ID3D11ShaderResourceView* pSRV)
 {
+	////셰이더에서 pConstantName(예: "g_WorldMatrix")라는 이름의 변수(상수버퍼 멤버)를 찾음
 	ID3DX11EffectVariable* pVariable = m_pEffect->GetVariableByName(pConstantName);
 	if (nullptr == pVariable)
 		return E_FAIL;
 
+	//찾아온 변수를 "셰이더 리소스(SRV, 보통 텍스처)" 타입으로 변환
 	ID3DX11EffectShaderResourceVariable* pSRVariable = pVariable->AsShaderResource();
 	if (nullptr == pSRVariable)
 		return E_FAIL;
 
+	//셰이더에 바인딩(연결)
 	return pSRVariable->SetResource(pSRV);
 }
 

@@ -17,22 +17,12 @@ CTexture::CTexture(const CTexture& Prototype)
 
 HRESULT CTexture::Initialize_Prototype(const _tchar* pTextureFilePath, _uint iNumTextures)
 {
+    //개수 멤버변수에 저장
     m_iNumTextures = iNumTextures;
 
-    ///* D:\ */
-    //_tchar          szDrive[MAX_PATH] = {};
-
-    ///* Burger\153\Framework\Engine\PrivateBurger\153\Framework\Engine\Private\ */
-    //_tchar          szDir[MAX_PATH] = {};
-
-    ///* Texture */
-    //_tchar          szFileName[MAX_PATH] = {};
-
-    /* .cpp */
     _tchar          szExt[MAX_PATH] = {};
 
-    
-    /* D:\Burger\153\Framework\Engine\PrivateBurger\153\Framework\Engine\Private\Texture%d.png*/
+    //경로에서 확장자 추출
     _wsplitpath_s(pTextureFilePath, nullptr, 0, nullptr, 0, nullptr, 0, szExt, MAX_PATH);
 
     for (size_t i = 0; i < iNumTextures; i++)    
