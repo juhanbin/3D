@@ -18,8 +18,6 @@ CShader::CShader(const CShader& Prototype)
 		Safe_AddRef(pInputLayout);
 }
 
-//FX(.fx) 셰이더 파일을 컴파일해서 효과 객체를 만들고,
-// 첫 번째 테크닉의 모든 패스별로 셰이더에 맞는 정점 구조(InputLayout)를 생성해 준비해두는 함수
 HRESULT CShader::Initialize_Prototype(const _tchar* pShaderFilePath, const D3D11_INPUT_ELEMENT_DESC* pElements, _uint iNumElements)
 {	
 	/*D3DCOMPILE_SKIP_VALIDATION*/
@@ -69,7 +67,6 @@ HRESULT CShader::Initialize(void* pArg)
 	return S_OK;
 }
 
-//지정한 패스 번호의 셰이더/상태값과 정점 구조(InputLayout)를 GPU에 적용해서, 이후 렌더링이 그 상태로 동작하도록 준비하는 함수
 HRESULT CShader::Begin(_uint iPassIndex)
 {
 	if (iPassIndex >= m_iNumPasses)
@@ -84,7 +81,7 @@ HRESULT CShader::Begin(_uint iPassIndex)
 }
 
 //m_pShaderCom->Bind_Matrix("g_WorldMatrix", )
-//C++에서 만든 행렬 값을 FX(.fx) 파일 안의 지정된 행렬 변수에 바인딩해서,셰이더가 이 행렬로 변환 / 계산을 할 수 있게 해준다!
+
 HRESULT CShader::Bind_Matrix(const _char* pConstantName, const _float4x4* pMatrix)
 {
 	ID3DX11EffectVariable*	pVariable = m_pEffect->GetVariableByName(pConstantName);
@@ -97,6 +94,20 @@ HRESULT CShader::Bind_Matrix(const _char* pConstantName, const _float4x4* pMatri
 
 	return pMatrixVariable->SetMatrix(reinterpret_cast<const _float*>(pMatrix));	
 }
+
+HRESULT CShader::Bind_SRV(const _char* pConstantName, ID3D11ShaderResourceView* pSRV)
+{
+	ID3DX11EffectVariable* pVariable = m_pEffect->GetVariableByName(pConstantName);
+	if (nullptr == pVariable)
+		return E_FAIL;
+
+	ID3DX11EffectShaderResourceVariable* pSRVariable = pVariable->AsShaderResource();
+	if (nullptr == pSRVariable)
+		return E_FAIL;
+
+	return pSRVariable->SetResource(pSRV);
+}
+
 
 CShader* CShader::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, const _tchar* pShaderFilePath, const D3D11_INPUT_ELEMENT_DESC* pElements, _uint iNumElements)
 {

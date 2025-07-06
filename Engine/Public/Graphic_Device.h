@@ -70,6 +70,8 @@ private:
 	/* ID3D11ShaderResourceView : 셰이더에 전달될 수 있는 텍스처 타입. */	
 	/* ID3D11RenderTargetView : 렌더타겟용으로 사용될 수 있는 텍스처 타입. */
 	/* ID3D11DepthStencilView : 깊이스텐실 버퍼로서 사용될 수 있는 타입.  */
+	
+
 	ID3D11RenderTargetView*		m_pBackBufferRTV = { nullptr };
 	ID3D11DepthStencilView*		m_pDepthStencilView = { nullptr };
 

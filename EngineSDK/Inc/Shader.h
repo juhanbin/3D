@@ -17,14 +17,13 @@ public:
 
 public:
 	HRESULT Begin(_uint iPassIndex);
-	//셰이더 시작,
 
 	HRESULT Bind_Matrix(const _char* pConstantName, const _float4x4* pMatrix);
+	HRESULT Bind_SRV(const _char* pConstantName, ID3D11ShaderResourceView* pSRV);
 
 private:
 	ID3DX11Effect*				m_pEffect = { nullptr };
 
-	//정점 구조체가 GPU에서 어떻게 해석돼야 할지 DirectX에 알려주는 명세서
 	vector<ID3D11InputLayout*>	m_InputLayouts;
 
 	_uint						m_iNumPasses = { };

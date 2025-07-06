@@ -70,6 +70,10 @@ HRESULT CUIObject::Render()
 
 
 
+
+
+
+
 HRESULT CUIObject::Begin()
 {
 	/* 트랜스폼이 들고 있는 월드 행렬이 fx, fy, fsizex, fsizey로 뷰포트상에  그려질 수 있도록 보정한다. */

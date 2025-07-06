@@ -37,10 +37,10 @@ HRESULT CVIBuffer_Rect::Initialize_Prototype()
 	pVertices[1].vTexcoord = _float2(1.f, 0.f);
 
 	pVertices[2].vPosition = _float3(0.5f, -0.5f, 0.f);
-	pVertices[2].vTexcoord = _float2(0.f, 1.f);
+	pVertices[2].vTexcoord = _float2(1.f, 1.f);
 
 	pVertices[3].vPosition = _float3(-0.5f, -0.5f, 0.f);
-	pVertices[3].vTexcoord = _float2(1.f, 1.f);
+	pVertices[3].vTexcoord = _float2(0.f, 1.f);
 
 	D3D11_SUBRESOURCE_DATA	VBInitialData{};
 	VBInitialData.pSysMem = pVertices;

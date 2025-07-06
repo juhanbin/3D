@@ -5,7 +5,7 @@
 #include "VIBuffer_Rect.h"
 //#include "VIBuffer_Cube.h"
 #include "Transform.h"
-//#include "Texture.h"
+#include "Texture.h"
 #include "Shader.h"
 
 /* 원형객체(게임오브젝트, 컴포넌트)를 레벨별로 구분하여 보관한다. */
