@@ -29,6 +29,7 @@ HRESULT CBackGround::Initialize(void* pArg)
 
     if (FAILED(Ready_Components()))
         return E_FAIL;
+
     /*D3D11_SHADER_DESC*/
     return S_OK;
 }
