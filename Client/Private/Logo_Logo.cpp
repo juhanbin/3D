@@ -20,9 +20,9 @@ HRESULT CLogo_Logo::Initialize(void* pArg)
 {
     UIOBJECT_DESC               Desc{};
     Desc.fX = g_iWinSizeX >> 1;
-    Desc.fY = (g_iWinSizeY >> 1) - 30;
-    Desc.fSizeX = (g_iWinSizeX >>1) - 50;
-    Desc.fSizeY = (g_iWinSizeY >>1) + 100;
+    Desc.fY = (g_iWinSizeY >> 1);
+    Desc.fSizeX = (g_iWinSizeX >>1) - 60;
+    Desc.fSizeY = (g_iWinSizeY >>1) + 190;
 
     if (FAILED(__super::Initialize(&Desc)))
         return E_FAIL;
@@ -79,7 +79,7 @@ HRESULT CLogo_Logo::Render()
 
 HRESULT CLogo_Logo::Ready_Components()
 {
-    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_Component_Shader_VtxPosTex"),
+    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_Component_Shader_VtxPosTex_Logo"),
         TEXT("Com_Shader"), reinterpret_cast<CComponent**>(&m_pShaderCom), nullptr)))
         return E_FAIL;
 
