@@ -32,6 +32,8 @@ private:
 	CVIBuffer_Rect* m_pVIBufferCom = { nullptr };
 
 private:
+	_bool	m_bturn = true;
+private:
 	HRESULT Ready_Components();
 
 public:

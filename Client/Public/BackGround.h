@@ -32,6 +32,9 @@ private:
 	CVIBuffer_Rect*			m_pVIBufferCom = { nullptr };
 
 private:
+	_uint m_iTextureIndex = 0;
+
+private:
 	HRESULT Ready_Components();
 
 public:

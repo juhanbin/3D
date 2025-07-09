@@ -40,7 +40,8 @@ void CLogo_Logo::Priority_Update(_float fTimeDelta)
 
 void CLogo_Logo::Update(_float fTimeDelta)
 {
-    int a = 10;
+    if (GetKeyState('K') & 0x8000)
+        m_bturn = false;
 }
 
 void CLogo_Logo::Late_Update(_float fTimeDelta)
@@ -64,8 +65,17 @@ HRESULT CLogo_Logo::Render()
     if (FAILED(m_pShaderCom->Bind_Matrix("g_ProjMatrix", &m_ProjMatrix)))
         return E_FAIL;
 
-    if (FAILED(m_pTextureCom->Bind_Shader_Resource(m_pShaderCom, "g_Texture", 0)))
-        return E_FAIL;
+    if (m_bturn == true)
+    {
+        if (FAILED(m_pTextureCom->Bind_Shader_Resource(m_pShaderCom, "g_Texture", 0)))
+            return E_FAIL;
+    }
+    else
+    {
+        if (FAILED(m_pTextureCom->Bind_Shader_Resource(m_pShaderCom, "g_Texture", 1)))
+            return E_FAIL;
+    }
+    
 
     m_pShaderCom->Begin(0);
 

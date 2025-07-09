@@ -36,12 +36,15 @@ HRESULT CBackGround::Initialize(void* pArg)
 
 void CBackGround::Priority_Update(_float fTimeDelta)
 {
-    int a = 10;
+
 }
 
 void CBackGround::Update(_float fTimeDelta)
 {
-    int a = 10;
+    if (GetKeyState('K') & 0x8000)
+        m_iTextureIndex = 1;
+    //else
+        //m_iTextureIndex = 0;
 }
 
 void CBackGround::Late_Update(_float fTimeDelta)
@@ -65,7 +68,7 @@ HRESULT CBackGround::Render()
     if (FAILED(m_pShaderCom->Bind_Matrix("g_ProjMatrix", &m_ProjMatrix)))
         return E_FAIL;
 
-    if (FAILED(m_pTextureCom->Bind_Shader_Resource(m_pShaderCom, "g_Texture", 0)))
+    if (FAILED(m_pTextureCom->Bind_Shader_Resource(m_pShaderCom, "g_Texture", m_iTextureIndex)))
         return E_FAIL;
 
     m_pShaderCom->Begin(0);    
