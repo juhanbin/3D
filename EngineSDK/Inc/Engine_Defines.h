@@ -6,6 +6,9 @@
 #include <DirectXMath.h>
 #include <d3dcompiler.h>
 
+#define DIRECTINPUT_VERSION 0x0800
+#include <dinput.h>
+
 #include "Fx11/d3dx11effect.h"
 #include "DirectXTK/DDSTextureLoader.h"
 #include "DirectXTK/WICTextureLoader.h"

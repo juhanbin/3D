@@ -6,6 +6,7 @@
 #include "Prototype_Manager.h"
 #include "Renderer.h"
 #include "Timer_Manager.h"
+#include "PipeLine.h"
 //#include "Picking.h"
 
 IMPLEMENT_SINGLETON(CGameInstance)
@@ -30,7 +31,7 @@ HRESULT CGameInstance::Initialize_Engine(const ENGINE_DESC& EngineDesc, ID3D11De
 
 	m_pLevel_Manager = CLevel_Manager::Create();
 	if (nullptr == m_pLevel_Manager)
-		return E_FAIL;	
+		return E_FAIL;
 
 	m_pPrototype_Manager = CPrototype_Manager::Create(EngineDesc.iNumLevels);
 	if (nullptr == m_pPrototype_Manager)
@@ -48,6 +49,10 @@ HRESULT CGameInstance::Initialize_Engine(const ENGINE_DESC& EngineDesc, ID3D11De
 	if (nullptr == m_pTimer_Manager)
 		return E_FAIL;
 
+	m_pPipeLine = CPipeLine::Create();
+	if (nullptr == m_pPipeLine)
+		return E_FAIL;
+
 	return S_OK;
 }
 
@@ -57,6 +62,7 @@ void CGameInstance::Update_Engine(_float fTimeDelta)
 	m_pObject_Manager->Priority_Update(fTimeDelta);
 
 	/*m_pPicking->Update();*/
+	m_pPipeLine->Update();
 
 	m_pObject_Manager->Update(fTimeDelta);
 	m_pObject_Manager->Late_Update(fTimeDelta);
@@ -78,15 +84,15 @@ void CGameInstance::Render_Begin(const _float4* pClearColor)
 {
 	if (nullptr == m_pGraphic_Device)
 		return;
-	
+
 	m_pGraphic_Device->Clear_BackBuffer_View(pClearColor);
-	
-	m_pGraphic_Device->Clear_DepthStencil_View();		
+
+	m_pGraphic_Device->Clear_DepthStencil_View();
 }
 
 HRESULT CGameInstance::Draw()
 {
-	if (nullptr == m_pLevel_Manager || 
+	if (nullptr == m_pLevel_Manager ||
 		nullptr == m_pRenderer)
 		return E_FAIL;
 
@@ -111,12 +117,12 @@ void CGameInstance::Render_End(HWND hWnd)
 
 _float CGameInstance::Rand_Normal()
 {
-	return static_cast<_float>(rand()) / RAND_MAX;	
+	return static_cast<_float>(rand()) / RAND_MAX;
 }
 
 _float CGameInstance::Rand(_float fMin, _float fMax)
-{	
-	return fMin + Rand_Normal() * (fMax - fMin);	
+{
+	return fMin + Rand_Normal() * (fMax - fMin);
 }
 
 #pragma endregion
@@ -148,7 +154,7 @@ CBase* CGameInstance::Clone_Prototype(PROTOTYPE ePrototype, _uint iPrototypeLeve
 	if (nullptr == m_pPrototype_Manager)
 		return nullptr;
 
-	return m_pPrototype_Manager->Clone_Prototype(ePrototype, iPrototypeLevelIndex, strPrototypeTag, pArg);	
+	return m_pPrototype_Manager->Clone_Prototype(ePrototype, iPrototypeLevelIndex, strPrototypeTag, pArg);
 }
 
 #pragma endregion
@@ -199,6 +205,41 @@ void CGameInstance::Compute_TimeDelta(const _wstring& strTimerTag)
 	m_pTimer_Manager->Compute_TimeDelta(strTimerTag);
 }
 
+_matrix CGameInstance::Get_Transform_Matrix(D3DTS eTransformState) const
+{
+	return m_pPipeLine->Get_Transform_Matrix(eTransformState);
+}
+
+const _float4x4* CGameInstance::Get_Transform_Float4x4(D3DTS eTransformState) const
+{
+	return m_pPipeLine->Get_Transform_Float4x4(eTransformState);
+}
+
+_matrix CGameInstance::Get_Transform_Matrix_Inverse(D3DTS eTransformState) const
+{
+	return m_pPipeLine->Get_Transform_Matrix_Inverse(eTransformState);
+}
+
+const _float4x4* CGameInstance::Get_Transform_Float4x4_Inverse(D3DTS eTransformState) const
+{
+	return m_pPipeLine->Get_Transform_Float4x4_Inverse(eTransformState);
+}
+
+const _float4* CGameInstance::Get_CamPosition() const
+{
+	return m_pPipeLine->Get_CamPosition();
+}
+
+void CGameInstance::Set_Transform(D3DTS eTransformState, _fmatrix Matrix)
+{
+	m_pPipeLine->Set_Transform(eTransformState, Matrix);
+}
+
+void CGameInstance::Set_Transform(D3DTS eTransformState, const _float4x4& Matrix)
+{
+	m_pPipeLine->Set_Transform(eTransformState, Matrix);
+}
+
 #pragma endregion
 //
 //void CGameInstance::Transform_Picking_ToLocalSpace(CTransform* pTransformCom)
@@ -218,6 +259,7 @@ void CGameInstance::Release_Engine()
 	Release();
 
 	//Safe_Release(m_pPicking);
+	Safe_Release(m_pPipeLine);
 	Safe_Release(m_pTimer_Manager);
 	Safe_Release(m_pRenderer);
 	Safe_Release(m_pObject_Manager);

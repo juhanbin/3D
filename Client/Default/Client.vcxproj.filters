@@ -34,6 +34,15 @@
     <Filter Include="02.GameObject\Logo_Logo">
       <UniqueIdentifier>{abc29366-0889-4f8d-b23a-8caf9c6f2195}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02.GameObject\Camera">
+      <UniqueIdentifier>{ae0d18f9-33f3-46dd-be29-f131cd33de7c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObject\Camera\Free">
+      <UniqueIdentifier>{65060000-b782-4bdb-859a-22c80770f8dc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObject\Terrain">
+      <UniqueIdentifier>{c04dca5e-251b-432d-ab47-38e3cf04cb35}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h">
@@ -71,6 +80,12 @@
     </ClInclude>
     <ClInclude Include="..\Public\Logo_Logo.h">
       <Filter>02.GameObject\Logo_Logo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Camera_Free.h">
+      <Filter>02.GameObject\Camera\Free</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Terrain.h">
+      <Filter>02.GameObject\Terrain</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -110,6 +125,12 @@
     </ClCompile>
     <ClCompile Include="..\Private\Logo_Logo.cpp">
       <Filter>02.GameObject\Logo_Logo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Camera_Free.cpp">
+      <Filter>02.GameObject\Camera\Free</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Terrain.cpp">
+      <Filter>02.GameObject\Terrain</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

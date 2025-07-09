@@ -2,8 +2,8 @@
 #include "Shader.h"
 
 CTransform::CTransform(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
-	: CComponent { pDevice, pContext }
-	
+	: CComponent{ pDevice, pContext }
+
 {
 
 }
@@ -100,7 +100,7 @@ void CTransform::Rotation(_fvector vAxis, _float fRadian)
 	Set_State(STATE::RIGHT, XMVector4Transform(vRight, RotationMatrix));
 	Set_State(STATE::UP, XMVector4Transform(vUp, RotationMatrix));
 	Set_State(STATE::LOOK, XMVector4Transform(vLook, RotationMatrix));
-	
+
 	// XMVector3TransformNormal();
 
 
@@ -140,7 +140,7 @@ void CTransform::Chase(_fvector vTargetPos, _float fTimeDelta, _float fLimit)
 
 	_float		fDistance = XMVectorGetX(XMVector3Length(vMoveDir));
 
-	if(fDistance >= fLimit)
+	if (fDistance >= fLimit)
 		vPosition += XMVector3Normalize(vMoveDir) * m_fSpeedPerSec * fTimeDelta;
 
 	Set_State(STATE::POSITION, vPosition);

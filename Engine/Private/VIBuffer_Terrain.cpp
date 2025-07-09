@@ -1,7 +1,7 @@
 #include "VIBuffer_Terrain.h"
 
 CVIBuffer_Terrain::CVIBuffer_Terrain(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
-	: CVIBuffer { pDevice, pContext }
+	: CVIBuffer{ pDevice, pContext }
 {
 
 }
@@ -31,10 +31,10 @@ HRESULT CVIBuffer_Terrain::Initialize_Prototype(const _tchar* pHeightMapFilePath
 
 	_uint* pPixels = new _uint[m_iNumVertices];
 
-	ReadFile(hFile, pPixels, sizeof(_uint) * m_iNumVertices, &dwByte, nullptr);	
+	ReadFile(hFile, pPixels, sizeof(_uint) * m_iNumVertices, &dwByte, nullptr);
 
 	CloseHandle(hFile);
-	
+
 	m_iVertexStride = sizeof(VTXNORTEX);
 	m_iNumIndices = (m_iNumVerticesX - 1) * (m_iNumVerticesZ - 1) * 2 * 3;
 	m_iIndexStride = 4;
@@ -42,7 +42,7 @@ HRESULT CVIBuffer_Terrain::Initialize_Prototype(const _tchar* pHeightMapFilePath
 	m_eIndexFormat = DXGI_FORMAT_R32_UINT;
 	m_ePrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
-	
+
 	VTXNORTEX* pVertices = new VTXNORTEX[m_iNumVertices];
 
 	for (size_t i = 0; i < m_iNumVerticesZ; i++)
@@ -71,7 +71,7 @@ HRESULT CVIBuffer_Terrain::Initialize_Prototype(const _tchar* pHeightMapFilePath
 			_uint		iIndex = i * m_iNumVerticesX + j;
 
 			_uint		iIndices[] = {
-				iIndex + m_iNumVerticesX, 
+				iIndex + m_iNumVerticesX,
 				iIndex + m_iNumVerticesX + 1,
 				iIndex + 1,
 				iIndex
@@ -90,7 +90,7 @@ HRESULT CVIBuffer_Terrain::Initialize_Prototype(const _tchar* pHeightMapFilePath
 			XMStoreFloat3(&pVertices[iIndices[0]].vNormal, XMLoadFloat3(&pVertices[iIndices[0]].vNormal) + vNormal);
 			XMStoreFloat3(&pVertices[iIndices[1]].vNormal, XMLoadFloat3(&pVertices[iIndices[1]].vNormal) + vNormal);
 			XMStoreFloat3(&pVertices[iIndices[2]].vNormal, XMLoadFloat3(&pVertices[iIndices[2]].vNormal) + vNormal);
-						
+
 			pIndices[iNumIndices++] = iIndices[0];
 			pIndices[iNumIndices++] = iIndices[2];
 			pIndices[iNumIndices++] = iIndices[3];
@@ -143,7 +143,7 @@ HRESULT CVIBuffer_Terrain::Initialize_Prototype(const _tchar* pHeightMapFilePath
 		return E_FAIL;
 
 	Safe_Delete_Array(pPixels);
-	
+
 	Safe_Delete_Array(pIndices);
 
 	return S_OK;

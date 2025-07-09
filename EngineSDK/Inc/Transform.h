@@ -18,17 +18,24 @@ private:
 	CTransform(const CTransform& Prototype) = delete;
 	virtual ~CTransform() = default;
 
-public:	
+public:
 	_vector Get_State(STATE eState) const {
 		return XMLoadFloat4(reinterpret_cast<const _float4*>(&m_WorldMatrix.m[ENUM_CLASS(eState)]));
-	}	
+	}
 
 	_float3 Get_Scaled() const {
 		return _float3(
-			XMVectorGetX(XMVector3Length(Get_State(STATE::RIGHT))), 
+			XMVectorGetX(XMVector3Length(Get_State(STATE::RIGHT))),
 			XMVectorGetX(XMVector3Length(Get_State(STATE::UP))),
 			XMVectorGetX(XMVector3Length(Get_State(STATE::LOOK)))
 		);
+	}
+
+	_matrix Get_WorldMatrix() {
+		return XMLoadFloat4x4(&m_WorldMatrix);
+	}
+	_matrix Get_WorldMatrix_Inverse() {
+		return XMMatrixInverse(nullptr, XMLoadFloat4x4(&m_WorldMatrix));
 	}
 
 	void Set_State(STATE eState, _fvector vState) {
