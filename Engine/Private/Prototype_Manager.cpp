@@ -4,9 +4,9 @@
 
 #include "GameInstance.h"
 
-CPrototype_Manager::CPrototype_Manager()	
+CPrototype_Manager::CPrototype_Manager()
 {
-	
+
 }
 
 HRESULT CPrototype_Manager::Initialize(_uint iNumLevels)
@@ -20,7 +20,7 @@ HRESULT CPrototype_Manager::Initialize(_uint iNumLevels)
 
 HRESULT CPrototype_Manager::Add_Prototype(_uint iPrototpyeLevelIndex, const _wstring& strPrototypeTag, CBase* pPrototype)
 {
-	if (nullptr == m_pPrototypes || 
+	if (nullptr == m_pPrototypes ||
 		m_iNumLevels <= iPrototpyeLevelIndex ||
 		nullptr != Find_Prototype(iPrototpyeLevelIndex, strPrototypeTag))
 		return E_FAIL;
@@ -70,7 +70,7 @@ CBase* CPrototype_Manager::Find_Prototype(_uint iPrototypeLevelIndex, const _wst
 	if (iter == m_pPrototypes[iPrototypeLevelIndex].end())
 		return nullptr;
 
-	return iter->second;	
+	return iter->second;
 }
 
 CPrototype_Manager* CPrototype_Manager::Create(_uint iNumLevels)
@@ -97,5 +97,5 @@ void CPrototype_Manager::Free()
 		m_pPrototypes[i].clear();
 	}
 
-	Safe_Delete_Array(m_pPrototypes);	
+	Safe_Delete_Array(m_pPrototypes);
 }

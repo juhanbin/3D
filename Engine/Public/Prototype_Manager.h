@@ -26,9 +26,9 @@ public:
 	void Clear(_uint iLevelIndex);
 private:
 	_uint											m_iNumLevels = {  };
-	map<const _wstring, class CBase*>*				m_pPrototypes = { nullptr };
+	map<const _wstring, class CBase*>* m_pPrototypes = { nullptr };
 	typedef map<const _wstring, class CBase*>		PROTOTYPES;
-	
+
 
 private:
 	class CBase* Find_Prototype(_uint iPrototpyeLevelIndex, const _wstring& strPrototypeTag);

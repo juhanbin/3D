@@ -32,13 +32,13 @@ public:
 	}
 
 private:
-	ID3D11Device*					m_pDevice = { nullptr }; 
-	ID3D11DeviceContext*			m_pContext = { nullptr };
+	ID3D11Device* m_pDevice = { nullptr };
+	ID3D11DeviceContext* m_pContext = { nullptr };
 	LEVEL							m_eNextLevelID = { LEVEL::END };
 	HANDLE							m_hThread = {};
 	_tchar							m_szLoadingText[MAX_PATH] = {};
 	_bool							m_isFinished = { false };
-	CGameInstance*					m_pGameInstance = { nullptr };
+	CGameInstance* m_pGameInstance = { nullptr };
 	CRITICAL_SECTION				m_CriticalSection = {};
 
 
