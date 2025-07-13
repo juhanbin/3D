@@ -82,6 +82,12 @@
     <Filter Include="01.Utility\02.GameObject\Camera">
       <UniqueIdentifier>{e2e5c1cd-49e7-4847-89a5-6d53b0505548}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01.Utility\96.Lights">
+      <UniqueIdentifier>{51e62f5e-7563-44b5-bcc5-ea4fa1d1f22b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Utility\96.Lights\Manager">
+      <UniqueIdentifier>{44df6018-420b-4bba-a8f1-86317f4863db}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Private\Timer.cpp">
@@ -152,6 +158,12 @@
     </ClCompile>
     <ClCompile Include="..\Private\Camera.cpp">
       <Filter>01.Utility\02.GameObject\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Light.cpp">
+      <Filter>01.Utility\96.Lights</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Light_Manager.cpp">
+      <Filter>01.Utility\96.Lights\Manager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -241,6 +253,12 @@
     </ClInclude>
     <ClInclude Include="..\Public\Camera.h">
       <Filter>01.Utility\02.GameObject\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Light.h">
+      <Filter>01.Utility\96.Lights</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Light_Manager.h">
+      <Filter>01.Utility\96.Lights\Manager</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
