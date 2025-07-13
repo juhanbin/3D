@@ -64,6 +64,13 @@ public:
 	const _float4* Get_CamPosition() const;
 	void Set_Transform(D3DTS eTransformState, _fmatrix Matrix);
 	void Set_Transform(D3DTS eTransformState, const _float4x4& Matrix);
+
+#pragma region INPUT_DEVICE
+	_byte	Get_DIKeyState(_ubyte byKeyID);
+	_byte	Get_DIMouseState(MOUSEKEYSTATE eMouse);
+	_long	Get_DIMouseMove(MOUSEMOVESTATE eMouseState);
+#pragma endregion
+
 #pragma endregion
 	//
 	//#pragma region PICKING 
@@ -73,6 +80,7 @@ public:
 
 private:
 	class CGraphic_Device* m_pGraphic_Device = { nullptr };
+	class CInput_Device* m_pInput_Device = { nullptr };
 	class CLevel_Manager* m_pLevel_Manager = { nullptr };
 	class CObject_Manager* m_pObject_Manager = { nullptr };
 	class CPrototype_Manager* m_pPrototype_Manager = { nullptr };

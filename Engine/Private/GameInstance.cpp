@@ -1,6 +1,7 @@
 #include "GameInstance.h"
 
 #include "Graphic_Device.h"
+#include "Input_Device.h"
 #include "Level_Manager.h"
 #include "Object_Manager.h"
 #include "Prototype_Manager.h"
@@ -23,6 +24,11 @@ HRESULT CGameInstance::Initialize_Engine(const ENGINE_DESC& EngineDesc, ID3D11De
 	m_pGraphic_Device = CGraphic_Device::Create(EngineDesc.hWnd, EngineDesc.eWinMode, EngineDesc.iWinSizeX, EngineDesc.iWinSizeY, ppDevice, ppContext);
 	if (nullptr == m_pGraphic_Device)
 		return E_FAIL;
+
+	m_pInput_Device = CInput_Device::Create(EngineDesc.hInst, EngineDesc.hWnd);
+	if (nullptr == m_pInput_Device)
+		return E_FAIL;
+
 
 	//m_pPicking = CPicking::Create(*ppOut, EngineDesc.hWnd);
 	//if (nullptr == m_pPicking)
@@ -58,6 +64,8 @@ HRESULT CGameInstance::Initialize_Engine(const ENGINE_DESC& EngineDesc, ID3D11De
 
 void CGameInstance::Update_Engine(_float fTimeDelta)
 {
+	m_pInput_Device->Update();
+
 	/* 내 게임내에서 반복적인 갱신이 필요한 객체들이 있다라면 갱신을 여기에서 모아서 수행하낟. */
 	m_pObject_Manager->Priority_Update(fTimeDelta);
 
@@ -240,6 +248,21 @@ void CGameInstance::Set_Transform(D3DTS eTransformState, const _float4x4& Matrix
 	m_pPipeLine->Set_Transform(eTransformState, Matrix);
 }
 
+_byte CGameInstance::Get_DIKeyState(_ubyte byKeyID)
+{
+	return m_pInput_Device->Get_DIKeyState(byKeyID);
+}
+
+_byte CGameInstance::Get_DIMouseState(MOUSEKEYSTATE eMouse)
+{
+	return m_pInput_Device->Get_DIMouseState(eMouse);
+}
+
+_long CGameInstance::Get_DIMouseMove(MOUSEMOVESTATE eMouseState)
+{
+	return m_pInput_Device->Get_DIMouseMove(eMouseState);
+}
+
 #pragma endregion
 //
 //void CGameInstance::Transform_Picking_ToLocalSpace(CTransform* pTransformCom)
@@ -265,6 +288,7 @@ void CGameInstance::Release_Engine()
 	Safe_Release(m_pObject_Manager);
 	Safe_Release(m_pPrototype_Manager);
 	Safe_Release(m_pLevel_Manager);
+	Safe_Release(m_pInput_Device);
 	Safe_Release(m_pGraphic_Device);
 }
 
