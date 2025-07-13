@@ -98,6 +98,15 @@ HRESULT CShader::Begin(_uint iPassIndex)
 
 //m_pShaderCom->Bind_Matrix("g_WorldMatrix", )
 
+HRESULT CShader::Bind_RawValue(const _char* pConstantName, const void* pData, _uint iLength)
+{
+	ID3DX11EffectVariable* pVariable = m_pEffect->GetVariableByName(pConstantName);
+	if (nullptr == pVariable)
+		return E_FAIL;
+
+	return pVariable->SetRawValue(pData, 0, iLength);
+}
+
 HRESULT CShader::Bind_Matrix(const _char* pConstantName, const _float4x4* pMatrix)
 {
 	//셰이더에서 pConstantName(예: "g_WorldMatrix")라는 이름의 변수(상수버퍼 멤버)를 찾음
