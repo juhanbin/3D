@@ -38,6 +38,19 @@ public:
 		return *((reinterpret_cast<_int*>(&m_tMouseState)) + static_cast<_uint>(eMouseState));
 	}
 
+public:
+	bool KeyDown(_ubyte byKeyID) 
+	{
+		return (m_byKeyState[byKeyID] & 0x80) && !(m_byPrevKeyState[byKeyID] & 0x80);
+	}
+	bool KeyPressing(_ubyte byKeyID) 
+	{
+		return (m_byKeyState[byKeyID] & 0x80);
+	}
+	bool KeyUp(_ubyte byKeyID) 
+	{
+		return !(m_byKeyState[byKeyID] & 0x80) && (m_byPrevKeyState[byKeyID] & 0x80);
+	}
 
 public:
 	HRESULT Initialize(HINSTANCE hInst, HWND hWnd);
@@ -56,6 +69,8 @@ private:
 
 
 private:
+private:
+	_byte					m_byPrevKeyState[256] = {};
 	_byte					m_byKeyState[256] = {};
 	DIMOUSESTATE			m_tMouseState = {};
 

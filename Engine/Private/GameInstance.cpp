@@ -267,6 +267,21 @@ _long CGameInstance::Get_DIMouseMove(MOUSEMOVESTATE eMouseState)
 	return m_pInput_Device->Get_DIMouseMove(eMouseState);
 }
 
+_byte CGameInstance::KeyDown(_ubyte byKeyID)
+{
+	return m_pInput_Device->KeyDown(byKeyID);
+}
+
+_byte CGameInstance::KeyPressing(_ubyte byKeyID)
+{
+	return m_pInput_Device->KeyPressing(byKeyID);
+}
+
+_byte CGameInstance::KeyUp(_ubyte byKeyID)
+{
+	return m_pInput_Device->KeyUp(byKeyID);
+}
+
 const LIGHT_DESC* CGameInstance::Get_LightDesc(_uint iIndex) const
 {
 	return m_pLight_Manager->Get_LightDesc(iIndex);

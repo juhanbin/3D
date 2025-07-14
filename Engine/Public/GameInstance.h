@@ -70,6 +70,10 @@ public:
 	_byte	Get_DIKeyState(_ubyte byKeyID);
 	_byte	Get_DIMouseState(MOUSEKEYSTATE eMouse);
 	_long	Get_DIMouseMove(MOUSEMOVESTATE eMouseState);
+
+	_byte	KeyDown(_ubyte byKeyID);
+	_byte	KeyPressing(_ubyte byKeyID);
+	_byte	KeyUp(_ubyte byKeyID);
 #pragma endregion
 
 #pragma region LIGHT_MANAGER
