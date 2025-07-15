@@ -46,6 +46,9 @@
     <Filter Include="02.GameObject\Logo_StartButton">
       <UniqueIdentifier>{f1ef3a0c-5ab2-4e45-98f8-0a7e230885c2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02.GameObject\Monster">
+      <UniqueIdentifier>{15960447-9085-446d-8005-6a1bc452b515}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h">
@@ -92,6 +95,9 @@
     </ClInclude>
     <ClInclude Include="..\Public\Logo_StartButton.h">
       <Filter>02.GameObject\Logo_StartButton</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Monster.h">
+      <Filter>02.GameObject\Monster</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -140,6 +146,9 @@
     </ClCompile>
     <ClCompile Include="..\Private\Logo_StartButton.cpp">
       <Filter>02.GameObject\Logo_StartButton</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Monster.cpp">
+      <Filter>02.GameObject\Monster</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

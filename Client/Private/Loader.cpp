@@ -6,7 +6,7 @@
 #include "Logo_Logo.h"
 #include "Logo_StartButton.h"
 #include "Terrain.h"
-//#include "Monster.h"
+#include "Monster.h"
 #include "Camera_Free.h"
 //#include "Player.h"
 //#include "Effect.h"
@@ -150,6 +150,26 @@ HRESULT CLoader::Loading_For_GamePlay_Level()
 		CVIBuffer_Terrain::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Terrain/Height1.bmp")))))
 		return E_FAIL;
 
+	_matrix		PreTransformMatrix = XMMatrixIdentity();
+
+	/* Prototype_Component_Model_Fiona */
+	PreTransformMatrix = XMMatrixRotationY(XMConvertToRadians(180.0f));
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Model_Fiona"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, "../Bin/Resources/Models/Fiona/Fiona.fbx", PreTransformMatrix))))
+		return E_FAIL;
+
+	/* Prototype_Component_Model_ForkLift */
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Model_ForkLift"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, "../Bin/Resources/Models/ForkLift/ForkLift.fbx", PreTransformMatrix))))
+		return E_FAIL;
+
+	/* Prototype_Component_Model_Hero */
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Model_Hero"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, "../Bin/Resources/Blood_Spear/Model/test2.fbx", PreTransformMatrix))))
+		return E_FAIL;
+
 	///* Prototype_Component_VIBuffer_Cube */
 	//if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::LEVEL_GAMEPLAY), TEXT("Prototype_Component_VIBuffer_Cube"),
 	//	CVIBuffer_Cube::Create(m_pDevice, m_pContext))))
@@ -160,6 +180,11 @@ HRESULT CLoader::Loading_For_GamePlay_Level()
 	/* Prototype_Component_Shader_VtxNorTex */
 	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Shader_VtxNorTex"),
 		CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxNorTex.hlsl"), VTXNORTEX::Elements, VTXNORTEX::iNumElements))))
+		return E_FAIL;
+
+	/* Prototype_Component_Shader_VtxMesh */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Shader_VtxMesh"),
+		CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxMesh.hlsl"), VTXMESH::Elements, VTXMESH::iNumElements))))
 		return E_FAIL;
 
 
@@ -185,10 +210,10 @@ HRESULT CLoader::Loading_For_GamePlay_Level()
 	//	CSky::Create(m_pDevice, m_pContext))))
 	//	return E_FAIL;
 
-	///* Prototype_GameObject_Monster */
-	//if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::LEVEL_GAMEPLAY), TEXT("Prototype_GameObject_Monster"),
-	//	CMonster::Create(m_pDevice, m_pContext))))
-	//	return E_FAIL;
+	/* Prototype_GameObject_Monster */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Monster"),
+		CMonster::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
 
 	///* Prototype_GameObject_Effect */
 	//if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::LEVEL_GAMEPLAY), TEXT("Prototype_GameObject_Effect"),
