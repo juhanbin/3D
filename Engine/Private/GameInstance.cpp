@@ -9,6 +9,7 @@
 #include "Timer_Manager.h"
 #include "PipeLine.h"
 #include "Light_Manager.h"
+#include "EventBus.h"
 //#include "Picking.h"
 
 IMPLEMENT_SINGLETON(CGameInstance)
@@ -61,6 +62,10 @@ HRESULT CGameInstance::Initialize_Engine(const ENGINE_DESC& EngineDesc, ID3D11De
 
 	m_pLight_Manager = CLight_Manager::Create();
 	if (nullptr == m_pLight_Manager)
+		return E_FAIL;
+
+	m_pEventBus = CEventBus::Create();
+	if (nullptr == m_pEventBus)
 		return E_FAIL;
 
 	return S_OK;
@@ -292,6 +297,21 @@ HRESULT CGameInstance::Add_Light(const LIGHT_DESC& LightDesc)
 	return m_pLight_Manager->Add_Light(LightDesc);
 }
 
+HRESULT CGameInstance::Register_Event(_uint iLevelID, const _wstring& strEventTag, CEventBus::EVENTCALLBACK Callback)
+{
+	return m_pEventBus->Register_Event(iLevelID, strEventTag, Callback);
+}
+
+void CGameInstance::Dispatch_Event(_uint iLevelID, const _wstring& strEventTag, void* pArg)
+{
+	m_pEventBus->Dispatch_Event(iLevelID, strEventTag, pArg);
+}
+
+HRESULT CGameInstance::Clear_Event_Level(_uint iLevelID)
+{
+	return m_pEventBus->Clear_Level(iLevelID);
+}
+
 #pragma endregion
 //
 //void CGameInstance::Transform_Picking_ToLocalSpace(CTransform* pTransformCom)
@@ -313,6 +333,7 @@ void CGameInstance::Release_Engine()
 	//Safe_Release(m_pPicking);
 	Safe_Release(m_pLight_Manager);
 	Safe_Release(m_pPipeLine);
+	Safe_Release(m_pEventBus);
 	Safe_Release(m_pTimer_Manager);
 	Safe_Release(m_pRenderer);
 	Safe_Release(m_pObject_Manager);

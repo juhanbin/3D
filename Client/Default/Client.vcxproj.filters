@@ -43,6 +43,9 @@
     <Filter Include="02.GameObject\Terrain">
       <UniqueIdentifier>{c04dca5e-251b-432d-ab47-38e3cf04cb35}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02.GameObject\Logo_StartButton">
+      <UniqueIdentifier>{f1ef3a0c-5ab2-4e45-98f8-0a7e230885c2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h">
@@ -86,6 +89,9 @@
     </ClInclude>
     <ClInclude Include="..\Public\Terrain.h">
       <Filter>02.GameObject\Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Logo_StartButton.h">
+      <Filter>02.GameObject\Logo_StartButton</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -131,6 +137,9 @@
     </ClCompile>
     <ClCompile Include="..\Private\Terrain.cpp">
       <Filter>02.GameObject\Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Logo_StartButton.cpp">
+      <Filter>02.GameObject\Logo_StartButton</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

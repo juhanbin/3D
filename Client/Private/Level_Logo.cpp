@@ -19,6 +19,27 @@ HRESULT CLevel_Logo::Initialize()
 	if (FAILED(Ready_Layer_Logo(TEXT("Layer_Logo"))))
 		return E_FAIL;
 
+	///////////////////////////
+	if (FAILED(Ready_Layer_StartButton(TEXT("Layer_Button"))))
+		return E_FAIL;
+
+	m_pGameInstance->Register_Event(static_cast<_uint>(LEVEL::LOGO), TEXT("StartButton"),
+		[this](void*) {
+			TCHAR szMsg[256];
+
+			//int someValue = 42; // 예시 변수. 실제 출력하고 싶은 변수로 교체
+			//float someFloat = 3.14f; // 예시
+			//// 메시지 포맷 (TCHAR, 유니코드 고려)
+			//_stprintf_s(szMsg, 256, TEXT("[디버그] StartButton 콜백 호출! someValue = %d, someFloat = %.2f\n"), someValue, someFloat);
+			//OutputDebugString(szMsg);
+
+			_stprintf_s(szMsg, 256, TEXT("[디버그] StartButton 콜백 호출!\n"));
+			OutputDebugString(szMsg);
+			//m_pGameInstance->Open_Level(static_cast<_uint>(LEVEL::LOADING), CLevel_Loading::Create(m_pDevice, m_pContext, LEVEL::GAMEPLAY));
+			//m_pGameInstance->Clear_Event_Level(static_cast<_uint>(LEVEL::LOGO));
+		});
+
+	//////////////////////////////////
 	return S_OK;
 }
 
@@ -53,6 +74,15 @@ HRESULT CLevel_Logo::Ready_Layer_Logo(const _wstring& strLayerTag)
 {
 	if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::LOGO), strLayerTag,
 		ENUM_CLASS(LEVEL::LOGO), TEXT("Prototype_GameObject_Logo"))))
+		return E_FAIL;
+
+	return S_OK;
+}
+
+HRESULT CLevel_Logo::Ready_Layer_StartButton(const _wstring& strLayerTag)
+{
+	if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::LOGO), strLayerTag,
+		ENUM_CLASS(LEVEL::LOGO), TEXT("Prototype_GameObject_StartButton"))))
 		return E_FAIL;
 
 	return S_OK;

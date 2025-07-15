@@ -82,6 +82,13 @@ public:
 
 #pragma endregion
 
+#pragma region EVENT_BUS
+public:
+	HRESULT Register_Event(_uint iLevelID, const _wstring& strEventTag, CEventBus::EVENTCALLBACK Callback);
+	void    Dispatch_Event(_uint iLevelID, const _wstring& strEventTag, void* pArg = nullptr);
+	HRESULT Clear_Event_Level(_uint iLevelID);
+	CEventBus* Get_EventBus() const { return m_pEventBus; }
+#pragma endregion
 
 	//
 	//#pragma region PICKING 
@@ -100,6 +107,7 @@ private:
 	class CPicking* m_pPicking = { nullptr };
 	class CPipeLine* m_pPipeLine = { nullptr };
 	class CLight_Manager* m_pLight_Manager = { nullptr };
+	class CEventBus* m_pEventBus = { nullptr };
 
 public:
 	void Release_Engine();

@@ -4,6 +4,7 @@
 
 #include "BackGround.h"
 #include "Logo_Logo.h"
+#include "Logo_StartButton.h"
 #include "Terrain.h"
 //#include "Monster.h"
 #include "Camera_Free.h"
@@ -92,6 +93,10 @@ HRESULT CLoader::Loading_For_Logo_Level()
 
 	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::LOGO), TEXT("Prototype_Component_Texture_Logo_Logo"),
 		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Blood_Spear/Textures/Logo_Logo%d.png"), 2))))
+		return E_FAIL;
+
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::LOGO), TEXT("Prototype_GameObject_StartButton"),
+		CLogo_StartButton::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
 	lstrcpy(m_szLoadingText, TEXT("모델을 로딩중입니다."));
