@@ -23,6 +23,9 @@ HRESULT CLevel_Logo::Initialize()
 	if (FAILED(Ready_Layer_StartButton(TEXT("Layer_Button"))))
 		return E_FAIL;
 
+	if (FAILED(Ready_Layer_Cursor(TEXT("Layer_Cursor"))))
+		return E_FAIL;
+
 	m_pGameInstance->Register_Event(static_cast<_uint>(LEVEL::LOGO), TEXT("StartButton"),
 		[this](void*) {
 			TCHAR szMsg[256];
@@ -40,6 +43,10 @@ HRESULT CLevel_Logo::Initialize()
 		});
 
 	//////////////////////////////////
+
+	if (FAILED(Ready_Layer_Fade(TEXT("Layer_Fade"))))
+		return E_FAIL;
+
 	return S_OK;
 }
 
@@ -83,6 +90,24 @@ HRESULT CLevel_Logo::Ready_Layer_StartButton(const _wstring& strLayerTag)
 {
 	if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::LOGO), strLayerTag,
 		ENUM_CLASS(LEVEL::LOGO), TEXT("Prototype_GameObject_StartButton"))))
+		return E_FAIL;
+
+	return S_OK;
+}
+
+HRESULT CLevel_Logo::Ready_Layer_Cursor(const _wstring& strLayerTag)
+{
+	if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::LOGO), strLayerTag,
+		ENUM_CLASS(LEVEL::LOGO), TEXT("Prototype_GameObject_Cursor"))))
+		return E_FAIL;
+
+	return S_OK;
+}
+
+HRESULT CLevel_Logo::Ready_Layer_Fade(const _wstring& strLayerTag)
+{
+	if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::LOGO), strLayerTag,
+		ENUM_CLASS(LEVEL::LOGO), TEXT("Prototype_GameObject_Fade"))))
 		return E_FAIL;
 
 	return S_OK;

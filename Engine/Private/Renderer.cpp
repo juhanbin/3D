@@ -18,9 +18,23 @@ HRESULT CRenderer::Initialize()
     dsDesc.DepthFunc = D3D11_COMPARISON_ALWAYS;
     dsDesc.StencilEnable = FALSE; // 스텐실은 여기선 OFF지만 필요하면 ON으로
 
-    HRESULT hr = m_pDevice->CreateDepthStencilState(&dsDesc, &m_pUIDepthStencilState);
+    D3D11_BLEND_DESC blendDesc = {};
+    blendDesc.RenderTarget[0].BlendEnable = TRUE;
+    blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+    blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+    blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+    blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+    blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+    blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+    blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
+    HRESULT hr = m_pDevice->CreateBlendState(&blendDesc, &m_pAlphaBlendState);
     if (FAILED(hr))
         return hr;
+
+    HRESULT hhr = m_pDevice->CreateDepthStencilState(&dsDesc, &m_pUIDepthStencilState);
+    if (FAILED(hhr))
+        return hhr;
 
     return S_OK;
 }
@@ -47,7 +61,8 @@ HRESULT CRenderer::Draw()
         return E_FAIL;
     if (FAILED(Render_UI()))
         return E_FAIL;
-
+    if (FAILED(Render_Fade()))
+        return E_FAIL;
     return S_OK;
 }
 
@@ -111,6 +126,11 @@ HRESULT CRenderer::Render_UI()
     // 2. UI용(깊이 꺼짐) 상태 적용
     m_pContext->OMSetDepthStencilState(m_pUIDepthStencilState, 0);
 
+    float blendFactor[4] = { 0.f, 0.f, 0.f, 0.f };
+    UINT sampleMask = 0xffffffff;
+
+    m_pContext->OMSetBlendState(m_pAlphaBlendState, blendFactor, sampleMask);
+
     // --- UI 오브젝트 렌더링 ---
     for (auto& pRenderObject : m_RenderObjects[ENUM_CLASS(RENDERGROUP::UI)])
     {
@@ -120,6 +140,42 @@ HRESULT CRenderer::Render_UI()
         Safe_Release(pRenderObject);
     }
     m_RenderObjects[ENUM_CLASS(RENDERGROUP::UI)].clear();
+
+    m_pContext->OMSetBlendState(nullptr, blendFactor, sampleMask);
+
+    // 3. 원래 상태로 복원 (꼭 해야 함!)
+    m_pContext->OMSetDepthStencilState(pPrevDSState, prevStencilRef);
+    Safe_Release(pPrevDSState);
+
+    return S_OK;
+}
+
+HRESULT CRenderer::Render_Fade()
+{
+    // 1. 기존 상태 저장
+    ID3D11DepthStencilState* pPrevDSState = nullptr;
+    UINT prevStencilRef = 0;
+    m_pContext->OMGetDepthStencilState(&pPrevDSState, &prevStencilRef);
+
+    // 2. UI용(깊이 꺼짐) 상태 적용
+    m_pContext->OMSetDepthStencilState(m_pUIDepthStencilState, 0);
+
+    float blendFactor[4] = { 0.f, 0.f, 0.f, 0.f };
+    UINT sampleMask = 0xffffffff;
+
+    m_pContext->OMSetBlendState(m_pAlphaBlendState, blendFactor, sampleMask);
+
+    // --- UI 오브젝트 렌더링 ---
+    for (auto& pRenderObject : m_RenderObjects[ENUM_CLASS(RENDERGROUP::FADE)])
+    {
+        if (nullptr != pRenderObject)
+            pRenderObject->Render();
+
+        Safe_Release(pRenderObject);
+    }
+    m_RenderObjects[ENUM_CLASS(RENDERGROUP::FADE)].clear();
+
+    m_pContext->OMSetBlendState(nullptr, blendFactor, sampleMask);
 
     // 3. 원래 상태로 복원 (꼭 해야 함!)
     m_pContext->OMSetDepthStencilState(pPrevDSState, prevStencilRef);

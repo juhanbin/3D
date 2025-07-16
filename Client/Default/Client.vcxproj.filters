@@ -49,6 +49,12 @@
     <Filter Include="02.GameObject\Monster">
       <UniqueIdentifier>{15960447-9085-446d-8005-6a1bc452b515}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02.GameObject\Cursor">
+      <UniqueIdentifier>{bd74026c-ad54-4174-879a-a080e6fc43c6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObject\Fade">
+      <UniqueIdentifier>{37036d93-1cc0-4e61-b1ce-78ba04a3104b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h">
@@ -98,6 +104,12 @@
     </ClInclude>
     <ClInclude Include="..\Public\Monster.h">
       <Filter>02.GameObject\Monster</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Cursor.h">
+      <Filter>02.GameObject\Cursor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Fade.h">
+      <Filter>02.GameObject\Fade</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -149,6 +161,12 @@
     </ClCompile>
     <ClCompile Include="..\Private\Monster.cpp">
       <Filter>02.GameObject\Monster</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Cursor.cpp">
+      <Filter>02.GameObject\Cursor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Fade.cpp">
+      <Filter>02.GameObject\Fade</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

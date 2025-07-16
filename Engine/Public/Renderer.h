@@ -23,6 +23,8 @@ private:
 	ID3D11Device*							m_pDevice = { nullptr };
 	ID3D11DeviceContext*					m_pContext = { nullptr };
 
+	ID3D11BlendState* m_pAlphaBlendState = nullptr;
+
 	list<class CGameObject*>				m_RenderObjects[ENUM_CLASS(RENDERGROUP::END)];
 	ID3D11DepthStencilState* m_pUIDepthStencilState = nullptr;
 private:
@@ -30,7 +32,7 @@ private:
 	HRESULT Render_NonBlend();
 	HRESULT Render_Blend();
 	HRESULT Render_UI();
-
+	HRESULT Render_Fade();
 
 public:
 	static CRenderer* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);

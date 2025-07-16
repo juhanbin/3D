@@ -8,6 +8,8 @@
 #include "Terrain.h"
 #include "Monster.h"
 #include "Camera_Free.h"
+#include "Cursor.h"
+#include "Fade.h"
 //#include "Player.h"
 //#include "Effect.h"
 //#include "Sky.h"
@@ -87,6 +89,10 @@ HRESULT CLoader::Loading_For_Logo_Level()
 		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Blood_Spear/Textures/Logo_bg%d.png"), 2))))
 		return E_FAIL;
 
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::LOGO), TEXT("Prototype_Component_Texture_Cursor"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Blood_Spear/Textures/Cursor.png"), 1))))
+		return E_FAIL;
+
 	/*if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::LOGO), TEXT("Prototype_Component_Texture_Logo"),
 		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Blood_Spear/Textures/Logo%d.png"), 1))))
 		return E_FAIL;*/
@@ -95,9 +101,7 @@ HRESULT CLoader::Loading_For_Logo_Level()
 		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Blood_Spear/Textures/Logo_Logo%d.png"), 2))))
 		return E_FAIL;
 
-	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::LOGO), TEXT("Prototype_GameObject_StartButton"),
-		CLogo_StartButton::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
+	
 
 	lstrcpy(m_szLoadingText, TEXT("모델을 로딩중입니다."));
 
@@ -112,6 +116,18 @@ HRESULT CLoader::Loading_For_Logo_Level()
 
 	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::LOGO), TEXT("Prototype_GameObject_Logo"),
 		CLogo_Logo::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::LOGO), TEXT("Prototype_GameObject_StartButton"),
+		CLogo_StartButton::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::LOGO), TEXT("Prototype_GameObject_Cursor"),
+		CCursor::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::LOGO), TEXT("Prototype_GameObject_Fade"),
+		CFade::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 	lstrcpy(m_szLoadingText, TEXT("로딩이 완료되었습니다."));
 	

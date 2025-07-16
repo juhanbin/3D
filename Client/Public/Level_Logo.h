@@ -21,6 +21,8 @@ private:
 	HRESULT Ready_Layer_Logo(const _wstring& strLayerTag);
 
 	HRESULT Ready_Layer_StartButton(const _wstring& strLayerTag);
+	HRESULT Ready_Layer_Cursor(const _wstring& strLayerTag);
+	HRESULT Ready_Layer_Fade(const _wstring& strLayerTag);
 public:
 	static CLevel_Logo* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	virtual void Free() override;
