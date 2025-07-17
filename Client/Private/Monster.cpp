@@ -46,9 +46,17 @@ HRESULT CMonster::Render()
     if (FAILED(Bind_ShaderResources()))
         return E_FAIL;
 
-    m_pShaderCom->Begin(0);
+    _uint           iNumMeshes = m_pModelCom->Get_NumMeshes();
 
-    m_pModelCom->Render();
+    for (size_t i = 0; i < iNumMeshes; i++)
+    {
+        if (FAILED(m_pModelCom->Bind_Materials(m_pShaderCom, "g_DiffuseTexture", i, aiTextureType_DIFFUSE, 0)))
+            return E_FAIL;
+
+        m_pShaderCom->Begin(0);
+
+        m_pModelCom->Render(i);
+    }
 
     return S_OK;
 }

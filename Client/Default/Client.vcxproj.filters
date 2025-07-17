@@ -102,14 +102,14 @@
     <ClInclude Include="..\Public\Logo_StartButton.h">
       <Filter>02.GameObject\Logo_StartButton</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\Monster.h">
-      <Filter>02.GameObject\Monster</Filter>
-    </ClInclude>
     <ClInclude Include="..\Public\Cursor.h">
       <Filter>02.GameObject\Cursor</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Fade.h">
       <Filter>02.GameObject\Fade</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Monster.h">
+      <Filter>02.GameObject\Monster</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -159,14 +159,14 @@
     <ClCompile Include="..\Private\Logo_StartButton.cpp">
       <Filter>02.GameObject\Logo_StartButton</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\Monster.cpp">
-      <Filter>02.GameObject\Monster</Filter>
-    </ClCompile>
     <ClCompile Include="..\Private\Cursor.cpp">
       <Filter>02.GameObject\Cursor</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Fade.cpp">
       <Filter>02.GameObject\Fade</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Monster.cpp">
+      <Filter>02.GameObject\Monster</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

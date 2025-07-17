@@ -97,6 +97,9 @@
     <Filter Include="01.Utility\77.EventBus">
       <UniqueIdentifier>{e3fb6c80-8f02-4a84-be7c-2e8bb8e651ae}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01.Utility\03.Component\Model\Material">
+      <UniqueIdentifier>{407bfbd0-210b-4738-9ea9-39793213114c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Private\Timer.cpp">
@@ -182,6 +185,9 @@
     </ClCompile>
     <ClCompile Include="..\Private\EventBus.cpp">
       <Filter>01.Utility\77.EventBus</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\MeshMaterial.cpp">
+      <Filter>01.Utility\03.Component\Model\Material</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -286,6 +292,9 @@
     </ClInclude>
     <ClInclude Include="..\Public\EventBus.h">
       <Filter>01.Utility\77.EventBus</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\MeshMaterial.h">
+      <Filter>01.Utility\03.Component\Model\Material</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

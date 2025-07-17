@@ -1,7 +1,7 @@
 #include "Mesh.h"
 
 CMesh::CMesh(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
-	: CVIBuffer { pDevice, pContext }
+	: CVIBuffer{ pDevice, pContext }
 {
 }
 
@@ -12,6 +12,7 @@ CMesh::CMesh(const CMesh& Prototype)
 
 HRESULT CMesh::Initialize_Prototype(const aiMesh* pAIMesh, _fmatrix PreTransformMatrix)
 {
+	m_iMaterialIndex = pAIMesh->mMaterialIndex;
 	m_iNumVertices = pAIMesh->mNumVertices;
 	m_iVertexStride = sizeof(VTXMESH);
 	m_iNumIndices = pAIMesh->mNumFaces * 3;

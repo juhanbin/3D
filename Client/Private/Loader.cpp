@@ -183,7 +183,7 @@ HRESULT CLoader::Loading_For_GamePlay_Level()
 	/* Prototype_Component_Model_Hero */
 	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
 	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Model_Hero"),
-		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, "../Bin/Resources/Blood_Spear/Model/test2.fbx", PreTransformMatrix))))
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, "../Bin/Resources/Blood_Spear/Model/Hero/Hero.fbx", PreTransformMatrix))))
 		return E_FAIL;
 
 	///* Prototype_Component_VIBuffer_Cube */
