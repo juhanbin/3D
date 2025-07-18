@@ -17,14 +17,20 @@ public:
 	}
 
 public:
-	virtual HRESULT Initialize_Prototype(const aiMesh* pAIMesh, _fmatrix PreTransformMatrix);
+	virtual HRESULT Initialize_Prototype(MODELTYPE eTupe, const aiMesh* pAIMesh, _fmatrix PreTransformMatrix);
 	virtual HRESULT Initialize(void* pArg) override;
 
 private:
 	_uint			m_iMaterialIndex = {};
+	_uint			m_iNumBones = {};
+	vector<_uint>	m_BoneIndices;
+
+private:
+	HRESULT Ready_Vertices_For_NonAnim(const aiMesh* pAIMesh, _fmatrix PreTransformMatrix);
+	HRESULT Readt_Vertices_For_Anim(const aiMesh* pAIMesh);
 
 public:
-	static CMesh* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, const aiMesh* pAIMesh, _fmatrix PreTransformMatrix);
+	static CMesh* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, MODELTYPE eType, const aiMesh* pAIMesh, _fmatrix PreTransformMatrix);
 	virtual CComponent* Clone(void* pArg) override;
 	virtual void Free() override;
 };
