@@ -100,6 +100,9 @@
     <Filter Include="01.Utility\03.Component\Model\Material">
       <UniqueIdentifier>{407bfbd0-210b-4738-9ea9-39793213114c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01.Utility\03.Component\Model\Bone">
+      <UniqueIdentifier>{c5074de0-d821-46fb-96ba-72e3417ac6c5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Private\Timer.cpp">
@@ -188,6 +191,9 @@
     </ClCompile>
     <ClCompile Include="..\Private\MeshMaterial.cpp">
       <Filter>01.Utility\03.Component\Model\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Bone.cpp">
+      <Filter>01.Utility\03.Component\Model\Bone</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -295,6 +301,9 @@
     </ClInclude>
     <ClInclude Include="..\Public\MeshMaterial.h">
       <Filter>01.Utility\03.Component\Model\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Bone.h">
+      <Filter>01.Utility\03.Component\Model\Bone</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

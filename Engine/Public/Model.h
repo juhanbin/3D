@@ -31,6 +31,7 @@ public:
 
 public:
 	HRESULT Bind_Materials(class CShader* pShader, const _char* pConstantName, _uint iMeshIndex, aiTextureType eTextureType, _uint iIndex);
+	void Play_Animation(_float fTimeDelta);
 
 private:
 	/* 파일로부터 읽은 모든 정보를 다 저장해주는 구조체. */
@@ -46,14 +47,16 @@ private:
 	vector<class CMesh*>	m_Meshes;
 
 private:
-	/* Diffuse, Ambient, Specular */
-	_uint							m_iNumMaterials = {};
+	_uint							m_iNumMaterials{};
 	vector<class CMeshMaterial*>	m_Materials;
+
+private:
+	vector<class CBone*> m_Bones;
 
 private:
 	HRESULT Ready_Meshes();
 	HRESULT Ready_Materials(const _char* pModelFilePath);
-	//HRESULT Ready_Bones();
+	HRESULT Ready_Bones(const aiNode* pAINode, _int iParentIndex);
 
 public:
 	static CModel* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, MODELTYPE eModelType, const _char* pModelFilePath, _fmatrix PreTransformMatrix);
