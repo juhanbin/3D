@@ -24,6 +24,14 @@ HRESULT CMonster::Initialize(void* pArg)
     if (pArg)
     {
         MONSTER_DESC* pDesc = static_cast<MONSTER_DESC*>(pArg);
+
+        m_pTransformCom->Scale(pDesc->vScale);
+        m_pTransformCom->Set_State(STATE::POSITION,
+            XMVectorSet(pDesc->vPos.x, pDesc->vPos.y, pDesc->vPos.z, 1.f));
+        m_pTransformCom->Rotation(XMVectorSet(1.f, 0.f, 0.f, 0.f), pDesc->vRot.x);
+        m_pTransformCom->Rotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), pDesc->vRot.y);
+        m_pTransformCom->Rotation(XMVectorSet(0.f, 0.f, 1.f, 0.f), pDesc->vRot.z);
+
         char szDbg[256];
         sprintf_s(szDbg,sizeof(szDbg), "[MON::Init] pos=(%.2f,%.2f,%.2f) scale=(%.2f,%.2f,%.2f) rot=(%.2f,%.2f,%.2f)\n",
             pDesc->vPos.x, pDesc->vPos.y, pDesc->vPos.z,
@@ -31,6 +39,10 @@ HRESULT CMonster::Initialize(void* pArg)
             pDesc->vRot.x, pDesc->vRot.y, pDesc->vRot.z);
         OutputDebugStringA(szDbg);
     }
+
+    XMMATRIX world = m_pTransformCom->Get_WorldMatrix();
+    char szWorld[256];
+    XMStoreFloat4x4((XMFLOAT4X4*)&szWorld, world);
 
     if (FAILED(Ready_Components()))
         return E_FAIL;
