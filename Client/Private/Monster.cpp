@@ -25,18 +25,33 @@ HRESULT CMonster::Initialize(void* pArg)
     {
         MONSTER_DESC* pDesc = static_cast<MONSTER_DESC*>(pArg);
 
-        m_pTransformCom->Scale(pDesc->vScale);
-        m_pTransformCom->Set_State(STATE::POSITION,
-            XMVectorSet(pDesc->vPos.x, pDesc->vPos.y, pDesc->vPos.z, 1.f));
-        m_pTransformCom->Rotation(XMVectorSet(1.f, 0.f, 0.f, 0.f), pDesc->vRot.x);
-        m_pTransformCom->Rotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), pDesc->vRot.y);
-        m_pTransformCom->Rotation(XMVectorSet(0.f, 0.f, 1.f, 0.f), pDesc->vRot.z);
+        //크기
+        XMMATRIX matScale = XMMatrixScaling(pDesc->vScale.x, pDesc->vScale.y, pDesc->vScale.z);
+
+        //회전
+        XMMATRIX matRot = XMMatrixRotationRollPitchYaw(
+            XMConvertToRadians(pDesc->vRot.x),
+            XMConvertToRadians(pDesc->vRot.y),
+            XMConvertToRadians(pDesc->vRot.z));
+
+        //위치
+        XMMATRIX matTrans = XMMatrixTranslation(pDesc->vPos.x, pDesc->vPos.y, pDesc->vPos.z);
+
+        XMMATRIX matWorld = matScale * matRot * matTrans;
+
+        XMFLOAT4X4 matWorld4x4;
+        XMStoreFloat4x4(&matWorld4x4, matWorld);
+
+        m_pTransformCom->Set_State(STATE::RIGHT, XMLoadFloat4((XMFLOAT4*)&matWorld4x4.m[0]));
+        m_pTransformCom->Set_State(STATE::UP, XMLoadFloat4((XMFLOAT4*)&matWorld4x4.m[1]));
+        m_pTransformCom->Set_State(STATE::LOOK, XMLoadFloat4((XMFLOAT4*)&matWorld4x4.m[2]));
+        m_pTransformCom->Set_State(STATE::POSITION, XMLoadFloat4((XMFLOAT4*)&matWorld4x4.m[3]));
 
         char szDbg[256];
-        sprintf_s(szDbg,sizeof(szDbg), "[MON::Init] pos=(%.2f,%.2f,%.2f) scale=(%.2f,%.2f,%.2f) rot=(%.2f,%.2f,%.2f)\n",
-            pDesc->vPos.x, pDesc->vPos.y, pDesc->vPos.z,
+        sprintf_s(szDbg,sizeof(szDbg), "scale=(%.2f,%.2f,%.2f) rot=(%.2f,%.2f,%.2f) [MON::Init] pos=(%.2f,%.2f,%.2f)\n",
             pDesc->vScale.x, pDesc->vScale.y, pDesc->vScale.z,
-            pDesc->vRot.x, pDesc->vRot.y, pDesc->vRot.z);
+            pDesc->vRot.x, pDesc->vRot.y, pDesc->vRot.z,
+            pDesc->vPos.x, pDesc->vPos.y, pDesc->vPos.z);
         OutputDebugStringA(szDbg);
     }
 

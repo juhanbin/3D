@@ -9,7 +9,7 @@
 #include <fstream>
 
 // Object types
-const char* g_ObjectTypes[] = { "Cube", "Sphere", "Cylinder", "Capsule","Monster"};
+const char* g_ObjectTypes[] = { "Cube", "Sphere", "Cylinder", "Capsule", "Monster" };
 const int g_NumObjectTypes = sizeof(g_ObjectTypes) / sizeof(g_ObjectTypes[0]);
 
 struct MapObject
@@ -45,9 +45,9 @@ static void SaveScene(const char* filename)
     for (const MapObject& o : g_Objects)
     {
         ofs << o.id << ' ' << o.type << ' '
-            << o.pos[0] << ' ' << o.pos[1] << ' ' << o.pos[2] << ' '
             << o.size[0] << ' ' << o.size[1] << ' ' << o.size[2] << ' '
-            << o.rot[0] << ' ' << o.rot[1] << ' ' << o.rot[2] << '\n';
+            << o.rot[0] << ' ' << o.rot[1] << ' ' << o.rot[2] << ' '
+            << o.pos[0] << ' ' << o.pos[1] << ' ' << o.pos[2] << '\n';
     }
 }
 
@@ -59,9 +59,9 @@ static bool LoadScene(const char* filename)
     g_Objects.clear();
     MapObject o;
     while (ifs >> o.id >> o.type
-        >> o.pos[0] >> o.pos[1] >> o.pos[2]
         >> o.size[0] >> o.size[1] >> o.size[2]
-        >> o.rot[0] >> o.rot[1] >> o.rot[2])
+        >> o.rot[0] >> o.rot[1] >> o.rot[2]
+        >> o.pos[0] >> o.pos[1] >> o.pos[2])
     {
         g_Objects.push_back(o);
     }
@@ -107,9 +107,9 @@ int main(int, char**)
     ImGui_ImplWin32_Init(hwnd);
     ImGui_ImplDX11_Init(g_pd3dDevice, g_pd3dDeviceContext);
 
-    static float temp_pos[3] = { 0,0,0 };
     static float temp_size[3] = { 1,1,1 };
     static float temp_rot[3] = { 0,0,0 };
+    static float temp_pos[3] = { 0,0,0 };
 
     ImVec4 clear_color = ImVec4(0.2f, 0.25f, 0.3f, 1.0f);
     bool done = false;
@@ -175,9 +175,9 @@ int main(int, char**)
                     MapObject obj{};
                     obj.id = (int)g_Objects.size();
                     obj.type = i;
-                    obj.pos[0] = obj.pos[1] = obj.pos[2] = 0.0f;
                     obj.size[0] = obj.size[1] = obj.size[2] = 1.0f;
                     obj.rot[0] = obj.rot[1] = obj.rot[2] = 0.0f;
+                    obj.pos[0] = obj.pos[1] = obj.pos[2] = 0.0f;
                     g_Objects.push_back(obj);
                     ImGui::CloseCurrentPopup();
                 }
@@ -192,9 +192,10 @@ int main(int, char**)
             if (ImGui::Selectable(label, g_Selected == i))
             {
                 g_Selected = i;
-                std::memcpy(temp_pos, g_Objects[i].pos, sizeof(float) * 3);
+                // 크기->회전->위치 순서로 복사
                 std::memcpy(temp_size, g_Objects[i].size, sizeof(float) * 3);
                 std::memcpy(temp_rot, g_Objects[i].rot, sizeof(float) * 3);
+                std::memcpy(temp_pos, g_Objects[i].pos, sizeof(float) * 3);
             }
         }
         ImGui::End();
@@ -202,12 +203,15 @@ int main(int, char**)
         ImGui::Begin("object option");
         if (g_Selected != -1)
         {
-            ImGui::Text("position");
-            ImGui::DragFloat3("x/y/z##pos", temp_pos, 0.1f);
+            // 크기 -> 회전 -> 위치 순서
             ImGui::Text("size");
             ImGui::DragFloat3("x/y/z##size", temp_size, 0.1f);
+
             ImGui::Text("rotation");
             ImGui::DragFloat3("x/y/z##rot", temp_rot, 0.1f);
+
+            ImGui::Text("position");
+            ImGui::DragFloat3("x/y/z##pos", temp_pos, 0.1f);
 
             if (ImGui::Button("delete"))
             {
@@ -219,9 +223,10 @@ int main(int, char**)
             if (ImGui::Button("apply"))
             {
                 PushUndo();
-                std::memcpy(g_Objects[g_Selected].pos, temp_pos, sizeof(float) * 3);
+                // 크기 -> 회전 -> 위치 순서로 적용
                 std::memcpy(g_Objects[g_Selected].size, temp_size, sizeof(float) * 3);
                 std::memcpy(g_Objects[g_Selected].rot, temp_rot, sizeof(float) * 3);
+                std::memcpy(g_Objects[g_Selected].pos, temp_pos, sizeof(float) * 3);
             }
         }
         ImGui::End();
