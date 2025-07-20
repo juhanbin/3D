@@ -11,6 +11,14 @@ NS_END
 NS_BEGIN(Client)
 class CMonster final :public CGameObject
 {
+public:
+	struct MONSTER_DESC : public CGameObject::GAMEOBJECT_DESC
+	{
+		_float3 vPos{ 0.f,0.f,0.f };
+		_float3 vScale{ 1.f,1.f,1.f };
+		_float3 vRot{ 0.f,0.f,0.f };
+	};
+
 private:
 	CMonster(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	CMonster(const CMonster& Prototype);

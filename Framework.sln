@@ -7,7 +7,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Client", "Client\Default\Cl
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Engine", "Engine\Default\Engine.vcxproj", "{2BD9B880-2198-4554-8A16-EA02AB8153C8}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "example_win32_directx11", "..\..\..\..\..\..\Downloads\imgui-master\examples\example_win32_directx11\example_win32_directx11.vcxproj", "{9F316E83-5AE5-4939-A723-305A94F48005}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "example_win32_directx11", "example_win32_directx11\example_win32_directx11.vcxproj", "{9F316E83-5AE5-4939-A723-305A94F48005}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

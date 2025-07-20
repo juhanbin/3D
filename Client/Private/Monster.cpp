@@ -21,6 +21,17 @@ HRESULT CMonster::Initialize(void* pArg)
     if (FAILED(__super::Initialize(pArg)))
         return E_FAIL;
 
+    if (pArg)
+    {
+        MONSTER_DESC* pDesc = static_cast<MONSTER_DESC*>(pArg);
+        char szDbg[256];
+        sprintf_s(szDbg,sizeof(szDbg), "[MON::Init] pos=(%.2f,%.2f,%.2f) scale=(%.2f,%.2f,%.2f) rot=(%.2f,%.2f,%.2f)\n",
+            pDesc->vPos.x, pDesc->vPos.y, pDesc->vPos.z,
+            pDesc->vScale.x, pDesc->vScale.y, pDesc->vScale.z,
+            pDesc->vRot.x, pDesc->vRot.y, pDesc->vRot.z);
+        OutputDebugStringA(szDbg);
+    }
+
     if (FAILED(Ready_Components()))
         return E_FAIL;
 
@@ -48,10 +59,19 @@ HRESULT CMonster::Render()
 
     _uint           iNumMeshes = m_pModelCom->Get_NumMeshes();
 
+    if (iNumMeshes == 0)
+    {
+        OutputDebugStringA("Monster Model의 Mesh가 0개입니다!\n");
+        return E_FAIL;
+    }
+
     for (size_t i = 0; i < iNumMeshes; i++)
     {
         if (FAILED(m_pModelCom->Bind_Materials(m_pShaderCom, "g_DiffuseTexture", i, aiTextureType_DIFFUSE, 0)))
+        {
+            OutputDebugStringA("머티리얼 바인딩 실패!\n");
             return E_FAIL;
+        }
 
         m_pShaderCom->Begin(0);
 

@@ -2,6 +2,8 @@
 
 #include "GameInstance.h"
 #include "Camera_Free.h"
+#include "Monster.h"
+#include <fstream>
 
 CLevel_GamePlay::CLevel_GamePlay(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	: CLevel{ pDevice, pContext }
@@ -103,11 +105,78 @@ HRESULT CLevel_GamePlay::Ready_Layer_Player(const _wstring& strLayerTag)
 
 HRESULT CLevel_GamePlay::Ready_Layer_Monster(const _wstring& strLayerTag)
 {
+        std::ifstream ifs("../../Mapdata/scene.txt");
+        if (!ifs.is_open())
+        {
+                if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::GAMEPLAY), strLayerTag,
+                        ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Monster"))))
+                        return E_FAIL;
+                return S_OK;
+        }
+
+        /*struct MapObject
+        {
+                int id; int type; float pos[3]; float size[3]; float rot[3];
+        } obj{};
+
+        while (ifs >> obj.id >> obj.type
+                    >> obj.pos[0] >> obj.pos[1] >> obj.pos[2]
+                    >> obj.size[0] >> obj.size[1] >> obj.size[2]
+                    >> obj.rot[0] >> obj.rot[1] >> obj.rot[2])
+        {
+                if (obj.type != 4)
+                        continue;
+                CMonster::MONSTER_DESC desc{};
+                desc.vPos = _float3(obj.pos[0], obj.pos[1], obj.pos[2]);
+                desc.vScale = _float3(obj.size[0], obj.size[1], obj.size[2]);
+                desc.vRot = _float3(obj.rot[0], obj.rot[1], obj.rot[2]);
+                if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::GAMEPLAY), strLayerTag,
+                        ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Monster"), &desc)))
+                        return E_FAIL;
+        }*/
+		struct MapObject
+		{
+			int id; int type; float pos[3]; float size[3]; float rot[3];
+		} obj{};
+
+		while (ifs >> obj.id >> obj.type
+			>> obj.pos[0] >> obj.pos[1] >> obj.pos[2]
+			>> obj.size[0] >> obj.size[1] >> obj.size[2]
+			>> obj.rot[0] >> obj.rot[1] >> obj.rot[2])
+		{
+			if (obj.type != 4)
+				continue;
+			WCHAR buf[256];
+			wsprintf(buf, L"[SCENE] id=%d type=%d pos=(%.2f,%.2f,%.2f) scale=(%.2f,%.2f,%.2f) rot=(%.2f,%.2f,%.2f)\n",
+				obj.id, obj.type,
+				obj.pos[0], obj.pos[1], obj.pos[2],
+				obj.size[0], obj.size[1], obj.size[2],
+				obj.rot[0], obj.rot[1], obj.rot[2]);
+			OutputDebugStringW(buf);
+
+			CMonster::MONSTER_DESC desc{};
+			desc.vPos = _float3(obj.pos[0], obj.pos[1], obj.pos[2]);
+			desc.vScale = _float3(obj.size[0], obj.size[1], obj.size[2]);
+			desc.vRot = _float3(obj.rot[0], obj.rot[1], obj.rot[2]);
+
+			char szDbg[256];
+			sprintf_s(szDbg,sizeof(szDbg), "[MON DESC] pos=(%.2f,%.2f,%.2f) scale=(%.2f,%.2f,%.2f) rot=(%.2f,%.2f,%.2f)\n",
+				desc.vPos.x, desc.vPos.y, desc.vPos.z,
+				desc.vScale.x, desc.vScale.y, desc.vScale.z,
+				desc.vRot.x, desc.vRot.y, desc.vRot.z);
+			OutputDebugStringA(szDbg);
+
+			if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::GAMEPLAY), strLayerTag,
+				ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Monster"), &desc)))
+				OutputDebugStringW(L"[SCENE] 몬스터 Add 실패!\n");
+		}
+
 	if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::GAMEPLAY), strLayerTag,
 		ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Monster"))))
 		return E_FAIL;
 
-	return S_OK;
+
+        return S_OK;
 }
 
 HRESULT CLevel_GamePlay::Ready_Layer_Effect(const _wstring& strLayerTag)
