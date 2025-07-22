@@ -55,6 +55,9 @@
     <Filter Include="02.GameObject\Fade">
       <UniqueIdentifier>{37036d93-1cc0-4e61-b1ce-78ba04a3104b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02.GameObject\MapObject">
+      <UniqueIdentifier>{1915e4b2-656e-42d7-b13c-c1c7048c68e9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h">
@@ -110,6 +113,9 @@
     </ClInclude>
     <ClInclude Include="..\Public\Monster.h">
       <Filter>02.GameObject\Monster</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\MapObject.h">
+      <Filter>02.GameObject\MapObject</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -167,6 +173,9 @@
     </ClCompile>
     <ClCompile Include="..\Private\Monster.cpp">
       <Filter>02.GameObject\Monster</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\MapObject.cpp">
+      <Filter>02.GameObject\MapObject</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

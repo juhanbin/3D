@@ -3,6 +3,7 @@
 #include "GameInstance.h"
 #include "Camera_Free.h"
 #include "Monster.h"
+#include "MapObject.h"
 #include <fstream>
 
 CLevel_GamePlay::CLevel_GamePlay(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
@@ -25,7 +26,10 @@ HRESULT CLevel_GamePlay::Initialize()
 	if (FAILED(Ready_Layer_Player(TEXT("Layer_Player"))))
 		return E_FAIL;
 
-	if (FAILED(Ready_Layer_Monster(TEXT("Layer_Monster"))))
+	/*if (FAILED(Ready_Layer_Monster(TEXT("Layer_Monster"))))
+		return E_FAIL;*/
+
+	if (FAILED(Ready_Layer_MapObjects(TEXT("Layer_MapObject"))))
 		return E_FAIL;
 
 	if (FAILED(Ready_Layer_Effect(TEXT("Layer_Effect"))))
@@ -139,6 +143,44 @@ HRESULT CLevel_GamePlay::Ready_Layer_Monster(const _wstring& strLayerTag)
 
         return S_OK;
 }
+HRESULT CLevel_GamePlay::Ready_Layer_MapObjects(const _wstring& strLayerTag)
+{
+	std::ifstream ifs("../../Mapdata/scene.txt");
+	if (!ifs.is_open())
+	{
+		OutputDebugStringW(L"[SCENE] scene.txt 파일을 열 수 없습니다.\n");
+		return S_OK;
+	}
+
+	struct SceneObjRaw {
+		int id;
+		int type; // EObjectType
+		float size[3], rot[3], pos[3];
+	} obj;
+
+	while (ifs >> obj.id >> obj.type
+		>> obj.size[0] >> obj.size[1] >> obj.size[2]
+		>> obj.rot[0] >> obj.rot[1] >> obj.rot[2]
+		>> obj.pos[0] >> obj.pos[1] >> obj.pos[2])
+	{
+		CMapObject::MAPOBJECT_DESC desc{};
+		desc.type = static_cast<EObjectType>(obj.type);
+		desc.vScale = _float3(obj.size[0], obj.size[1], obj.size[2]);
+		desc.vRot = _float3(obj.rot[0], obj.rot[1], obj.rot[2]);
+		desc.vPos = _float3(obj.pos[0], obj.pos[1], obj.pos[2]);
+
+		// 타입별로 다른 Layer에 넣고 싶다면 아래 분기 추가,
+		// 아니면 그냥 모두 strLayerTag ("Layer_MapObject")로 넣으면 됨
+		if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(
+			ENUM_CLASS(LEVEL::GAMEPLAY), strLayerTag,
+			ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_MapObject"), &desc)))
+		{
+			OutputDebugStringW(L"[SCENE] MapObject Add 실패!\n");
+		}
+	}
+	return S_OK;
+}
+
 
 HRESULT CLevel_GamePlay::Ready_Layer_Effect(const _wstring& strLayerTag)
 {
