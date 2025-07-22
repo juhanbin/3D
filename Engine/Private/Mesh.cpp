@@ -100,6 +100,7 @@ HRESULT CMesh::Ready_Vertices_For_NonAnim(const aiMesh* pAIMesh, _fmatrix PreTra
 		return E_FAIL;
 
 	Safe_Delete_Array(pVertices);
+	return S_OK;
 }
 
 HRESULT CMesh::Readt_Vertices_For_Anim(const aiMesh* pAIMesh)

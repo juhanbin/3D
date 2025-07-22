@@ -137,6 +137,8 @@ HRESULT CModel::Ready_Bones(const aiNode* pAINode, _int iParentIndex)
 
     for (size_t i = 0; i < pAINode->mNumChildren; i++)
         Ready_Bones(pAINode->mChildren[i], iIndex);
+
+    return S_OK;
 }
 
 CModel* CModel::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, MODELTYPE eModelType, const _char* pModelFilePath, _fmatrix PreTransformMatrix)
