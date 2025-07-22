@@ -62,19 +62,10 @@ HRESULT CMainApp::Render()
 	ImGui::NewFrame();
 
 	// ---- ImGui 버튼 예시 ----
-	ImGui::Begin("Test ImGui Window");
-	if (ImGui::Button("Hello, ImGui Button!")) {
-		// 버튼 클릭 시 동작
-		OutputDebugStringA("ImGui Button Pressed!\n");
-	}
-	ImGui::End();
+	Render_ImGuiPanel();
 
-	// ---- ImGui 프레임 종료/렌더 ----
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-
-	m_pGameInstance->Draw();
-	m_pGameInstance->Render_End();
 
 	return S_OK;
 }
@@ -120,6 +111,126 @@ HRESULT CMainApp::Start_Level(LEVEL eStartLevelID)
 		return E_FAIL;
 
 	return S_OK;
+}
+
+void CMainApp::Render_ImGuiPanel()
+{
+	ImGui::Begin("edit option");
+	if (ImGui::Button("create"))
+		ImGui::OpenPopup("CreateObjectPopup");
+	ImGui::SameLine();
+	if (ImGui::Button("undo") && !m_UndoStack.empty())
+	{
+		m_Objects = m_UndoStack.back();
+		m_UndoStack.pop_back();
+		m_Selected = -1;
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("load"))
+		LoadScene("../../Mapdata/scene.txt");
+	ImGui::SameLine();
+	if (ImGui::Button("save"))
+		SaveScene("../../Mapdata/scene.txt");
+
+	if (ImGui::BeginPopup("CreateObjectPopup"))
+	{
+		ImGui::Text("Select object type");
+		ImGui::Separator();
+		for (int i = 0; i < NumObjectTypes; ++i)
+		{
+			if (ImGui::Selectable(ObjectTypes[i]))
+			{
+				PushUndo();
+				MapObject obj{};
+				obj.id = (int)m_Objects.size();
+				obj.type = i;
+				obj.size[0] = obj.size[1] = obj.size[2] = 1.0f;
+				obj.rot[0] = obj.rot[1] = obj.rot[2] = 0.0f;
+				obj.pos[0] = obj.pos[1] = obj.pos[2] = 0.0f;
+				m_Objects.push_back(obj);
+				ImGui::CloseCurrentPopup();
+			}
+		}
+		ImGui::EndPopup();
+	}
+
+	for (int i = 0; i < (int)m_Objects.size(); ++i)
+	{
+		char label[64];
+		std::snprintf(label, sizeof(label), "[%s] Object %d", ObjectTypes[m_Objects[i].type], m_Objects[i].id);
+		if (ImGui::Selectable(label, m_Selected == i))
+		{
+			m_Selected = i;
+			std::memcpy(m_TempSize, m_Objects[i].size, sizeof(float) * 3);
+			std::memcpy(m_TempRot, m_Objects[i].rot, sizeof(float) * 3);
+			std::memcpy(m_TempPos, m_Objects[i].pos, sizeof(float) * 3);
+		}
+	}
+	ImGui::End();
+
+	ImGui::Begin("object option");
+	if (m_Selected != -1)
+	{
+		ImGui::Text("size");
+		ImGui::DragFloat3("x/y/z##size", m_TempSize, 0.1f);
+		ImGui::Text("rotation");
+		ImGui::DragFloat3("x/y/z##rot", m_TempRot, 0.1f);
+		ImGui::Text("position");
+		ImGui::DragFloat3("x/y/z##pos", m_TempPos, 0.1f);
+
+		if (ImGui::Button("delete"))
+		{
+			PushUndo();
+			m_Objects.erase(m_Objects.begin() + m_Selected);
+			m_Selected = -1;
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("apply"))
+		{
+			PushUndo();
+			std::memcpy(m_Objects[m_Selected].size, m_TempSize, sizeof(float) * 3);
+			std::memcpy(m_Objects[m_Selected].rot, m_TempRot, sizeof(float) * 3);
+			std::memcpy(m_Objects[m_Selected].pos, m_TempPos, sizeof(float) * 3);
+		}
+	}
+	ImGui::End();
+}
+
+void CMainApp::SaveScene(const char* filename)
+{
+	std::ofstream ofs(filename);
+	for (const MapObject& o : m_Objects)
+	{
+		ofs << o.id << ' ' << o.type << ' '
+			<< o.size[0] << ' ' << o.size[1] << ' ' << o.size[2] << ' '
+			<< o.rot[0] << ' ' << o.rot[1] << ' ' << o.rot[2] << ' '
+			<< o.pos[0] << ' ' << o.pos[1] << ' ' << o.pos[2] << '\n';
+	}
+}
+
+bool CMainApp::LoadScene(const char* filename)
+{
+	std::ifstream ifs(filename);
+	if (!ifs)
+		return false;
+	m_Objects.clear();
+	MapObject o;
+	while (ifs >> o.id >> o.type
+		>> o.size[0] >> o.size[1] >> o.size[2]
+		>> o.rot[0] >> o.rot[1] >> o.rot[2]
+		>> o.pos[0] >> o.pos[1] >> o.pos[2])
+	{
+		m_Objects.push_back(o);
+	}
+	m_Selected = -1;
+	return true;
+}
+
+void CMainApp::PushUndo()
+{
+	m_UndoStack.push_back(m_Objects);
+	if (m_UndoStack.size() > 20)
+		m_UndoStack.erase(m_UndoStack.begin());
 }
 
 CMainApp* CMainApp::Create()

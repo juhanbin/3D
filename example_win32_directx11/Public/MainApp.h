@@ -30,6 +30,22 @@ private:
 	HRESULT Start_Level(LEVEL eStartLevelID);
 
 public:
+	// --- MapTool 관련 함수 ---
+	void Render_ImGuiPanel();
+	void SaveScene(const char* filename);
+	bool LoadScene(const char* filename);
+	void PushUndo();
+
+private:
+	// --- MapTool 데이터 ---
+	vector<MapObject> m_Objects;
+	vector<vector<MapObject>> m_UndoStack;
+	int m_Selected = -1;
+	float m_TempSize[3] = { 1,1,1 };
+	float m_TempRot[3] = { 0,0,0 };
+	float m_TempPos[3] = { 0,0,0 };
+
+public:
 	static CMainApp* Create();
 	virtual void Free() override;		
 };

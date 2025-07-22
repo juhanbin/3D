@@ -12,12 +12,12 @@ CEdit::CEdit(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 
 HRESULT CEdit::Initialize()
 {
-	//if (FAILED(Ready_Lights()))
-	//	return E_FAIL;
+	if (FAILED(Ready_Lights()))
+		return E_FAIL;
 	//
 	///* 현재 레벨을 구성해주기 위한 객체들을 생성한다. */
-	//if (FAILED(Ready_Layer_Camera(TEXT("Layer_Camera"))))
-	//	return E_FAIL;
+	if (FAILED(Ready_Layer_Camera(TEXT("Layer_Camera"))))
+		return E_FAIL;
 	//
 	//if (FAILED(Ready_Layer_BackGround(TEXT("Layer_BackGround"))))
 	//	return E_FAIL;
