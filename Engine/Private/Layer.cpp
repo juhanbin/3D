@@ -44,6 +44,13 @@ void CLayer::Late_Update(_float fTimeDelta)
 	}
 }
 
+void CLayer::Clear()
+{
+	for (auto& pGameObject : m_GameObjects)
+		Safe_Release(pGameObject);
+	m_GameObjects.clear();
+}
+
 CLayer* CLayer::Create()
 {
 	return new CLayer();

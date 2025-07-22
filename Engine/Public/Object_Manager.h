@@ -20,6 +20,7 @@ public:
 public:
 	HRESULT Initialize(_uint iNumLevels);
 	HRESULT Add_GameObject_ToLayer(_uint iLayerLevelIndex, const _wstring& strLayerTag, _uint iPrototypeLevelIndex, const _wstring& strPrototypeTag, void* pArg);
+	HRESULT Clear_Layer(_uint iLayerLevelIndex, const _wstring& strLayerTag);
 	void Priority_Update(_float fTimeDelta);
 	void Update(_float fTimeDelta);
 	void Late_Update(_float fTimeDelta);

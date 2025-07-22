@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Prototype_Manager.h"
+#include"Graphic_Device.h"
 
 NS_BEGIN(Engine)
 
@@ -35,6 +36,7 @@ public:
 public:
 	HRESULT Add_Prototype(_uint iPrototpyeLevelIndex, const _wstring& strPrototypeTag, class CBase* pPrototype);
 	class CBase* Clone_Prototype(PROTOTYPE ePrototype, _uint iPrototpyeLevelIndex, const _wstring& strPrototypeTag, void* pArg = nullptr);
+	HRESULT Clear_Layer(_uint iLayerLevelIndex, const _wstring& strLayerTag);
 #pragma endregion
 
 #pragma region OBJECT_MANAGER
@@ -95,6 +97,8 @@ public:
 	//	void Transform_Picking_ToLocalSpace(class CTransform* pTransformCom);
 	//	_bool isPicked_InLocalSpace(const _float3& vPointA, const _float3& vPointB, const _float3& vPointC, _float3* pOut);
 	//#pragma endregion
+public:
+	CGraphic_Device* GetGraphicDevice();
 
 private:
 	class CGraphic_Device* m_pGraphic_Device = { nullptr };

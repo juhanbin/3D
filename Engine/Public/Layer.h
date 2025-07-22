@@ -23,7 +23,7 @@ public:
 	void Update(_float fTimeDelta);
 	void Late_Update(_float fTimeDelta);
 
-
+	void Clear();
 private:
 	list<class CGameObject*>			m_GameObjects;
 

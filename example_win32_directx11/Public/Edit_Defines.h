@@ -10,30 +10,50 @@
 
 #include "../Default/framework.h"
 #include <process.h>
-
 #include <vector>
 #include <fstream>
+
 /* 클라이언트에서 사용할 수 있는 공통적인 정의를 모아놓은 파일 */
 namespace Edit
 {
-	const unsigned int			g_iWinSizeX = 1280;
-	const unsigned int			g_iWinSizeY = 720;
+    const unsigned int g_iWinSizeX = 1280;
+    const unsigned int g_iWinSizeY = 720;
 
-	enum class LEVEL { STATIC, LOADING, EDIT, END };
+    enum class LEVEL { STATIC, LOADING, EDIT, END };
 }
 
 extern HWND g_hWnd;
 extern HINSTANCE g_hInst;
 using namespace Edit;
 
-struct MapObject
+// --- enum 기반 오브젝트 타입 ---
+enum class EObjectType
 {
-    int   id;
-    int   type; // 0=Cube, 1=Sphere, ...
-    float pos[3];
-    float size[3];
-    float rot[3];
+    MONSTER,
+    ROCK_AA,
+    END
 };
 
-static constexpr const char* ObjectTypes[5] = { "Cube", "Sphere", "Cylinder", "Capsule", "Monster" };
-static constexpr int NumObjectTypes = 5;
+// 오브젝트 타입 이름 변환 함수
+inline const char* ToObjectTypeString(EObjectType type)
+{
+    switch (type)
+    {
+    case EObjectType::MONSTER:  return "Monster";
+    case EObjectType::ROCK_AA:  return "Rock_AA";
+    default:                    return "Unknown";
+    }
+}
+
+// enum 사용 구조체
+struct MapObject
+{
+    int         id;
+    EObjectType type;
+    float       pos[3];
+    float       size[3];
+    float       rot[3];
+};
+
+static constexpr int NumObjectTypes = static_cast<int>(EObjectType::END);
+

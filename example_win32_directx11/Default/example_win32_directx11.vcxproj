@@ -159,8 +159,9 @@
     <ClCompile Include="..\Private\Level_Loading.cpp" />
     <ClCompile Include="..\Private\Loader.cpp" />
     <ClCompile Include="..\Private\MainApp.cpp" />
-    <ClCompile Include="..\Private\Monster.cpp" />
+    <ClCompile Include="..\Private\MapObject.cpp" />
     <ClCompile Include="imgui.cpp" />
+    <ClCompile Include="imgui_demo.cpp" />
     <ClCompile Include="imgui_draw.cpp" />
     <ClCompile Include="imgui_impl_dx11.cpp" />
     <ClCompile Include="imgui_impl_win32.cpp" />
@@ -175,7 +176,7 @@
     <ClInclude Include="..\Public\Level_Loading.h" />
     <ClInclude Include="..\Public\Loader.h" />
     <ClInclude Include="..\Public\MainApp.h" />
-    <ClInclude Include="..\Public\Monster.h" />
+    <ClInclude Include="..\Public\MapObject.h" />
     <ClInclude Include="imgui.h" />
     <ClInclude Include="imgui_impl_win32.h" />
   </ItemGroup>

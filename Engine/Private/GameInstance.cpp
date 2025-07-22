@@ -174,6 +174,14 @@ CBase* CGameInstance::Clone_Prototype(PROTOTYPE ePrototype, _uint iPrototypeLeve
 	return m_pPrototype_Manager->Clone_Prototype(ePrototype, iPrototypeLevelIndex, strPrototypeTag, pArg);
 }
 
+HRESULT CGameInstance::Clear_Layer(_uint iLayerLevelIndex, const _wstring& strLayerTag)
+{
+	if (nullptr == m_pObject_Manager)
+		return E_FAIL;
+
+	return m_pObject_Manager->Clear_Layer(iLayerLevelIndex, strLayerTag);
+}
+
 #pragma endregion
 
 #pragma region OBJECT_MANAGER
@@ -310,6 +318,11 @@ void CGameInstance::Dispatch_Event(_uint iLevelID, const _wstring& strEventTag, 
 HRESULT CGameInstance::Clear_Event_Level(_uint iLevelID)
 {
 	return m_pEventBus->Clear_Level(iLevelID);
+}
+
+CGraphic_Device* CGameInstance::GetGraphicDevice()
+{
+	return m_pGraphic_Device;
 }
 
 #pragma endregion

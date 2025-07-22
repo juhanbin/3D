@@ -55,8 +55,15 @@ void CCamera_Free::Priority_Update(_float fTimeDelta)
     {
         m_pTransformCom->Go_Right(fTimeDelta);
     }
-
-    _int    iMouseMove = {};
+    if (m_pGameInstance->Get_DIKeyState(DIK_LEFT) & 0x80) // ← 방향키
+        m_pTransformCom->Turn(XMVectorSet(0.f, 1.f, 0.f, 0.f), -fTimeDelta * m_fMouseSensor * 3.0f); // -Yaw
+    if (m_pGameInstance->Get_DIKeyState(DIK_RIGHT) & 0x80) // → 방향키
+        m_pTransformCom->Turn(XMVectorSet(0.f, 1.f, 0.f, 0.f), +fTimeDelta * m_fMouseSensor * 3.0f); // +Yaw
+    if (m_pGameInstance->Get_DIKeyState(DIK_UP) & 0x80) // ↑ 방향키
+        m_pTransformCom->Turn(m_pTransformCom->Get_State(STATE::RIGHT), -fTimeDelta * m_fMouseSensor * 3.0f); // -Pitch
+    if (m_pGameInstance->Get_DIKeyState(DIK_DOWN) & 0x80) // ↓ 방향키
+        m_pTransformCom->Turn(m_pTransformCom->Get_State(STATE::RIGHT), +fTimeDelta * m_fMouseSensor * 3.0f); // +Pitch
+    /*_int    iMouseMove = {};
 
     if (iMouseMove = m_pGameInstance->Get_DIMouseMove(MOUSEMOVESTATE::X))
     {
@@ -66,7 +73,7 @@ void CCamera_Free::Priority_Update(_float fTimeDelta)
     if (iMouseMove = m_pGameInstance->Get_DIMouseMove(MOUSEMOVESTATE::Y))
     {
         m_pTransformCom->Turn(m_pTransformCom->Get_State(STATE::RIGHT), fTimeDelta * iMouseMove * m_fMouseSensor);
-    }
+    }*/
 
     __super::Update_PipeLines();
 }

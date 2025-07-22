@@ -40,8 +40,11 @@
     <ClCompile Include="..\Private\Camera_Free.cpp">
       <Filter>GameObject\Camera\Free</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\Monster.cpp">
-      <Filter>GameObject\Monster</Filter>
+    <ClCompile Include="imgui_demo.cpp">
+      <Filter>98.Default</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\MapObject.cpp">
+      <Filter>GameObject\MapObject</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -66,11 +69,11 @@
     <ClInclude Include="..\Public\Camera_Free.h">
       <Filter>GameObject\Camera\Free</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\Monster.h">
-      <Filter>GameObject\Monster</Filter>
-    </ClInclude>
     <ClInclude Include="imgui.h">
       <Filter>98.Default</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\MapObject.h">
+      <Filter>GameObject\MapObject</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -98,14 +101,14 @@
     <Filter Include="GameObject">
       <UniqueIdentifier>{b21b33ae-df19-4e16-b816-5ad3d24752c3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="GameObject\Monster">
-      <UniqueIdentifier>{8858f276-bd28-49d8-bfc0-638e397bc37a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="GameObject\Camera">
       <UniqueIdentifier>{e1d3f8c7-781f-44c8-87fe-9710acdf10a0}</UniqueIdentifier>
     </Filter>
     <Filter Include="GameObject\Camera\Free">
       <UniqueIdentifier>{e758e8cc-8289-441b-a95b-493d549be05b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\MapObject">
+      <UniqueIdentifier>{5797cf56-2178-4186-b370-bd7fb5831ea7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -1,40 +1,42 @@
-#include "Monster.h"
+#include "MapObject.h"
 #include "GameInstance.h"
 
-CMonster::CMonster(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
+CMapObject::CMapObject(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
     :CGameObject{ pDevice,pContext }
 {
 }
 
-CMonster::CMonster(const CMonster& Prototype)
+CMapObject::CMapObject(const CMapObject& Prototype)
     :CGameObject{ Prototype }
+    , m_eType(Prototype.m_eType)
 {
 }
 
-HRESULT CMonster::Initialize_Prototype()
+HRESULT CMapObject::Initialize_Prototype()
 {
     return S_OK;
 }
 
-HRESULT CMonster::Initialize(void* pArg)
+HRESULT CMapObject::Initialize(void* pArg)
 {
     if (FAILED(__super::Initialize(pArg)))
         return E_FAIL;
 
     if (pArg)
     {
-        MONSTER_DESC* pDesc = static_cast<MONSTER_DESC*>(pArg);
+        MAPOBJECT_DESC* pDesc = static_cast<MAPOBJECT_DESC*>(pArg);
+        m_eType = pDesc->type;
 
-        //크기
+        // 크기
         XMMATRIX matScale = XMMatrixScaling(pDesc->vScale.x, pDesc->vScale.y, pDesc->vScale.z);
 
-        //회전
+        // 회전
         XMMATRIX matRot = XMMatrixRotationRollPitchYaw(
             XMConvertToRadians(pDesc->vRot.x),
             XMConvertToRadians(pDesc->vRot.y),
             XMConvertToRadians(pDesc->vRot.z));
 
-        //위치
+        // 위치
         XMMATRIX matTrans = XMMatrixTranslation(pDesc->vPos.x, pDesc->vPos.y, pDesc->vPos.z);
 
         XMMATRIX matWorld = matScale * matRot * matTrans;
@@ -48,16 +50,13 @@ HRESULT CMonster::Initialize(void* pArg)
         m_pTransformCom->Set_State(STATE::POSITION, XMLoadFloat4((XMFLOAT4*)&matWorld4x4.m[3]));
 
         char szDbg[256];
-        sprintf_s(szDbg,sizeof(szDbg), "scale=(%.2f,%.2f,%.2f) rot=(%.2f,%.2f,%.2f) [MON::Init] pos=(%.2f,%.2f,%.2f)\n",
+        sprintf_s(szDbg, sizeof(szDbg), "type=%d scale=(%.2f,%.2f,%.2f) rot=(%.2f,%.2f,%.2f) pos=(%.2f,%.2f,%.2f)\n",
+            (int)m_eType,
             pDesc->vScale.x, pDesc->vScale.y, pDesc->vScale.z,
             pDesc->vRot.x, pDesc->vRot.y, pDesc->vRot.z,
             pDesc->vPos.x, pDesc->vPos.y, pDesc->vPos.z);
         OutputDebugStringA(szDbg);
     }
-
-    XMMATRIX world = m_pTransformCom->Get_WorldMatrix();
-    char szWorld[256];
-    XMStoreFloat4x4((XMFLOAT4X4*)&szWorld, world);
 
     if (FAILED(Ready_Components()))
         return E_FAIL;
@@ -65,30 +64,23 @@ HRESULT CMonster::Initialize(void* pArg)
     return S_OK;
 }
 
-void CMonster::Priority_Update(_float fTimeDelta)
-{
-}
-
-void CMonster::Update(_float fTimeDelta)
-{
-}
-
-void CMonster::Late_Update(_float fTimeDelta)
+void CMapObject::Priority_Update(_float fTimeDelta) {}
+void CMapObject::Update(_float fTimeDelta) {}
+void CMapObject::Late_Update(_float fTimeDelta)
 {
     if (FAILED(m_pGameInstance->Add_RenderGroup(RENDERGROUP::NONBLEND, this)))
         return;
 }
 
-HRESULT CMonster::Render()
+HRESULT CMapObject::Render()
 {
     if (FAILED(Bind_ShaderResources()))
         return E_FAIL;
 
-    _uint           iNumMeshes = m_pModelCom->Get_NumMeshes();
-
+    _uint iNumMeshes = m_pModelCom->Get_NumMeshes();
     if (iNumMeshes == 0)
     {
-        OutputDebugStringA("Monster Model의 Mesh가 0개입니다!\n");
+        OutputDebugStringA("MapObject Model의 Mesh가 0개입니다!\n");
         return E_FAIL;
     }
 
@@ -101,31 +93,42 @@ HRESULT CMonster::Render()
         }
 
         m_pShaderCom->Begin(0);
-
         m_pModelCom->Render(i);
     }
 
     return S_OK;
 }
 
-HRESULT CMonster::Ready_Components()
+HRESULT CMapObject::Ready_Components()
 {
+    // 공통 셰이더
     if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Shader_VtxMesh"),
         TEXT("Com_Shader"), reinterpret_cast<CComponent**>(&m_pShaderCom), nullptr)))
         return E_FAIL;
 
-    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Model_Hero"),
+    // 오브젝트 타입별로 모델만 다르게
+    const wchar_t* modelProto = nullptr;
+    switch (m_eType)
+    {
+    case EObjectType::MONSTER:
+        modelProto = TEXT("Prototype_Component_Model_Hero");
+        break;
+    case EObjectType::ROCK_AA:
+        modelProto = TEXT("Prototype_Component_Model_Rock_AA");
+        break;
+    default:
+        OutputDebugStringA("Unknown EObjectType in Ready_Components!\n");
+        return E_FAIL;
+    }
+
+    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::EDIT), modelProto,
         TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom), nullptr)))
         return E_FAIL;
-
-    /*if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Model_ForkLift"),
-        TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom), nullptr)))
-        return E_FAIL;*/
 
     return S_OK;
 }
 
-HRESULT CMonster::Bind_ShaderResources()
+HRESULT CMapObject::Bind_ShaderResources()
 {
     if (FAILED(m_pTransformCom->Bind_Shader_Resource(m_pShaderCom, "g_WorldMatrix")))
         return E_FAIL;
@@ -154,33 +157,33 @@ HRESULT CMonster::Bind_ShaderResources()
     return S_OK;
 }
 
-CMonster* CMonster::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
+CMapObject* CMapObject::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 {
-    CMonster* pInstance = new CMonster(pDevice, pContext);
+    CMapObject* pInstance = new CMapObject(pDevice, pContext);
 
     if (FAILED(pInstance->Initialize_Prototype()))
     {
-        MSG_BOX(TEXT("Failed to Created : CMonster"));
+        MSG_BOX(TEXT("Failed to Created : CMapObject"));
         Safe_Release(pInstance);
     }
 
     return pInstance;
 }
 
-CGameObject* CMonster::Clone(void* pArg)
+CGameObject* CMapObject::Clone(void* pArg)
 {
-    CMonster* pInstance = new CMonster(*this);
+    CMapObject* pInstance = new CMapObject(*this);
 
     if (FAILED(pInstance->Initialize(pArg)))
     {
-        MSG_BOX(TEXT("Failed to Created : CMonster"));
+        MSG_BOX(TEXT("Failed to Created : CMapObject"));
         Safe_Release(pInstance);
     }
 
     return pInstance;
 }
 
-void CMonster::Free()
+void CMapObject::Free()
 {
     __super::Free();
 

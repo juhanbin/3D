@@ -1,8 +1,10 @@
-#include "Loader.h"
+ï»¿#include "Loader.h"
 
 #include "GameInstance.h"
 
-#include "Monster.h"
+//#include "Monster.h"
+//#include "Rock_AA.h"
+#include "MapObject.h"
 #include "Camera_Free.h"
 //#include "Player.h"
 //#include "Effect.h"
@@ -37,10 +39,10 @@ HRESULT CLoader::Initialize(LEVEL eNextLevelID)
 
 	
 
-	/* ½º·¹µå¸¦ »ı¼ºÇÏ°í */
-	/* »ı¼ºÇÑ ½º·¹µå°¡ ·ÎµùÀ» ÇÒ ¼ö ÀÖµµ·Ï Ã³¸®ÇÑ´Ù. */
+	/* ìŠ¤ë ˆë“œë¥¼ ìƒì„±í•˜ê³  */
+	/* ìƒì„±í•œ ìŠ¤ë ˆë“œê°€ ë¡œë”©ì„ í•  ìˆ˜ ìˆë„ë¡ ì²˜ë¦¬í•œë‹¤. */
 
-	/* ½ºÅÃ ¸Ş¸ğ¸®¸¦ Á¦¿ÜÇÑ ±âÅ¸ ´Ù¸¥ ¸Ş¸ğ¸®°ø°£(Èü, µ¥ÀÌÅÍ, ÄÚµå, ) Àº ½º·¹µå°£ ¼­·Î °øÀ¯ÇÑ´Ù. */
+	/* ìŠ¤íƒ ë©”ëª¨ë¦¬ë¥¼ ì œì™¸í•œ ê¸°íƒ€ ë‹¤ë¥¸ ë©”ëª¨ë¦¬ê³µê°„(í™, ë°ì´í„°, ì½”ë“œ, ) ì€ ìŠ¤ë ˆë“œê°„ ì„œë¡œ ê³µìœ í•œë‹¤. */
 	m_hThread = (HANDLE)_beginthreadex(nullptr, 0, LoadingMain, this, 0, nullptr);
 	if (0 == m_hThread)
 		return E_FAIL;
@@ -73,9 +75,9 @@ HRESULT CLoader::Loading()
 
 HRESULT CLoader::Loading_For_Edit()
 {
-	lstrcpy(m_szLoadingText, TEXT("ÅØ½ºÃÄ¸¦ ·ÎµùÁßÀÔ´Ï´Ù."));
+	lstrcpy(m_szLoadingText, TEXT("í…ìŠ¤ì³ë¥¼ ë¡œë”©ì¤‘ì…ë‹ˆë‹¤."));
 
-	lstrcpy(m_szLoadingText, TEXT("¸ğµ¨À» ·ÎµùÁßÀÔ´Ï´Ù."));
+	lstrcpy(m_szLoadingText, TEXT("ëª¨ë¸ì„ ë¡œë”©ì¤‘ì…ë‹ˆë‹¤."));
 
 	_matrix		PreTransformMatrix = XMMatrixIdentity();
 
@@ -97,13 +99,18 @@ HRESULT CLoader::Loading_For_Edit()
 		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, "../Bin/Resources/Blood_Spear/Model/Hero/Hero.fbx", PreTransformMatrix))))
 		return E_FAIL;
 
+	/* Prototype_Component_Model_Rock_AA */
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Model_Rock_AA"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, "../Bin/Resources/Blood_Spear/Model/Rock/Rock_AA.fbx", PreTransformMatrix))))
+		return E_FAIL;
 	///* Prototype_Component_VIBuffer_Cube */
 	//if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::LEVEL_GAMEPLAY), TEXT("Prototype_Component_VIBuffer_Cube"),
 	//	CVIBuffer_Cube::Create(m_pDevice, m_pContext))))
 	//	return E_FAIL;
 
 	//
-	lstrcpy(m_szLoadingText, TEXT("½¦ÀÌ´õ¸¦ ·ÎµùÁßÀÔ´Ï´Ù."));
+	lstrcpy(m_szLoadingText, TEXT("ì‰ì´ë”ë¥¼ ë¡œë”©ì¤‘ì…ë‹ˆë‹¤."));
 	/* Prototype_Component_Shader_VtxNorTex */
 	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Shader_VtxNorTex"),
 		CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxNorTex.hlsl"), VTXNORTEX::Elements, VTXNORTEX::iNumElements))))
@@ -115,19 +122,23 @@ HRESULT CLoader::Loading_For_Edit()
 		return E_FAIL;
 
 
-	lstrcpy(m_szLoadingText, TEXT("°ÔÀÓ¿ÀºêÁ§Æ®¸¦ ·ÎµùÁßÀÔ´Ï´Ù."));
+	lstrcpy(m_szLoadingText, TEXT("ê²Œì„ì˜¤ë¸Œì íŠ¸ë¥¼ ë¡œë”©ì¤‘ì…ë‹ˆë‹¤."));
 
 	/* Prototype_GameObject_Camera_Free */
 	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_GameObject_Camera_Free"),
 		CCamera_Free::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
-	/* Prototype_GameObject_Monster */
-	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_GameObject_Monster"),
-		CMonster::Create(m_pDevice, m_pContext))))
+	///* Prototype_GameObject_Monster */
+	//if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_GameObject_Monster"),
+	//	CMonster::Create(m_pDevice, m_pContext))))
+	//	return E_FAIL;
+
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_GameObject_MapObject"),
+		CMapObject::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
-	lstrcpy(m_szLoadingText, TEXT("·ÎµùÀÌ ¿Ï·áµÇ¾ú½À´Ï´Ù."));
+	lstrcpy(m_szLoadingText, TEXT("ë¡œë”©ì´ ì™„ë£Œë˜ì—ˆìŠµë‹ˆë‹¤."));
 
 	m_isFinished = true;
 

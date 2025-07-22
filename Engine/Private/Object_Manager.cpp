@@ -49,6 +49,16 @@ HRESULT CObject_Manager::Add_GameObject_ToLayer(_uint iLayerLevelIndex, const _w
 	return S_OK;
 }
 
+HRESULT CObject_Manager::Clear_Layer(_uint iLayerLevelIndex, const _wstring& strLayerTag)
+{
+	CLayer* pLayer = Find_Layer(iLayerLevelIndex, strLayerTag);
+	if (nullptr == pLayer)
+		return S_OK;
+
+	pLayer->Clear();
+	return S_OK;
+}
+
 void CObject_Manager::Priority_Update(_float fTimeDelta)
 {
 	for (size_t i = 0; i < m_iNumLevels; i++)

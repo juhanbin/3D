@@ -35,6 +35,7 @@ public:
 	void SaveScene(const char* filename);
 	bool LoadScene(const char* filename);
 	void PushUndo();
+	void RefreshScene();
 
 private:
 	// --- MapTool ตฅภฬลอ ---
@@ -45,6 +46,8 @@ private:
 	float m_TempRot[3] = { 0,0,0 };
 	float m_TempPos[3] = { 0,0,0 };
 
+	ID3D11RenderTargetView* m_pBackBufferRTV = nullptr;
+	ID3D11DepthStencilView* m_pDepthStencilView = nullptr;
 public:
 	static CMainApp* Create();
 	virtual void Free() override;		
