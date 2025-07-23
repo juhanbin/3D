@@ -4,9 +4,13 @@
 #include "MapObject.h"
 #include "Edit_Defines.h"
 #include "Graphic_Device.h"
+#include <fstream>
+
+using namespace DirectX;
+using namespace Edit;
 
 CMainApp::CMainApp()
-    : m_pGameInstance{ CGameInstance::GetInstance() }
+    : m_pGameInstance{ Engine::CGameInstance::GetInstance() }
 {
     Safe_AddRef(m_pGameInstance);
 }
@@ -31,7 +35,6 @@ HRESULT CMainApp::Initialize()
     if (FAILED(Start_Level(LEVEL::EDIT)))
         return E_FAIL;
 
-
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGui_ImplWin32_Init(g_hWnd);
@@ -54,7 +57,6 @@ HRESULT CMainApp::Render()
     _float4 vClearColor = _float4(0.f, 0.f, 1.f, 1.f);
 
     m_pGameInstance->Render_Begin(&vClearColor);
-
     m_pGameInstance->Draw();
 
     ImGui_ImplDX11_NewFrame();
@@ -75,19 +77,15 @@ HRESULT CMainApp::Ready_Prototype_ForStatic()
     if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_Component_Shader_VtxPosTex"),
         CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxPosTex.hlsl"), VTXPOSTEX::Elements, VTXPOSTEX::iNumElements))))
         return E_FAIL;
-
     if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_Component_Shader_VtxPosTex_BG"),
         CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxPosTex_BG.hlsl"), VTXPOSTEX::Elements, VTXPOSTEX::iNumElements))))
         return E_FAIL;
-
     if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_Component_Shader_VtxPosTex_Logo"),
         CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxPosTex_Logo.hlsl"), VTXPOSTEX::Elements, VTXPOSTEX::iNumElements))))
         return E_FAIL;
-
     if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_Component_Shader_Fade"),
         CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxPosTex_Fade.hlsl"), VTXPOSTEX::Elements, VTXPOSTEX::iNumElements))))
         return E_FAIL;
-
     if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_Component_VIBuffer_Rect"),
         CVIBuffer_Rect::Create(m_pDevice, m_pContext))))
         return E_FAIL;
@@ -99,8 +97,38 @@ HRESULT CMainApp::Start_Level(LEVEL eStartLevelID)
 {
     if (FAILED(m_pGameInstance->Open_Level(static_cast<_uint>(LEVEL::LOADING), CLevel_Loading::Create(m_pDevice, m_pContext, eStartLevelID))))
         return E_FAIL;
-
     return S_OK;
+}
+
+// ----------- MapTool 관련 함수 ------------
+
+Ray CMainApp::CreatePickingRay(int mx, int my, int w, int h, const DirectX::XMMATRIX& view, const DirectX::XMMATRIX& proj)
+{
+    float px = (2.0f * mx / w - 1.0f);
+    float py = (1.0f - 2.0f * my / h);
+    XMVECTOR rayClip = XMVectorSet(px, py, 1.0f, 1.0f);
+
+    XMMATRIX invProj = XMMatrixInverse(nullptr, proj);
+    XMVECTOR rayEye = XMVector3TransformCoord(rayClip, invProj);
+    rayEye = XMVectorSetW(rayEye, 0.0f);
+
+    XMMATRIX invView = XMMatrixInverse(nullptr, view);
+    XMVECTOR rayDir = XMVector3TransformNormal(rayEye, invView);
+    rayDir = XMVector3Normalize(rayDir);
+    XMVECTOR rayOrigin = XMVector3TransformCoord(XMVectorZero(), invView);
+
+    Ray ray;
+    XMStoreFloat3(&ray.origin, rayOrigin);
+    XMStoreFloat3(&ray.dir, rayDir);
+    return ray;
+}
+
+bool CMainApp::RayIntersectsAABB(const Ray& ray, const DirectX::BoundingBox& box, float* outDist)
+{
+    float dist = 0.0f;
+    bool hit = box.Intersects(XMLoadFloat3(&ray.origin), XMLoadFloat3(&ray.dir), dist);
+    if (hit && outDist) *outDist = dist;
+    return hit;
 }
 
 void CMainApp::Render_ImGuiPanel()
@@ -127,7 +155,7 @@ void CMainApp::Render_ImGuiPanel()
         SaveScene("../../Mapdata/scene.txt");
     }
 
-    // 팝업: 오브젝트 타입 선택(enum)
+    // 오브젝트 타입 선택(enum)
     if (ImGui::BeginPopup("CreateObjectPopup")) {
         ImGui::Text("Select Object Type");
         ImGui::Separator();
@@ -147,6 +175,62 @@ void CMainApp::Render_ImGuiPanel()
             }
         }
         ImGui::EndPopup();
+    }
+
+    ImGui::Text("피킹: 오브젝트 선택 (마우스 클릭)");
+
+    // ImGui 패널이 열려있는 상태에서만 피킹 처리
+    if (ImGui::IsMouseClicked(0) && !ImGui::IsAnyItemHovered()) // 왼쪽 클릭 시
+    {
+        // 마우스 좌표 구하기
+        ImVec2 pos = ImGui::GetMousePos();
+        int mouseX = (int)pos.x;
+        int mouseY = (int)pos.y;
+
+        char buf[128];
+        sprintf(buf, "Mouse (Screen): %.2f %.2f  (Client): %d %d\n", pos.x, pos.y, mouseX, mouseY);
+        OutputDebugStringA(buf);
+
+        // 뷰/프로젝션 행렬 구하기
+        XMMATRIX view = XMLoadFloat4x4(m_pGameInstance->Get_Transform_Float4x4(Engine::D3DTS::VIEW));
+        XMMATRIX proj = XMLoadFloat4x4(m_pGameInstance->Get_Transform_Float4x4(Engine::D3DTS::PROJ));
+
+        // 레이 생성
+        int winW = g_iWinSizeX;
+        int winH = g_iWinSizeY;
+        Ray ray = CreatePickingRay(mouseX, mouseY, winW, winH, view, proj);
+
+        sprintf(buf, "Ray O: %.2f %.2f %.2f D: %.2f %.2f %.2f\n", ray.origin.x, ray.origin.y, ray.origin.z, ray.dir.x, ray.dir.y, ray.dir.z);
+        OutputDebugStringA(buf);
+
+        int pickIdx = -1;
+        float minDist = FLT_MAX;
+        for (int i = 0; i < (int)m_Objects.size(); ++i) {
+            BoundingBox box;
+            // 오브젝트별 계산
+            XMFLOAT3 center = XMFLOAT3(m_Objects[i].pos[0], m_Objects[i].pos[1], m_Objects[i].pos[2]);
+            XMFLOAT3 extents = XMFLOAT3(
+                m_Objects[i].size[0] * 0.5f,
+                m_Objects[i].size[1] * 0.5f,
+                m_Objects[i].size[2] * 0.5f
+            );
+            box.Center = center;
+            box.Extents = extents;
+
+            float hitDist;
+            if (RayIntersectsAABB(ray, box, &hitDist)) {
+                if (hitDist < minDist) {
+                    minDist = hitDist;
+                    pickIdx = i;
+                }
+            }
+        }
+        if (pickIdx >= 0) {
+            m_Selected = pickIdx;
+            memcpy(m_TempSize, m_Objects[m_Selected].size, sizeof(float) * 3);
+            memcpy(m_TempRot, m_Objects[m_Selected].rot, sizeof(float) * 3);
+            memcpy(m_TempPos, m_Objects[m_Selected].pos, sizeof(float) * 3);
+        }
     }
 
     ImGui::Separator();
@@ -257,7 +341,6 @@ CMainApp* CMainApp::Create()
         MSG_BOX(TEXT("Failed to Created : CMainApp"));
         Safe_Release(pInstance);
     }
-
     return pInstance;
 }
 

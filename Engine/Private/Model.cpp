@@ -79,6 +79,39 @@ void CModel::Play_Animation(_float fTimeDelta)
         pBone->Update_CombinedTransformatrix(m_Bones);
 }
 
+void CModel::ComputeBoundingBox(DirectX::BoundingBox& outBox) const
+{
+    using namespace DirectX;
+
+    bool first = true;
+    XMFLOAT3 vMin{}, vMax{};
+    // 모든 메시 순회 (m_Meshes 컨테이너 등)
+    for (const auto& mesh : m_Meshes)  // m_Meshes는 메시 리스트(vector 등)
+    {
+        const auto& positions = mesh->GetPositions();
+        // 메시의 버텍스 배열 순회 (여기선 float3 포맷 가정)
+        for (const auto& v : positions)
+        {
+            if (first) {
+                vMin = vMax = v;
+                first = false;
+            }
+            else {
+                vMin.x = min(vMin.x, v.x);
+                vMin.y = min(vMin.y, v.y);
+                vMin.z = min(vMin.z, v.z);
+                vMax.x = max(vMax.x, v.x);
+                vMax.y = max(vMax.y, v.y);
+                vMax.z = max(vMax.z, v.z);
+            }
+        }
+    }
+    // min/max에서 박스 생성
+    XMFLOAT3 center = { (vMin.x + vMax.x) * 0.5f, (vMin.y + vMax.y) * 0.5f, (vMin.z + vMax.z) * 0.5f };
+    XMFLOAT3 extents = { (vMax.x - vMin.x) * 0.5f, (vMax.y - vMin.y) * 0.5f, (vMax.z - vMin.z) * 0.5f };
+    outBox = BoundingBox(center, extents);
+}
+
 HRESULT CModel::Render(_uint iMeshIndex)
 {
     if (FAILED(m_Meshes[iMeshIndex]->Bind_Resources()))

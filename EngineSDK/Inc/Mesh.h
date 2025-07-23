@@ -24,6 +24,10 @@ private:
 	_uint			m_iMaterialIndex = {};
 	_uint			m_iNumBones = {};
 	vector<_uint>	m_BoneIndices;
+	vector<_float3> m_vecPositions;
+
+public:
+	const std::vector<_float3>& GetPositions() const { return m_vecPositions; }
 
 private:
 	HRESULT Ready_Vertices_For_NonAnim(const aiMesh* pAIMesh, _fmatrix PreTransformMatrix);

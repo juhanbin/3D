@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Component.h"
+#include <DirectXCollision.h>
 
 /* 모델이 움직인다 -> 정점이 움직인다 -> 모든 정점에 대한 움직임 정보를 저장하기가 힘들다 */
 /* -> 뼈를 움직이게끔 처리해주면 조헥싿. -> 어떤 타이밍에 어떤 상태를 가지고 어떤 뼈가 움직여야하는지에 대한 정보가 필요하다. */
@@ -32,6 +33,9 @@ public:
 public:
 	HRESULT Bind_Materials(class CShader* pShader, const _char* pConstantName, _uint iMeshIndex, aiTextureType eTextureType, _uint iIndex);
 	void Play_Animation(_float fTimeDelta);
+
+public:
+	void ComputeBoundingBox(DirectX::BoundingBox& outBox) const;
 
 private:
 	/* 파일로부터 읽은 모든 정보를 다 저장해주는 구조체. */

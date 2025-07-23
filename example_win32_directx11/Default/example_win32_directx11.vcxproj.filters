@@ -46,6 +46,9 @@
     <ClCompile Include="..\Private\MapObject.cpp">
       <Filter>GameObject\MapObject</Filter>
     </ClCompile>
+    <ClCompile Include="Edit_Utils.cpp">
+      <Filter>99.Defines</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="imgui_impl_win32.h">
