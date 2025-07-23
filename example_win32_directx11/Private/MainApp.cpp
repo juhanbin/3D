@@ -155,7 +155,6 @@ void CMainApp::Render_ImGuiPanel()
         SaveScene("../../Mapdata/scene.txt");
     }
 
-    // 오브젝트 타입 선택(enum)
     if (ImGui::BeginPopup("CreateObjectPopup")) {
         ImGui::Text("Select Object Type");
         ImGui::Separator();
@@ -177,9 +176,8 @@ void CMainApp::Render_ImGuiPanel()
         ImGui::EndPopup();
     }
 
-    ImGui::Text("피킹: 오브젝트 선택 (마우스 클릭)");
+    //ImGui::Text("피킹: 오브젝트 선택 (마우스 클릭)");
 
-    // ImGui 패널이 열려있는 상태에서만 피킹 처리
     if (ImGui::IsMouseClicked(0) && !ImGui::IsAnyItemHovered()) // 왼쪽 클릭 시
     {
         // 마우스 좌표 구하기

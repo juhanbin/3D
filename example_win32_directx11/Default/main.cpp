@@ -1,4 +1,4 @@
-
+ï»¿
 #include "imgui.h"
 #include "imgui_impl_win32.h"
 #include "imgui_impl_dx11.h"
@@ -19,11 +19,11 @@
 HWND g_hWnd;
 HINSTANCE g_hInst;
 
-// **Áßº¹ ¼±¾ğ ÁÖÀÇ**
+// **ì¤‘ë³µ ì„ ì–¸ ì£¼ì˜**
 WCHAR szTitle[MAX_LOADSTRING] = L"MapTool";
 WCHAR szWindowClass[MAX_LOADSTRING] = L"MapToolWndClass";
 
-// ÇÔ¼ö ¼±¾ğ
+// í•¨ìˆ˜ ì„ ì–¸
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -39,7 +39,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 
     CMainApp* pMainApp = nullptr;
 
-    // Á÷Á¢ ÇÒ´ç
+    // ì§ì ‘ í• ë‹¹
     wcscpy_s(szTitle, L"MapTool");
     wcscpy_s(szWindowClass, L"MapToolWndClass");
     MyRegisterClass(hInstance);
@@ -79,7 +79,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
         {
             pGameInstance->Compute_TimeDelta(TEXT("Timer_60"));
             pMainApp->Update(pGameInstance->Get_TimeDelta(TEXT("Timer_60")));
-            pMainApp->Render(); // ImGuiµµ ¿©±â¼­ È£Ãâ
+            pMainApp->Render(); // ImGuië„ ì—¬ê¸°ì„œ í˜¸ì¶œ
             fTimeAcc = 0.f;
         }
     }
@@ -99,10 +99,10 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     wcex.cbClsExtra = 0;
     wcex.cbWndExtra = 0;
     wcex.hInstance = hInstance;
-    wcex.hIcon = NULL; // ¾ÆÀÌÄÜ ÇÊ¿ä¾øÀ¸¸é NULL
+    wcex.hIcon = NULL; // ì•„ì´ì½˜ í•„ìš”ì—†ìœ¼ë©´ NULL
     wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
     wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-    wcex.lpszMenuName = NULL; // ¸Ş´º ¾øÀ½
+    wcex.lpszMenuName = NULL; // ë©”ë‰´ ì—†ìŒ
     wcex.lpszClassName = szWindowClass;
     wcex.hIconSm = NULL;
     return RegisterClassExW(&wcex);
@@ -120,7 +120,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
     if (!hWnd) return FALSE;
     ShowWindow(hWnd, nCmdShow);
-    ShowCursor(TRUE); // ¿¡µğÅÍ´Â ¸¶¿ì½º º¸ÀÌ°Ô!
+    ShowCursor(TRUE); // ì—ë””í„°ëŠ” ë§ˆìš°ìŠ¤ ë³´ì´ê²Œ!
     UpdateWindow(hWnd);
 
     g_hWnd = hWnd;
@@ -129,7 +129,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    // ImGui Win32 ¸Ş½ÃÁö Ã³¸®
+    // ImGui Win32 ë©”ì‹œì§€ ì²˜ë¦¬
     if (ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam))
         return true;
 

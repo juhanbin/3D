@@ -26,7 +26,7 @@ HRESULT CEdit::Initialize()
 
 void CEdit::Update(_float fTimeDelta)
 {
-    // 필요시 에디터 업데이트 로직 작성
+    
 }
 
 HRESULT CEdit::Render()
