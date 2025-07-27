@@ -2,10 +2,13 @@
 
 #include "Edit_Defines.h"
 #include "Base.h"
-
 #include <DirectXMath.h>
 #include <DirectXCollision.h>
 #include <vector>
+#include <fstream>
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 NS_BEGIN(Engine)
 class CGameInstance;
@@ -39,14 +42,15 @@ private:
     HRESULT Start_Level(LEVEL eStartLevelID);
 
 public:
-    // --- MapTool 관련 함수 ---
+    // MapTool 함수
     void Render_ImGuiPanel();
     void SaveScene(const char* filename);
     bool LoadScene(const char* filename);
+    void ExportModelToBin_Anim(const MapObject& obj, const char* binPath);
+    void ExportModelToBin_NonAnim(const MapObject& obj, const char* binPath);
     void PushUndo();
     void RefreshScene();
 
-    // 피킹 & AABB 교차 함수 선언
     Ray CreatePickingRay(int mx, int my, int w, int h, const DirectX::XMMATRIX& view, const DirectX::XMMATRIX& proj);
     bool RayIntersectsAABB(const Ray& ray, const DirectX::BoundingBox& box, float* outDist = nullptr);
 
@@ -60,6 +64,11 @@ private:
 
     ID3D11RenderTargetView* m_pBackBufferRTV = nullptr;
     ID3D11DepthStencilView* m_pDepthStencilView = nullptr;
+
+    const aiScene* m_pAIScene = { nullptr };
+    Assimp::Importer m_Importer = {};
+    std::vector<ID3D11ShaderResourceView*> m_SRVs[AI_TEXTURE_TYPE_MAX];
+
 public:
     static CMainApp* Create();
     virtual void Free() override;

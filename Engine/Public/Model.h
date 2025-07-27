@@ -31,8 +31,12 @@ public:
 	virtual HRESULT Render(_uint iMeshIndex);
 
 public:
+	void Set_Animation(_uint iIndex, _bool isLoop = false);
+
+public:
 	HRESULT Bind_Materials(class CShader* pShader, const _char* pConstantName, _uint iMeshIndex, aiTextureType eTextureType, _uint iIndex);
-	void Play_Animation(_float fTimeDelta);
+	HRESULT Bind_BoneMatrices(class CShader* pShader, const _char* pConstantName, _uint iMeshIndex);
+	_bool Play_Animation(_float fTimeDelta);
 
 public:
 	void ComputeBoundingBox(DirectX::BoundingBox& outBox) const;
@@ -51,16 +55,25 @@ private:
 	vector<class CMesh*>	m_Meshes;
 
 private:
-	_uint							m_iNumMaterials{};
+	/* Diffuse, Ambient, Specular */
+	_uint							m_iNumMaterials = {};
 	vector<class CMeshMaterial*>	m_Materials;
 
 private:
-	vector<class CBone*> m_Bones;
+	vector<class CBone*>			m_Bones;
+
+private:
+	_uint							m_iCurrentAnimIndex = { 0 };
+	_uint							m_iNumAnimations = { 0 };
+	vector<class CAnimation*>		m_Animations;
+	_bool							m_isLoop = {};
+	_bool							m_isFinished = {};
 
 private:
 	HRESULT Ready_Meshes();
 	HRESULT Ready_Materials(const _char* pModelFilePath);
 	HRESULT Ready_Bones(const aiNode* pAINode, _int iParentIndex);
+	HRESULT Ready_Animations();
 
 public:
 	static CModel* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, MODELTYPE eModelType, const _char* pModelFilePath, _fmatrix PreTransformMatrix);

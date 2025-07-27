@@ -9,7 +9,8 @@
 //#include "Player.h"
 //#include "Effect.h"
 //#include "Sky.h"
-
+USING(Engine)
+NS_BEGIN(Edit)
 CLoader::CLoader(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	: m_pDevice{ pDevice }
 	, m_pContext { pContext }
@@ -171,3 +172,4 @@ void CLoader::Free()
 	Safe_Release(m_pDevice);
 	Safe_Release(m_pContext);
 }
+NS_END

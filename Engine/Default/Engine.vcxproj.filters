@@ -103,6 +103,12 @@
     <Filter Include="01.Utility\03.Component\Model\Bone">
       <UniqueIdentifier>{c5074de0-d821-46fb-96ba-72e3417ac6c5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01.Utility\03.Component\Model\Animation">
+      <UniqueIdentifier>{de599cde-e53c-40ff-b2f3-6b5b761df709}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Utility\03.Component\Model\Animation\Channel">
+      <UniqueIdentifier>{97eb0ef7-3a9f-4f01-a0fa-1db921504de1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Private\Timer.cpp">
@@ -194,6 +200,12 @@
     </ClCompile>
     <ClCompile Include="..\Private\Bone.cpp">
       <Filter>01.Utility\03.Component\Model\Bone</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Channel.cpp">
+      <Filter>01.Utility\03.Component\Model\Animation\Channel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Animation.cpp">
+      <Filter>01.Utility\03.Component\Model\Animation</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -304,6 +316,12 @@
     </ClInclude>
     <ClInclude Include="..\Public\Bone.h">
       <Filter>01.Utility\03.Component\Model\Bone</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Channel.h">
+      <Filter>01.Utility\03.Component\Model\Animation\Channel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Animation.h">
+      <Filter>01.Utility\03.Component\Model\Animation</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
