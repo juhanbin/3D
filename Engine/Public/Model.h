@@ -2,14 +2,7 @@
 
 #include "Component.h"
 #include <DirectXCollision.h>
-
-/* 모델이 움직인다 -> 정점이 움직인다 -> 모든 정점에 대한 움직임 정보를 저장하기가 힘들다 */
-/* -> 뼈를 움직이게끔 처리해주면 조헥싿. -> 어떤 타이밍에 어떤 상태를 가지고 어떤 뼈가 움직여야하는지에 대한 정보가 필요하다. */
-/* 앞에서 이야기한 정보들을 애니메이션이라고 부른다. */
-
-/* 1. 뼈 자체의 생성. */
-/* 2. 정점들은 대체 어떤 뼈의 정보를 따라서 갱신되야하는가에 대한 정보가 필요하다. */
-/* 3. 애니메이션정보(뼈들의 시간에 따른 상태값들)를 로드한다. */
+#include "BinType.h"
 
 NS_BEGIN(Engine)
 
@@ -26,7 +19,7 @@ public:
 	}
 
 public:
-	virtual HRESULT Initialize_Prototype(MODELTYPE eModelType, const _char* pModelFilePath, _fmatrix PreTransformMatrix);
+	virtual HRESULT Initialize_Prototype(MODELTYPE eModelType, FILETYPE eFileType, const _char* pModelFilePath, _fmatrix PreTransformMatrix);
 	virtual HRESULT Initialize(void* pArg);
 	virtual HRESULT Render(_uint iMeshIndex);
 
@@ -75,8 +68,14 @@ private:
 	HRESULT Ready_Bones(const aiNode* pAINode, _int iParentIndex);
 	HRESULT Ready_Animations();
 
+private:
+	HRESULT Ready_Meshes(ifstream& ifs);
+	HRESULT Ready_Materials(const _char* pModelFilePath,const vector<MaterialInfoBin>& binMaterials);
+	HRESULT Ready_Bones(const vector<BoneInfoBin>& binBones, _int iParentIndex);
+	HRESULT Ready_Animations(ifstream& ifs);
+
 public:
-	static CModel* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, MODELTYPE eModelType, const _char* pModelFilePath, _fmatrix PreTransformMatrix);
+	static CModel* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, MODELTYPE eModelType, FILETYPE eFileType , const _char* pModelFilePath, _fmatrix PreTransformMatrix);
 	virtual CComponent* Clone(void* pArg) override;
 	virtual void Free() override;
 

@@ -323,5 +323,8 @@
     <ClInclude Include="..\Public\Animation.h">
       <Filter>01.Utility\03.Component\Model\Animation</Filter>
     </ClInclude>
+    <ClInclude Include="..\Public\BinType.h">
+      <Filter>99.Defines</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

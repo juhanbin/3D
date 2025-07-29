@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Base.h"
-
+#include "BinType.h"
 /*
 aiNodeAnim : 애니메이션을 위한 뼈의 상태행렬을 보관한다.
 aiNode : 뼈들의 관계를 표현하기위한 데이터
@@ -32,6 +32,7 @@ public:
 public:
 
 	HRESULT Initialize(const aiNode* pAINode, _int iParentBoneIndex);
+	HRESULT Initialize(const BoneInfoBin& bin, _int iParentBoneIndex);
 	void Update_CombinedTransformationMatrix(const _float4x4& PreTransformMatrix, const vector<CBone*>& Bones);
 
 	_bool Compare_Name(const _char* pName) {
@@ -47,6 +48,7 @@ private:
 
 public:
 	static CBone* Create(const aiNode* pAINode, _int iParentBoneIndex);
+	static CBone* Create(const BoneInfoBin& bin, _int iParentBoneIndex); // BIN 버전
 	CBone* Clone();
 	virtual void Free() override;
 };

@@ -109,7 +109,7 @@ HRESULT CLevel_GamePlay::Ready_Layer_Player(const _wstring& strLayerTag)
 
 HRESULT CLevel_GamePlay::Ready_Layer_Monster(const _wstring& strLayerTag)
 {
-        std::ifstream ifs("../../Mapdata/scene.txt");
+        std::ifstream ifs("../../Mapdata/scene.bin");
         if (!ifs.is_open())
         {
                 if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::GAMEPLAY), strLayerTag,
@@ -119,7 +119,13 @@ HRESULT CLevel_GamePlay::Ready_Layer_Monster(const _wstring& strLayerTag)
         }
 		struct MapObject
 		{
-			int id; int type; float size[3]; float rot[3]; float pos[3];
+			int id; 
+			int type; 
+			float size[3]; 
+			float rot[3]; 
+			float pos[3];
+			char fbxPath[260];
+			char binPath[260];
 		} obj{};
 
 		while (ifs >> obj.id >> obj.type
@@ -145,32 +151,34 @@ HRESULT CLevel_GamePlay::Ready_Layer_Monster(const _wstring& strLayerTag)
 }
 HRESULT CLevel_GamePlay::Ready_Layer_MapObjects(const _wstring& strLayerTag)
 {
-	std::ifstream ifs("../../Mapdata/scene.txt");
+	std::ifstream ifs("../../Mapdata/scene.bin");
 	if (!ifs.is_open())
 	{
-		OutputDebugStringW(L"[SCENE] scene.txt 파일을 열 수 없습니다.\n");
+		OutputDebugStringW(L"[SCENE] scene.bin 파일을 열 수 없습니다.\n");
 		return S_OK;
 	}
 
-	struct SceneObjRaw {
-		int id;
-		int type; // EObjectType
-		float size[3], rot[3], pos[3];
-	} obj;
+	struct MapObject
+		{
+			int id; 
+			int type; 
+			float size[3]; 
+			float rot[3]; 
+			float pos[3];
+			char fbxPath[260];
+			char binPath[260];
+		} obj{};
 
-	while (ifs >> obj.id >> obj.type
-		>> obj.size[0] >> obj.size[1] >> obj.size[2]
-		>> obj.rot[0] >> obj.rot[1] >> obj.rot[2]
-		>> obj.pos[0] >> obj.pos[1] >> obj.pos[2])
-	{
+	size_t count = 0;
+	ifs.read((char*)&count, sizeof(count));
+	for (size_t i = 0; i < count; ++i) {
+		MapObject obj{};
+		ifs.read((char*)&obj, sizeof(obj));
 		CMapObject::MAPOBJECT_DESC desc{};
 		desc.type = static_cast<EObjectType>(obj.type);
 		desc.vScale = _float3(obj.size[0], obj.size[1], obj.size[2]);
 		desc.vRot = _float3(obj.rot[0], obj.rot[1], obj.rot[2]);
 		desc.vPos = _float3(obj.pos[0], obj.pos[1], obj.pos[2]);
-
-		// 타입별로 다른 Layer에 넣고 싶다면 아래 분기 추가,
-		// 아니면 그냥 모두 strLayerTag ("Layer_MapObject")로 넣으면 됨
 		if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(
 			ENUM_CLASS(LEVEL::GAMEPLAY), strLayerTag,
 			ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_MapObject"), &desc)))

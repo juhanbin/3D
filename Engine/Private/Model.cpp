@@ -4,6 +4,7 @@
 #include "Bone.h"
 #include "MeshMaterial.h"
 #include "Animation.h"
+#include <fstream>
 
 CModel::CModel(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
     : CComponent{ pDevice ,pContext }
@@ -33,38 +34,109 @@ CModel::CModel(const CModel& Prototype)
         Safe_AddRef(pMaterial);
 }
 
-HRESULT CModel::Initialize_Prototype(MODELTYPE eModelType, const _char* pModelFilePath, _fmatrix PreTransformMatrix)
+HRESULT CModel::Initialize_Prototype(MODELTYPE eModelType,FILETYPE eFileType, const _char* pModelFilePath, _fmatrix PreTransformMatrix)
 {
-    /* aiProcess_PreTransformVertices : 각각의 메시를 붙여야할 위치에 적절히 배치한다. */
-    /* 배치 : 각 메시의 정점들을 배치를 위한 임의의 행렬과 곱하여 로드한다. */
-
     m_eModelType = eModelType;
-
     XMStoreFloat4x4(&m_PreTransformMatrix, PreTransformMatrix);
 
-    _uint           iFlag = { aiProcess_ConvertToLeftHanded | aiProcessPreset_TargetRealtime_Fast };
 
-    if (MODELTYPE::NONANIM == m_eModelType)
-        iFlag |= aiProcess_PreTransformVertices;
+    if (eFileType == FILETYPE::BIN) // Bin파일일때
+    {
+        std::ifstream ifs(pModelFilePath, std::ios::binary);
+        if (!ifs) {
+            OutputDebugStringA("[BIN] 파일 열기 실패!\n");
+            return E_FAIL;
+        }
+        if (!ifs)
+            return E_FAIL;
 
-    m_pAIScene = m_Importer.ReadFile(pModelFilePath, iFlag);
-    if (nullptr == m_pAIScene)
-        return E_FAIL;
+        if (eModelType == MODELTYPE::NONANIM)
+        {
+            // 2. Mesh 정보 읽기
+            if (FAILED(Ready_Meshes(ifs))) { // 파일 스트림 넘김!
+                OutputDebugStringA("[BIN] Ready_Meshes 실패 (NONANIM)\n");
+                return E_FAIL;
+            }
 
-    if (FAILED(Ready_Bones(m_pAIScene->mRootNode, -1)))
-        return E_FAIL;
+            // 3. Material 정보 읽기
+            uint32_t materialCount = 0;
+            ifs.read((char*)&materialCount, sizeof(materialCount));
+            {
+                char dbg[128];
+                sprintf_s(dbg, "BIN NONANIM materialCount = %u\n", materialCount);
+                OutputDebugStringA(dbg);
+            }
+            vector<MaterialInfoBin> binMaterials(materialCount);
+            ifs.read((char*)binMaterials.data(), sizeof(MaterialInfoBin) * materialCount);
+            for (size_t i = 0; i < binMaterials.size(); ++i) {
+                char dbg[256];
+                sprintf_s(dbg, "BIN Material[%zu] basecolor=%s, normal=%s, arm=%s\n",
+                    i, binMaterials[i].basecolor, binMaterials[i].normal, binMaterials[i].arm);
+                OutputDebugStringA(dbg);
+            }
 
-    if (FAILED(Ready_Meshes()))
-        return E_FAIL;
+            if (FAILED(Ready_Materials(pModelFilePath, binMaterials))) {
+                OutputDebugStringA("[BIN] Ready_Materials 실패 (NONANIM)\n");
+                return E_FAIL;
+            }
+        }
+        else
+        {
+            // 1. Bone 정보 읽기
+            uint32_t boneCount = 0;
+            ifs.read((char*)&boneCount, sizeof(boneCount));
+            vector<BoneInfoBin> binBones(boneCount);
+            ifs.read((char*)binBones.data(), sizeof(BoneInfoBin) * boneCount);
 
-    //XMMatrixRotationQuaternion();
-    //XMMatrixRotationRollPitchYaw();
+            if (FAILED(Ready_Bones(binBones, -1)))
+                return E_FAIL;
 
-    if (FAILED(Ready_Materials(pModelFilePath)))
-        return E_FAIL;
+            // 2. Mesh 정보 읽기
+            if (FAILED(Ready_Meshes(ifs))) // 파일 스트림 넘김!
+                return E_FAIL;
 
-    if (FAILED(Ready_Animations()))
-        return E_FAIL;
+            // 3. Material 정보 읽기
+            uint32_t materialCount = 0;
+            ifs.read((char*)&materialCount, sizeof(materialCount));
+            vector<MaterialInfoBin> binMaterials(materialCount);
+            ifs.read((char*)binMaterials.data(), sizeof(MaterialInfoBin) * materialCount);
+
+            if (FAILED(Ready_Materials(pModelFilePath, binMaterials)))
+                return E_FAIL;
+
+            // 4. Animation 정보 읽기
+            if (FAILED(Ready_Animations(ifs)))
+                return E_FAIL;
+        }
+    }
+
+    else // fbx파일일때
+    {
+        _uint           iFlag = { aiProcess_ConvertToLeftHanded | aiProcessPreset_TargetRealtime_Fast };
+
+        if (MODELTYPE::NONANIM == m_eModelType)
+            iFlag |= aiProcess_PreTransformVertices;
+
+        m_pAIScene = m_Importer.ReadFile(pModelFilePath, iFlag);
+        if (nullptr == m_pAIScene)
+            return E_FAIL;
+
+        if (FAILED(Ready_Bones(m_pAIScene->mRootNode, -1)))
+            return E_FAIL;
+
+        if (FAILED(Ready_Meshes()))
+            return E_FAIL;
+
+        //XMMatrixRotationQuaternion();
+        //XMMatrixRotationRollPitchYaw();
+
+        if (FAILED(Ready_Materials(pModelFilePath)))
+            return E_FAIL;
+
+        if (FAILED(Ready_Animations()))
+            return E_FAIL;
+    }
+    
 
     return S_OK;
 }
@@ -235,13 +307,109 @@ HRESULT CModel::Ready_Animations()
     return S_OK;
 }
 
+HRESULT CModel::Ready_Meshes(ifstream& ifs)
+{
+    ifs.read((char*)&m_iNumMeshes, sizeof(m_iNumMeshes));
+    for (size_t i = 0; i < m_iNumMeshes; ++i)
+    {
+        // --- BIN에서 vertex, index 읽어오기 ---
+        uint32_t vtxCount = 0, idxCount = 0;
+        ifs.read((char*)&vtxCount, sizeof(vtxCount));
+        ifs.read((char*)&idxCount, sizeof(idxCount));
+        vector<SimpleVertexBin> vertices(vtxCount);
+        vector<uint32_t> indices(idxCount);
+        ifs.read((char*)vertices.data(), sizeof(SimpleVertexBin) * vtxCount);
+        ifs.read((char*)indices.data(), sizeof(uint32_t) * idxCount);
+
+        // --- CMesh 생성 ---
+        CMesh* pMesh = CMesh::Create(
+            m_pDevice, m_pContext,
+            m_eModelType,
+            vertices, indices, m_Bones,XMLoadFloat4x4(&m_PreTransformMatrix)
+        );
+        if (nullptr == pMesh)
+            return E_FAIL;
+        m_Meshes.push_back(pMesh);
+    }
+    return S_OK;
+}
+
+HRESULT CModel::Ready_Materials(const _char* pModelFilePath,const vector<MaterialInfoBin>& binMaterials)
+{
+    m_iNumMaterials = static_cast<_uint>(binMaterials.size());
+    m_Materials.reserve(m_iNumMaterials);
+
+    for (size_t i = 0; i < m_iNumMaterials; ++i)
+    {
+        // BIN용 생성자 또는 별도 Create 함수 필요 (경로만 전달)
+        CMeshMaterial* pMeshMaterial = CMeshMaterial::Create(m_pDevice, m_pContext, pModelFilePath, binMaterials[i]);
+        if (nullptr == pMeshMaterial)
+            return E_FAIL;
+
+        m_Materials.push_back(pMeshMaterial);
+    }
+
+    return S_OK;
+}
+
+HRESULT CModel::Ready_Bones(const vector<BoneInfoBin>& binBones, _int iParentIndex)
+{
+    m_Bones.clear();
+    m_Bones.reserve(binBones.size());
+
+    // 1. 본들 모두 생성
+    for (size_t i = 0; i < binBones.size(); ++i)
+    {
+        // CBone 생성자/팩토리에서 BoneInfoBin을 받아서 모든 정보 셋팅하도록 구현
+        CBone* pBone = CBone::Create(binBones[i], iParentIndex);
+        if (nullptr == pBone)
+            return E_FAIL;
+        m_Bones.push_back(pBone);
+    }
+}
+
+HRESULT CModel::Ready_Animations(std::ifstream& ifs)
+{
+    uint32_t numAnims = 0;
+    ifs.read((char*)&numAnims, sizeof(numAnims));
+    m_iNumAnimations = numAnims;
+    m_Animations.reserve(numAnims);
+
+    for (uint32_t i = 0; i < numAnims; ++i)
+    {
+        AnimInfoBin animBin = {};
+        ifs.read((char*)&animBin, sizeof(AnimInfoBin));
+
+        // --- 채널 정보 읽기 ---
+        std::vector<ChannelInfoBin> channelBins(animBin.channelCount);
+        ifs.read((char*)channelBins.data(), sizeof(ChannelInfoBin) * animBin.channelCount);
+
+        // --- 키프레임 전체 읽기 ---
+        std::vector<KeyFrameBin> keyframeBins;
+        keyframeBins.reserve(0);
+        for (uint32_t c = 0; c < animBin.channelCount; ++c) {
+            uint32_t kfCount = channelBins[c].keyframeCount;
+            size_t oldSize = keyframeBins.size();
+            keyframeBins.resize(oldSize + kfCount);
+            ifs.read((char*)&keyframeBins[oldSize], sizeof(KeyFrameBin) * kfCount);
+        }
+
+        // --- BIN용 애니 생성 ---
+        CAnimation* pAnim = CAnimation::Create(animBin, channelBins, keyframeBins, m_Bones);
+        if (!pAnim)
+            return E_FAIL;
+        m_Animations.push_back(pAnim);
+    }
+    return S_OK;
+}
 
 
-CModel* CModel::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, MODELTYPE eModelType, const _char* pModelFilePath, _fmatrix PreTransformMatrix)
+
+CModel* CModel::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, MODELTYPE eModelType, FILETYPE eFileType,const _char* pModelFilePath, _fmatrix PreTransformMatrix)
 {
     CModel* pInstance = new CModel(pDevice, pContext);
 
-    if (FAILED(pInstance->Initialize_Prototype(eModelType, pModelFilePath, PreTransformMatrix)))
+    if (FAILED(pInstance->Initialize_Prototype(eModelType, eFileType ,pModelFilePath, PreTransformMatrix)))
     {
         MSG_BOX(TEXT("Failed to Created : CModel"));
         Safe_Release(pInstance);

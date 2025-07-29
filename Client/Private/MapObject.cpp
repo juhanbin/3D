@@ -111,9 +111,6 @@ HRESULT CMapObject::Ready_Components()
     const wchar_t* modelProto = nullptr;
     switch (m_eType)
     {
-    case EObjectType::MONSTER:
-        modelProto = TEXT("Prototype_Component_Model_Hero");
-        break;
     case EObjectType::ROCK_AA:
         modelProto = TEXT("Prototype_Component_Model_Rock_AA");
         break;

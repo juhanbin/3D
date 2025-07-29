@@ -66,6 +66,50 @@ HRESULT CMeshMaterial::Initialize(const _char* pModelFilePath, const aiMaterial*
 	return S_OK;
 }
 
+HRESULT CMeshMaterial::Initialize(const _char* pModelFilePath, const MaterialInfoBin& bin)
+{
+	// basecolor, normal, arm 각각의 경로 생성
+	const char* texPaths[3] = { bin.basecolor, bin.normal, bin.arm };
+
+	for (int i = 0; i < 3; ++i)
+	{
+		if (strlen(texPaths[i]) == 0)
+			continue; // 경로 없으면 스킵
+
+		// 전체 경로 생성 (pModelFilePath = BIN 파일 경로, texPaths[i] = 텍스처 파일명)
+		// BIN 구조에 따라 pModelFilePath가 폴더일 수도, 파일 전체일 수도 있음!
+		// 여기선 BIN 파일이 저장된 디렉토리에 텍스처가 있다고 가정
+		char fullPath[MAX_PATH] = {};
+		char szDrive[MAX_PATH] = {}, szDir[MAX_PATH] = {};
+		_splitpath_s(pModelFilePath, szDrive, MAX_PATH, szDir, MAX_PATH, nullptr, 0, nullptr, 0);
+		strcpy_s(fullPath, szDrive);
+		strcat_s(fullPath, szDir);
+		strcat_s(fullPath, texPaths[i]);
+
+		// 유니코드로 변환
+		wchar_t wFullPath[MAX_PATH] = {};
+		MultiByteToWideChar(CP_ACP, 0, fullPath, -1, wFullPath, MAX_PATH);
+
+		// 확장자 추출
+		const char* ext = strrchr(texPaths[i], '.');
+		HRESULT hr = S_OK;
+		ID3D11ShaderResourceView* pSRV = nullptr;
+
+		if (ext && !_stricmp(ext, ".dds"))
+			hr = CreateDDSTextureFromFile(m_pDevice, wFullPath, nullptr, &pSRV);
+		else
+			hr = CreateWICTextureFromFile(m_pDevice, wFullPath, nullptr, &pSRV);
+
+		if (FAILED(hr))
+			return E_FAIL;
+
+		// 텍스처 타입별 인덱스(0=basecolor, 1=normal, 2=arm) → m_SRVs[텍스처타입]에 push
+		m_SRVs[i].push_back(pSRV);
+	}
+
+	return S_OK;
+}
+
 HRESULT CMeshMaterial::Bind_Resources(CShader* pShader, const _char* pConstantName, aiTextureType eTextureType, _uint iIndex)
 {
 	if (iIndex >= m_SRVs[eTextureType].size())
@@ -84,6 +128,17 @@ CMeshMaterial* CMeshMaterial::Create(ID3D11Device* pDevice, ID3D11DeviceContext*
 		Safe_Release(pInstance);
 	}
 
+	return pInstance;
+}
+
+CMeshMaterial* CMeshMaterial::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, const _char* pModelFilePath, const MaterialInfoBin& bin)
+{
+	CMeshMaterial* pInstance = new CMeshMaterial(pDevice, pContext);
+	if (FAILED(pInstance->Initialize(pModelFilePath,bin)))
+	{
+		MSG_BOX(TEXT("Failed to Create: CMeshMaterial (BIN)"));
+		Safe_Release(pInstance);
+	}
 	return pInstance;
 }
 

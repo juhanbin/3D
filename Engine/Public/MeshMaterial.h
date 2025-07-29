@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Base.h"
-
+#include "BinType.h"
 NS_BEGIN(Engine)
 
 class CMeshMaterial final : public CBase
@@ -12,6 +12,7 @@ private:
 
 public:
 	HRESULT Initialize(const _char* pModelFilePath, const aiMaterial* pAIMaterial);
+	HRESULT Initialize(const _char* pModelFilePath, const MaterialInfoBin& bin);
 	HRESULT Bind_Resources(class CShader* pShader, const _char* pConstantName, aiTextureType eTextureType, _uint iIndex);
 private:
 	ID3D11Device* m_pDevice = { nullptr };
@@ -20,8 +21,8 @@ private:
 
 public:
 	static CMeshMaterial* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, const _char* pModelFilePath, const aiMaterial* pAIMaterial);
+	static CMeshMaterial* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, const _char* pModelFilePath, const MaterialInfoBin& bin);
 	virtual void Free() override;
 };
 
 NS_END
-

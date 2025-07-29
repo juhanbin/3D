@@ -20,12 +20,18 @@ CAnimation::CAnimation(const CAnimation& Prototype)
 
 HRESULT CAnimation::Initialize(const aiAnimation* pAIAnimation, const vector<class CBone*>& Bones)
 {
+
     m_fDuration = pAIAnimation->mDuration;
     m_fTickPerSecond = pAIAnimation->mTicksPerSecond;
 
     m_iNumChannels = pAIAnimation->mNumChannels;
 
     m_CurrentKeyFrameIndices.resize(m_iNumChannels);
+
+    char buf[256];
+    sprintf_s(buf, "[CAnimation] Animation 생성: name=%s, Duration=%.3f, TicksPerSec=%.3f, ChannelCount=%d\n",
+        pAIAnimation->mName.data, m_fDuration, m_fTickPerSecond, m_iNumChannels);
+    //OutputDebugStringA(buf);
 
     for (size_t i = 0; i < m_iNumChannels; i++)
     {
@@ -36,6 +42,33 @@ HRESULT CAnimation::Initialize(const aiAnimation* pAIAnimation, const vector<cla
         m_Channels.push_back(pChannel);
     }
 
+    return S_OK;
+}
+
+HRESULT CAnimation::Initialize(const AnimInfoBin& animInfo, const std::vector<ChannelInfoBin>& channels, const std::vector<KeyFrameBin>& keyframes, const std::vector<class CBone*>& Bones)
+{
+    m_fDuration = static_cast<float>(animInfo.duration);
+    m_fTickPerSecond = static_cast<float>(animInfo.ticksPerSecond);
+    m_iNumChannels = animInfo.channelCount;
+    m_CurrentKeyFrameIndices.resize(m_iNumChannels);
+
+    size_t keyframeOffset = 0;
+    for (size_t i = 0; i < m_iNumChannels; ++i)
+    {
+        // 채널별 키프레임 분리
+        const ChannelInfoBin& chInfo = channels[i];
+        std::vector<KeyFrameBin> chKeyframes(
+            keyframes.begin() + keyframeOffset,
+            keyframes.begin() + keyframeOffset + chInfo.keyframeCount
+        );
+        keyframeOffset += chInfo.keyframeCount;
+
+        // BIN용 CChannel 생성
+        CChannel* pChannel = CChannel::Create(chInfo, chKeyframes, Bones);
+        if (!pChannel)
+            return E_FAIL;
+        m_Channels.push_back(pChannel);
+    }
     return S_OK;
 }
 
@@ -75,6 +108,19 @@ CAnimation* CAnimation::Create(const aiAnimation* pAIAnimation, const vector<cla
 
     return pInstance;
 }
+
+CAnimation* CAnimation::Create(const AnimInfoBin& animInfo, const std::vector<ChannelInfoBin>& channels, const std::vector<KeyFrameBin>& keyframes, const std::vector<class CBone*>& Bones)
+{
+    CAnimation* pInstance = new CAnimation();
+    if (FAILED(pInstance->Initialize(animInfo, channels, keyframes, Bones)))
+    {
+        MSG_BOX(TEXT("Failed to Created : CAnimation (BIN)"));
+        Safe_Release(pInstance);
+    }
+    return pInstance;
+}
+
+
 
 CAnimation* CAnimation::Clone()
 {

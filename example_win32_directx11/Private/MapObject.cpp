@@ -61,11 +61,22 @@ HRESULT CMapObject::Initialize(void* pArg)
     if (FAILED(Ready_Components()))
         return E_FAIL;
 
+    if ((m_eType == EObjectType::MONSTER))
+    {
+        m_pModelCom->Set_Animation(0, true);
+    }
+
     return S_OK;
 }
 
 void CMapObject::Priority_Update(_float fTimeDelta) {}
-void CMapObject::Update(_float fTimeDelta) {}
+void CMapObject::Update(_float fTimeDelta) 
+{
+    if ((m_eType == EObjectType::MONSTER))
+    {
+        m_pModelCom->Play_Animation(fTimeDelta);
+    }
+}
 void CMapObject::Late_Update(_float fTimeDelta)
 {
     if (FAILED(m_pGameInstance->Add_RenderGroup(RENDERGROUP::NONBLEND, this)))
@@ -78,20 +89,17 @@ HRESULT CMapObject::Render()
         return E_FAIL;
 
     _uint iNumMeshes = m_pModelCom->Get_NumMeshes();
-    if (iNumMeshes == 0)
-    {
-        OutputDebugStringA("MapObject Model의 Mesh가 0개입니다!\n");
-        return E_FAIL;
-    }
 
     for (size_t i = 0; i < iNumMeshes; i++)
     {
         if (FAILED(m_pModelCom->Bind_Materials(m_pShaderCom, "g_DiffuseTexture", i, aiTextureType_DIFFUSE, 0)))
-        {
-            OutputDebugStringA("머티리얼 바인딩 실패!\n");
             return E_FAIL;
-        }
 
+        if (m_eType == EObjectType::MONSTER)
+        {
+            if (FAILED(m_pModelCom->Bind_BoneMatrices(m_pShaderCom, "g_BoneMatrices", i)))
+                return E_FAIL;
+        }
         m_pShaderCom->Begin(0);
         m_pModelCom->Render(i);
     }
@@ -101,20 +109,22 @@ HRESULT CMapObject::Render()
 
 HRESULT CMapObject::Ready_Components()
 {
-    // 공통 셰이더
-    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Shader_VtxMesh"),
-        TEXT("Com_Shader"), reinterpret_cast<CComponent**>(&m_pShaderCom), nullptr)))
-        return E_FAIL;
-
-    // 오브젝트 타입별로 모델만 다르게
     const wchar_t* modelProto = nullptr;
     switch (m_eType)
     {
     case EObjectType::MONSTER:
         modelProto = TEXT("Prototype_Component_Model_Hero");
+
+        if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Shader_VtxAnimMesh"),
+            TEXT("Com_Shader"), reinterpret_cast<CComponent**>(&m_pShaderCom), nullptr)))
+            return E_FAIL;
         break;
     case EObjectType::ROCK_AA:
         modelProto = TEXT("Prototype_Component_Model_Rock_AA");
+
+        if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Shader_VtxMesh"),
+            TEXT("Com_Shader"), reinterpret_cast<CComponent**>(&m_pShaderCom), nullptr)))
+            return E_FAIL;
         break;
     default:
         OutputDebugStringA("Unknown EObjectType in Ready_Components!\n");

@@ -65,7 +65,7 @@ inline uint32_t max3(uint32_t a, uint32_t b, uint32_t c)
 {
     return max(max(a, b), c);
 }
-
+enum class FILETYPE { FBX, BIN };
 #pragma pack(push, 1)
 struct SimpleVertex {
     float pos[3];

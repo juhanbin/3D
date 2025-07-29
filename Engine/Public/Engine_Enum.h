@@ -12,6 +12,8 @@ namespace Engine
 
 	enum class MOUSEKEYSTATE { LB, RB, WB, END };
 	enum class MOUSEMOVESTATE { X, Y, WHEEL, END };
+
+	enum class FILETYPE {FBX,BIN};
 }
 
 #endif // Engine_Enum_h__

@@ -26,8 +26,16 @@ namespace Engine
 		XMFLOAT4	vDirection;
 		XMFLOAT4	vPosition;
 		float		fRange;
-
 	}LIGHT_DESC;
+
+	typedef struct tagKeyFrame
+	{
+		XMFLOAT3	vScale;
+		XMFLOAT4	vRotation;
+		XMFLOAT3	vTranslation;
+
+		float		fTrackPosition;
+	}KEYFRAME;
 
 	typedef struct tagVertexPositionTexcoord
 	{
@@ -72,6 +80,7 @@ namespace Engine
 			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 48, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		};
 	}VTXMESH;
+
 	typedef struct tagVertexAnimMesh
 	{
 		XMFLOAT3		vPosition;

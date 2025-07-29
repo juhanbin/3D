@@ -5,6 +5,8 @@
 #include <d3d11.h>
 #include <DirectXMath.h>
 #include <d3dcompiler.h>
+#include <DirectXCollision.h>
+
 
 #define DIRECTINPUT_VERSION 0x0800
 #include <dinput.h>
@@ -27,6 +29,12 @@ using namespace DirectX;
 #include <unordered_map>
 #include <ctime>
 using namespace std;
+
+
+namespace Engine
+{
+	static const unsigned int g_iMaxNumBones = 512;
+}
 
 #include "Engine_Enum.h"
 #include "Engine_Macro.h"

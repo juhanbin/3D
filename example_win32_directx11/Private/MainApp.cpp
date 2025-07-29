@@ -419,25 +419,57 @@ void CMainApp::ExportModelToBin_Anim(const MapObject& obj, const char* binPath)
         for (uint32_t i = 0; i < matCount; ++i) {
             aiMaterial* material = m_pAIScene->mMaterials[i];
             aiString path;
-            material->GetTexture(aiTextureType_DIFFUSE, 0, &path);
-            sprintf(buf, "  Material[%u] Diffuse: %s\n", i, path.C_Str());
-            OutputDebugStringA(buf);
             MaterialInfo matInfo{};
-            if (material->GetTexture(aiTextureType_DIFFUSE, 0, &path) == AI_SUCCESS)
-                strcpy_s(matInfo.basecolor, path.C_Str());
-            if (material->GetTexture(aiTextureType_NORMALS, 0, &path) == AI_SUCCESS)
-                strcpy_s(matInfo.normal, path.C_Str());
+
+            // basecolor
+            if (material->GetTexture(aiTextureType_DIFFUSE, 0, &path) == AI_SUCCESS) {
+                std::string texPath = path.C_Str();
+                std::replace(texPath.begin(), texPath.end(), '#', '/');
+                strcpy_s(matInfo.basecolor, texPath.c_str());
+                sprintf(buf, "  Material[%u] Diffuse: %s -> %s\n", i, path.C_Str(), texPath.c_str());
+                OutputDebugStringA(buf);
+            }
+            else {
+                sprintf(buf, "  Material[%u] Diffuse: (none)\n", i);
+                OutputDebugStringA(buf);
+            }
+
+            // normal
+            if (material->GetTexture(aiTextureType_NORMALS, 0, &path) == AI_SUCCESS) {
+                std::string texPath = path.C_Str();
+                std::replace(texPath.begin(), texPath.end(), '#', '/');
+                strcpy_s(matInfo.normal, texPath.c_str());
+                sprintf(buf, "  Material[%u] Normal: %s -> %s\n", i, path.C_Str(), texPath.c_str());
+                OutputDebugStringA(buf);
+            }
+            else {
+                sprintf(buf, "  Material[%u] Normal: (none)\n", i);
+                OutputDebugStringA(buf);
+            }
+
+            // arm (찾아서 있으면)
+            matInfo.arm[0] = 0;
             for (int j = 0; j < material->GetTextureCount(aiTextureType_UNKNOWN); ++j) {
                 if (material->GetTexture(aiTextureType_UNKNOWN, j, &path) == AI_SUCCESS) {
                     if (strstr(path.C_Str(), "ARM") || strstr(path.C_Str(), "arm")) {
-                        strcpy_s(matInfo.arm, path.C_Str());
+                        std::string texPath = path.C_Str();
+                        std::replace(texPath.begin(), texPath.end(), '#', '/');
+                        strcpy_s(matInfo.arm, texPath.c_str());
+                        sprintf(buf, "  Material[%u] ARM: %s -> %s\n", i, path.C_Str(), texPath.c_str());
+                        OutputDebugStringA(buf);
                         break;
                     }
                 }
             }
+            if (matInfo.arm[0] == 0) {
+                sprintf(buf, "  Material[%u] ARM: (none)\n", i);
+                OutputDebugStringA(buf);
+            }
+
             ofs.write((char*)&matInfo, sizeof(MaterialInfo));
         }
     }
+
 
     // ---- 3. 본 저장 ----
     std::vector<BoneInfo> bones;
@@ -630,28 +662,59 @@ void CMainApp::ExportModelToBin_NonAnim(const MapObject& obj, const char* binPat
     {
         char buf[256];
         uint32_t matCount = m_pAIScene->mNumMaterials;
-        sprintf(buf, "[BIN/NonAnim] Material Count: %u\n", matCount);
+        sprintf(buf, "[BIN/Anim] Material Count: %u\n", matCount);
         OutputDebugStringA(buf);
         ofs.write((char*)&matCount, sizeof(matCount));
         for (uint32_t i = 0; i < matCount; ++i) {
             aiMaterial* material = m_pAIScene->mMaterials[i];
             aiString path;
-            material->GetTexture(aiTextureType_DIFFUSE, 0, &path);
-            sprintf(buf, "  Material[%u] Diffuse: %s\n", i, path.C_Str());
-            OutputDebugStringA(buf);
             MaterialInfo matInfo{};
-            if (material->GetTexture(aiTextureType_DIFFUSE, 0, &path) == AI_SUCCESS)
-                strcpy_s(matInfo.basecolor, path.C_Str());
-            if (material->GetTexture(aiTextureType_NORMALS, 0, &path) == AI_SUCCESS)
-                strcpy_s(matInfo.normal, path.C_Str());
+
+            // basecolor
+            if (material->GetTexture(aiTextureType_DIFFUSE, 0, &path) == AI_SUCCESS) {
+                std::string texPath = path.C_Str();
+                std::replace(texPath.begin(), texPath.end(), '#', '/');
+                strcpy_s(matInfo.basecolor, texPath.c_str());
+                sprintf(buf, "  Material[%u] Diffuse: %s -> %s\n", i, path.C_Str(), texPath.c_str());
+                OutputDebugStringA(buf);
+            }
+            else {
+                sprintf(buf, "  Material[%u] Diffuse: (none)\n", i);
+                OutputDebugStringA(buf);
+            }
+
+            // normal
+            if (material->GetTexture(aiTextureType_NORMALS, 0, &path) == AI_SUCCESS) {
+                std::string texPath = path.C_Str();
+                std::replace(texPath.begin(), texPath.end(), '#', '/');
+                strcpy_s(matInfo.normal, texPath.c_str());
+                sprintf(buf, "  Material[%u] Normal: %s -> %s\n", i, path.C_Str(), texPath.c_str());
+                OutputDebugStringA(buf);
+            }
+            else {
+                sprintf(buf, "  Material[%u] Normal: (none)\n", i);
+                OutputDebugStringA(buf);
+            }
+
+            // arm (찾아서 있으면)
+            matInfo.arm[0] = 0;
             for (int j = 0; j < material->GetTextureCount(aiTextureType_UNKNOWN); ++j) {
                 if (material->GetTexture(aiTextureType_UNKNOWN, j, &path) == AI_SUCCESS) {
                     if (strstr(path.C_Str(), "ARM") || strstr(path.C_Str(), "arm")) {
-                        strcpy_s(matInfo.arm, path.C_Str());
+                        std::string texPath = path.C_Str();
+                        std::replace(texPath.begin(), texPath.end(), '#', '/');
+                        strcpy_s(matInfo.arm, texPath.c_str());
+                        sprintf(buf, "  Material[%u] ARM: %s -> %s\n", i, path.C_Str(), texPath.c_str());
+                        OutputDebugStringA(buf);
                         break;
                     }
                 }
             }
+            if (matInfo.arm[0] == 0) {
+                sprintf(buf, "  Material[%u] ARM: (none)\n", i);
+                OutputDebugStringA(buf);
+            }
+
             ofs.write((char*)&matInfo, sizeof(MaterialInfo));
         }
     }

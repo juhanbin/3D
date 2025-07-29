@@ -64,6 +64,51 @@ HRESULT CMesh::Initialize_Prototype(MODELTYPE eType, const aiMesh* pAIMesh, cons
 	return S_OK;
 }
 
+HRESULT CMesh::Initialize_Prototype(
+	MODELTYPE eType,
+	const vector<SimpleVertexBin>& verts,
+	const vector<uint32_t>& indices,
+	const vector<CBone*>& Bones,
+	_fmatrix PreTransformMatrix
+) {
+	strcpy_s(m_szName, "BinMesh");
+
+	m_iMaterialIndex = 0; // BIN에 별도 저장된 게 있으면 따로 세팅
+	m_iNumVertices = (UINT)verts.size();
+	m_iNumIndices = (UINT)indices.size();
+	m_iIndexStride = sizeof(uint32_t);
+	m_iNumVertexBuffers = 1;
+	m_eIndexFormat = DXGI_FORMAT_R32_UINT;
+	m_ePrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+
+	HRESULT hr;
+	if (eType == MODELTYPE::NONANIM)
+		hr = Ready_Vertices_For_NonAnim(verts, PreTransformMatrix);
+	else
+		hr = Ready_Vertices_For_Anim(verts, Bones);
+
+	if (FAILED(hr))
+		return E_FAIL;
+
+	// 인덱스 버퍼 생성
+	D3D11_BUFFER_DESC IBDesc{};
+	IBDesc.ByteWidth = m_iNumIndices * m_iIndexStride;
+	IBDesc.Usage = D3D11_USAGE_DEFAULT;
+	IBDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	IBDesc.CPUAccessFlags = 0;
+	IBDesc.MiscFlags = 0;
+	IBDesc.StructureByteStride = m_iIndexStride;
+
+	D3D11_SUBRESOURCE_DATA IBInit{};
+	IBInit.pSysMem = indices.data();
+
+	if (FAILED(m_pDevice->CreateBuffer(&IBDesc, &IBInit, &m_pIB)))
+		return E_FAIL;
+
+	return S_OK;
+}
+
+
 HRESULT CMesh::Initialize(void* pArg)
 {
 	return S_OK;
@@ -119,6 +164,35 @@ HRESULT CMesh::Ready_Vertices_For_NonAnim(const aiMesh* pAIMesh, _fmatrix PreTra
 
 	return S_OK;
 }
+
+HRESULT CMesh::Ready_Vertices_For_NonAnim(const vector<SimpleVertexBin>& verts, _fmatrix PreTransformMatrix)
+{
+	m_iVertexStride = sizeof(SimpleVertexBin);
+
+	// BIN에서 좌표 변환은 저장 당시 이미 적용된 것이 일반적(추가변환 불필요)
+	// 필요시 여기에 변환 넣기
+
+	// 버텍스 버퍼 생성
+	D3D11_BUFFER_DESC VBDesc{};
+	VBDesc.ByteWidth = (UINT)(verts.size() * sizeof(SimpleVertexBin));
+	VBDesc.Usage = D3D11_USAGE_DEFAULT;
+	VBDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	VBDesc.CPUAccessFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA VBInit{};
+	VBInit.pSysMem = verts.data();
+
+	if (FAILED(m_pDevice->CreateBuffer(&VBDesc, &VBInit, &m_pVB)))
+		return E_FAIL;
+
+	// m_vecPositions 세팅
+	m_vecPositions.clear();
+	for (const auto& v : verts)
+		m_vecPositions.push_back(_float3(v.pos[0], v.pos[1], v.pos[2]));
+
+	return S_OK;
+}
+
 
 HRESULT CMesh::Ready_Vertices_For_Anim(const aiMesh* pAIMesh, const vector<CBone*>& Bones)
 {
@@ -239,6 +313,34 @@ HRESULT CMesh::Ready_Vertices_For_Anim(const aiMesh* pAIMesh, const vector<CBone
 	return S_OK;
 }
 
+HRESULT CMesh::Ready_Vertices_For_Anim(const vector<SimpleVertexBin>& verts, const vector<CBone*>& Bones)
+{
+	m_iVertexStride = sizeof(SimpleVertexBin);
+
+	// 버텍스 버퍼 생성
+	D3D11_BUFFER_DESC VBDesc{};
+	VBDesc.ByteWidth = (UINT)(verts.size() * sizeof(SimpleVertexBin));
+	VBDesc.Usage = D3D11_USAGE_DEFAULT;
+	VBDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	VBDesc.CPUAccessFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA VBInit{};
+	VBInit.pSysMem = verts.data();
+
+	if (FAILED(m_pDevice->CreateBuffer(&VBDesc, &VBInit, &m_pVB)))
+		return E_FAIL;
+
+	m_vecPositions.clear();
+	for (const auto& v : verts)
+		m_vecPositions.push_back(_float3(v.pos[0], v.pos[1], v.pos[2]));
+
+	// BIN의 본 매핑은 로딩시점에 m_BoneIndices, m_OffsetMatrices 등 복구
+	// BIN에서 뼈 오프셋/인덱스 별도 저장했다면 별도 복구 함수에서 채우기
+
+	return S_OK;
+}
+
+
 
 CMesh* CMesh::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, MODELTYPE eType, const aiMesh* pAIMesh, const vector<CBone*>& Bones, _fmatrix PreTransformMatrix)
 {
@@ -247,6 +349,19 @@ CMesh* CMesh::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, MODEL
 	if (FAILED(pInstance->Initialize_Prototype(eType, pAIMesh, Bones, PreTransformMatrix)))
 	{
 		MSG_BOX(TEXT("Failed to Created : CMesh"));
+		Safe_Release(pInstance);
+	}
+
+	return pInstance;
+}
+
+CMesh* CMesh::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, MODELTYPE eType,const vector<SimpleVertexBin>& verts, const vector<uint32_t>& indices, const vector<CBone*>& Bones, _fmatrix PreTransformMatrix)
+{
+	CMesh* pInstance = new CMesh(pDevice, pContext);
+
+	if (FAILED(pInstance->Initialize_Prototype(eType, verts, indices, Bones, PreTransformMatrix)))
+	{
+		MSG_BOX(TEXT("Failed to Created : CMesh(Bin)"));
 		Safe_Release(pInstance);
 	}
 
