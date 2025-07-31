@@ -37,6 +37,7 @@ HRESULT CMapObject::Initialize(void* pArg)
             XMConvertToRadians(pDesc->vRot.z));
         XMMATRIX matTrans = XMMatrixTranslation(pDesc->vPos.x, pDesc->vPos.y, pDesc->vPos.z);
         XMMATRIX matWorld = matScale * matRot * matTrans;
+        //XMMATRIX matWorld = XMMatrixIdentity();
         XMFLOAT4X4 matWorld4x4;
         XMStoreFloat4x4(&matWorld4x4, matWorld);
 
@@ -45,13 +46,13 @@ HRESULT CMapObject::Initialize(void* pArg)
         m_pTransformCom->Set_State(STATE::LOOK, XMLoadFloat4((XMFLOAT4*)&matWorld4x4.m[2]));
         m_pTransformCom->Set_State(STATE::POSITION, XMLoadFloat4((XMFLOAT4*)&matWorld4x4.m[3]));
 
-        char szDbg[256];
+        /*char szDbg[256];
         sprintf_s(szDbg, sizeof(szDbg), "type=%d scale=(%.2f,%.2f,%.2f) rot=(%.2f,%.2f,%.2f) pos=(%.2f,%.2f,%.2f)\n",
             (int)m_eType,
             pDesc->vScale.x, pDesc->vScale.y, pDesc->vScale.z,
             pDesc->vRot.x, pDesc->vRot.y, pDesc->vRot.z,
             pDesc->vPos.x, pDesc->vPos.y, pDesc->vPos.z);
-        OutputDebugStringA(szDbg);
+        OutputDebugStringA(szDbg);*/
     }
 
     if (FAILED(Ready_Components()))
@@ -76,17 +77,14 @@ HRESULT CMapObject::Render()
     _uint iNumMeshes = m_pModelCom->Get_NumMeshes();
     if (iNumMeshes == 0)
     {
-        OutputDebugStringA("MapObject Model의 Mesh가 0개입니다!\n");
+        //OutputDebugStringA("MapObject Model의 Mesh가 0개입니다!\n");
         return E_FAIL;
     }
 
     for (size_t i = 0; i < iNumMeshes; i++)
     {
-        if (FAILED(m_pModelCom->Bind_Materials(m_pShaderCom, "g_DiffuseTexture", i, aiTextureType_DIFFUSE, 0)))
-        {
-            OutputDebugStringA("머티리얼 바인딩 실패!\n");
-            return E_FAIL;
-        }
+        m_pModelCom->Bind_Materials(m_pShaderCom, "g_DiffuseTexture", i, aiTextureType_DIFFUSE, 0);
+        //m_pModelCom->Bind_Materials(m_pShaderCom, "g_NormalTexture", i, aiTextureType_NORMALS, 0);
         m_pShaderCom->Begin(0);
         m_pModelCom->Render(i);
     }

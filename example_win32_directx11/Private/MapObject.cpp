@@ -1,4 +1,4 @@
-#include "MapObject.h"
+ï»¿#include "MapObject.h"
 #include "GameInstance.h"
 
 CMapObject::CMapObject(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
@@ -27,16 +27,16 @@ HRESULT CMapObject::Initialize(void* pArg)
         MAPOBJECT_DESC* pDesc = static_cast<MAPOBJECT_DESC*>(pArg);
         m_eType = pDesc->type;
 
-        // Å©±â
+        // í¬ê¸°
         XMMATRIX matScale = XMMatrixScaling(pDesc->vScale.x, pDesc->vScale.y, pDesc->vScale.z);
 
-        // È¸Àü
+        // íšŒì „
         XMMATRIX matRot = XMMatrixRotationRollPitchYaw(
             XMConvertToRadians(pDesc->vRot.x),
             XMConvertToRadians(pDesc->vRot.y),
             XMConvertToRadians(pDesc->vRot.z));
 
-        // À§Ä¡
+        // ìœ„ì¹˜
         XMMATRIX matTrans = XMMatrixTranslation(pDesc->vPos.x, pDesc->vPos.y, pDesc->vPos.z);
 
         XMMATRIX matWorld = matScale * matRot * matTrans;
@@ -50,12 +50,12 @@ HRESULT CMapObject::Initialize(void* pArg)
         m_pTransformCom->Set_State(STATE::POSITION, XMLoadFloat4((XMFLOAT4*)&matWorld4x4.m[3]));
 
         char szDbg[256];
-        sprintf_s(szDbg, sizeof(szDbg), "type=%d scale=(%.2f,%.2f,%.2f) rot=(%.2f,%.2f,%.2f) pos=(%.2f,%.2f,%.2f)\n",
-            (int)m_eType,
-            pDesc->vScale.x, pDesc->vScale.y, pDesc->vScale.z,
-            pDesc->vRot.x, pDesc->vRot.y, pDesc->vRot.z,
-            pDesc->vPos.x, pDesc->vPos.y, pDesc->vPos.z);
-        OutputDebugStringA(szDbg);
+        //sprintf_s(szDbg, sizeof(szDbg), "type=%d scale=(%.2f,%.2f,%.2f) rot=(%.2f,%.2f,%.2f) pos=(%.2f,%.2f,%.2f)\n",
+        //    (int)m_eType,
+        //    pDesc->vScale.x, pDesc->vScale.y, pDesc->vScale.z,
+        //    pDesc->vRot.x, pDesc->vRot.y, pDesc->vRot.z,
+        //    pDesc->vPos.x, pDesc->vPos.y, pDesc->vPos.z);
+        //OutputDebugStringA(szDbg);
     }
 
     if (FAILED(Ready_Components()))

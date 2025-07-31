@@ -1,4 +1,4 @@
-#include "Model.h"
+Ôªø#include "Model.h"
 
 #include "Mesh.h"
 #include "Bone.h"
@@ -34,112 +34,93 @@ CModel::CModel(const CModel& Prototype)
         Safe_AddRef(pMaterial);
 }
 
-HRESULT CModel::Initialize_Prototype(MODELTYPE eModelType,FILETYPE eFileType, const _char* pModelFilePath, _fmatrix PreTransformMatrix)
+HRESULT CModel::Initialize_Prototype(MODELTYPE eModelType, FILETYPE eFileType, const _char* pModelFilePath, _fmatrix PreTransformMatrix)
 {
     m_eModelType = eModelType;
     XMStoreFloat4x4(&m_PreTransformMatrix, PreTransformMatrix);
 
+    char dbg[256];
+    sprintf_s(dbg, "[DEBUG] sizeof AnimInfo=%zu ChannelInfo=%zu KeyFrame=%zu\n",
+        sizeof(AnimInfo), sizeof(ChannelInfo), sizeof(KeyFrame));
+    OutputDebugStringA(dbg);
 
-    if (eFileType == FILETYPE::BIN) // Bin∆ƒ¿œ¿œ∂ß
+    if (eFileType == FILETYPE::BIN)
     {
         std::ifstream ifs(pModelFilePath, std::ios::binary);
         if (!ifs) {
-            OutputDebugStringA("[BIN] ∆ƒ¿œ ø≠±‚ Ω«∆–!\n");
+            OutputDebugStringA("[BIN] ÌååÏùº Ïó¥Í∏∞ Ïã§Ìå®!\n");
             return E_FAIL;
         }
-        if (!ifs)
-            return E_FAIL;
 
+        // ‚úÖ Mesh Count Ï∂úÎ†•
         if (eModelType == MODELTYPE::NONANIM)
         {
-            // 2. Mesh ¡§∫∏ ¿–±‚
-            if (FAILED(Ready_Meshes(ifs))) { // ∆ƒ¿œ Ω∫∆Æ∏≤ ≥—±Ë!
-                OutputDebugStringA("[BIN] Ready_Meshes Ω«∆– (NONANIM)\n");
+            if (FAILED(Ready_Meshes(ifs)))
                 return E_FAIL;
-            }
 
-            // 3. Material ¡§∫∏ ¿–±‚
             uint32_t materialCount = 0;
             ifs.read((char*)&materialCount, sizeof(materialCount));
-            {
-                char dbg[128];
-                sprintf_s(dbg, "BIN NONANIM materialCount = %u\n", materialCount);
-                OutputDebugStringA(dbg);
-            }
-            vector<MaterialInfoBin> binMaterials(materialCount);
-            ifs.read((char*)binMaterials.data(), sizeof(MaterialInfoBin) * materialCount);
-            for (size_t i = 0; i < binMaterials.size(); ++i) {
-                char dbg[256];
-                sprintf_s(dbg, "BIN Material[%zu] basecolor=%s, normal=%s, arm=%s\n",
-                    i, binMaterials[i].basecolor, binMaterials[i].normal, binMaterials[i].arm);
-                OutputDebugStringA(dbg);
-            }
+            sprintf_s(dbg, "[LOAD] MaterialCount=%u\n", materialCount);
+            OutputDebugStringA(dbg);
 
-            if (FAILED(Ready_Materials(pModelFilePath, binMaterials))) {
-                OutputDebugStringA("[BIN] Ready_Materials Ω«∆– (NONANIM)\n");
+            vector<MaterialInfo> binMaterials(materialCount);
+            ifs.read((char*)binMaterials.data(), sizeof(MaterialInfo) * materialCount);
+            if (FAILED(Ready_Materials(pModelFilePath, binMaterials)))
                 return E_FAIL;
-            }
         }
         else
         {
-            // 1. Bone ¡§∫∏ ¿–±‚
-            uint32_t boneCount = 0;
-            ifs.read((char*)&boneCount, sizeof(boneCount));
-            vector<BoneInfoBin> binBones(boneCount);
-            ifs.read((char*)binBones.data(), sizeof(BoneInfoBin) * boneCount);
+            // ‚úÖ Mesh ÏùΩÍ∏∞
+            if (FAILED(Ready_Meshes(ifs))) return E_FAIL;
 
-            if (FAILED(Ready_Bones(binBones, -1)))
-                return E_FAIL;
-
-            // 2. Mesh ¡§∫∏ ¿–±‚
-            if (FAILED(Ready_Meshes(ifs))) // ∆ƒ¿œ Ω∫∆Æ∏≤ ≥—±Ë!
-                return E_FAIL;
-
-            // 3. Material ¡§∫∏ ¿–±‚
+            // ‚úÖ Material ÏùΩÍ∏∞
             uint32_t materialCount = 0;
             ifs.read((char*)&materialCount, sizeof(materialCount));
-            vector<MaterialInfoBin> binMaterials(materialCount);
-            ifs.read((char*)binMaterials.data(), sizeof(MaterialInfoBin) * materialCount);
+            sprintf_s(dbg, "[LOAD] MaterialCount=%u\n", materialCount);
+            OutputDebugStringA(dbg);
 
-            if (FAILED(Ready_Materials(pModelFilePath, binMaterials)))
-                return E_FAIL;
+            vector<MaterialInfo> binMaterials(materialCount);
+            ifs.read((char*)binMaterials.data(), sizeof(MaterialInfo) * materialCount);
 
-            // 4. Animation ¡§∫∏ ¿–±‚
-            if (FAILED(Ready_Animations(ifs)))
-                return E_FAIL;
+            // ‚úÖ Bone ÏùΩÍ∏∞
+            uint32_t boneCount = 0;
+            ifs.read((char*)&boneCount, sizeof(boneCount));
+            sprintf_s(dbg, "[LOAD] BoneCount=%u sizeof(BoneInfo)=%zu\n", boneCount, sizeof(BoneInfo));
+            OutputDebugStringA(dbg);
+
+            vector<BoneInfo> binBones(boneCount);
+            ifs.read((char*)binBones.data(), sizeof(BoneInfo) * boneCount);
+            if (FAILED(Ready_Bones(binBones, -1))) return E_FAIL;
+
+            // ‚úÖ Animation ÏùΩÍ∏∞
+            if (FAILED(Ready_Animations(ifs))) return E_FAIL;
         }
     }
-
-    else // fbx∆ƒ¿œ¿œ∂ß
+    else
     {
-        _uint           iFlag = { aiProcess_ConvertToLeftHanded | aiProcessPreset_TargetRealtime_Fast };
+        OutputDebugStringA("[FBX] FBX ÌååÏùº Î°úÎìú ÏãúÏûë\n");
 
+        _uint iFlag = { aiProcess_ConvertToLeftHanded | aiProcessPreset_TargetRealtime_Fast };
         if (MODELTYPE::NONANIM == m_eModelType)
             iFlag |= aiProcess_PreTransformVertices;
 
         m_pAIScene = m_Importer.ReadFile(pModelFilePath, iFlag);
-        if (nullptr == m_pAIScene)
+        if (!m_pAIScene)
             return E_FAIL;
 
-        if (FAILED(Ready_Bones(m_pAIScene->mRootNode, -1)))
-            return E_FAIL;
+        sprintf_s(dbg, "[FBX] Meshes=%u Materials=%u Animations=%u\n",
+            m_pAIScene->mNumMeshes, m_pAIScene->mNumMaterials, m_pAIScene->mNumAnimations);
+        OutputDebugStringA(dbg);
 
-        if (FAILED(Ready_Meshes()))
-            return E_FAIL;
-
-        //XMMatrixRotationQuaternion();
-        //XMMatrixRotationRollPitchYaw();
-
-        if (FAILED(Ready_Materials(pModelFilePath)))
-            return E_FAIL;
-
-        if (FAILED(Ready_Animations()))
-            return E_FAIL;
+        if (FAILED(Ready_Bones(m_pAIScene->mRootNode, -1))) return E_FAIL;
+        if (FAILED(Ready_Meshes())) return E_FAIL;
+        if (FAILED(Ready_Materials(pModelFilePath))) return E_FAIL;
+        if (FAILED(Ready_Animations())) return E_FAIL;
     }
-    
 
     return S_OK;
 }
+
 
 HRESULT CModel::Initialize(void* pArg)
 {
@@ -151,13 +132,30 @@ HRESULT CModel::Bind_Materials(class CShader* pShader, const _char* pConstantNam
     if (iMeshIndex >= m_iNumMeshes)
         return E_FAIL;
 
-    _uint       iMaterialIndex = m_Meshes[iMeshIndex]->Get_MaterialIndex();
-
+    _uint iMaterialIndex = m_Meshes[iMeshIndex]->Get_MaterialIndex();
     if (m_iNumMaterials <= iMaterialIndex)
         return E_FAIL;
 
+    // Ïã§Ï†ú Î∞îÏù∏Îî© Ï†Ñ ÌÖçÏä§Ï≤ò Ï†ïÎ≥¥ Î°úÍ∑∏
+    //char dbg[256];
+    //sprintf_s(dbg, "Bind_Materials: MeshIndex=%u, MaterialIndex=%u, TextureType=%d, ConstantName=%s\n", iMeshIndex, iMaterialIndex, eTextureType, pConstantName);
+    //OutputDebugStringA(dbg);
+
+    char dbg[512];
+    const char* fileName = "";
+
+    if (eTextureType == aiTextureType_DIFFUSE)
+        fileName = m_Materials[iMaterialIndex]->GetDiffuseFileName().c_str();
+    else if (eTextureType == aiTextureType_NORMALS)
+        fileName = m_Materials[iMaterialIndex]->GetNormalFileName().c_str();
+
+    //sprintf_s(dbg,
+    //    "[Bind_Materials] Mesh=%u MatIndex=%u Slot=%s Type=%d File=%s\n",
+    //    iMeshIndex, iMaterialIndex, pConstantName, eTextureType, fileName);
+
     return m_Materials[iMaterialIndex]->Bind_Resources(pShader, pConstantName, eTextureType, iIndex);
 }
+
 
 HRESULT CModel::Bind_BoneMatrices(CShader* pShader, const _char* pConstantName, _uint iMeshIndex)
 {
@@ -171,11 +169,11 @@ _bool CModel::Play_Animation(_float fTimeDelta)
 {
     m_isFinished = false;
 
-    /* «ˆ¿Á Ω√∞£ø° ∏¬¥¬ ª¿¿« ªÛ≈¬¥Î∑Œ ∆Ø¡§ ª¿µÈ¿« TransformationMatrix∏¶ ∞ªΩ≈«ÿ¡ÿ¥Ÿ. */
+    /* ÌòÑÏû¨ ÏãúÍ∞ÑÏóê ÎßûÎäî ÎºàÏùò ÏÉÅÌÉúÎåÄÎ°ú ÌäπÏ†ï ÎºàÎì§Ïùò TransformationMatrixÎ•º Í∞±Ïã†Ìï¥Ï§ÄÎã§. */
     m_Animations[m_iCurrentAnimIndex]->Update_TransformationMatrices(m_Bones, m_isLoop, &m_isFinished, fTimeDelta);
 
 
-    /* πŸ≤„æﬂ«“ ª¿µÈ¿« Transforemation«‡∑ƒ¿Ã ∞ªΩ≈µ«æ˙¥Ÿ∏È, ¡§¡°µÈø°∞‘ ¡˜¡¢ ¿¸¥ﬁµ«æﬂ«“ CombindTransformationMatrix∏¶ ∏∏µÈæÓ¡ÿ¥Ÿ. */
+    /* Î∞îÍøîÏïºÌï† ÎºàÎì§Ïùò TransforemationÌñâÎ†¨Ïù¥ Í∞±Ïã†ÎêòÏóàÎã§Î©¥, Ï†ïÏ†êÎì§ÏóêÍ≤å ÏßÅÏ†ë Ï†ÑÎã¨ÎêòÏïºÌï† CombindTransformationMatrixÎ•º ÎßåÎì§Ïñ¥Ï§ÄÎã§. */
     for (auto& pBone : m_Bones)
     {
         pBone->Update_CombinedTransformationMatrix(m_PreTransformMatrix, m_Bones);
@@ -190,11 +188,11 @@ void CModel::ComputeBoundingBox(DirectX::BoundingBox& outBox) const
 
     bool first = true;
     XMFLOAT3 vMin{}, vMax{};
-    // ∏µÁ ∏ﬁΩ√ º¯»∏ (m_Meshes ƒ¡≈◊¿Ã≥  µÓ)
-    for (const auto& mesh : m_Meshes)  // m_Meshes¥¬ ∏ﬁΩ√ ∏ÆΩ∫∆Æ(vector µÓ)
+    // Î™®Îì† Î©îÏãú ÏàúÌöå (m_Meshes Ïª®ÌÖåÏù¥ÎÑà Îì±)
+    for (const auto& mesh : m_Meshes)  // m_MeshesÎäî Î©îÏãú Î¶¨Ïä§Ìä∏(vector Îì±)
     {
         const auto& positions = mesh->GetPositions();
-        // ∏ﬁΩ√¿« πˆ≈ÿΩ∫ πËø≠ º¯»∏ (ø©±‚º± float3 ∆˜∏À ∞°¡§)
+        // Î©îÏãúÏùò Î≤ÑÌÖçÏä§ Î∞∞Ïó¥ ÏàúÌöå (Ïó¨Í∏∞ÏÑ† float3 Ìè¨Îß∑ Í∞ÄÏ†ï)
         for (const auto& v : positions)
         {
             if (first) {
@@ -211,7 +209,7 @@ void CModel::ComputeBoundingBox(DirectX::BoundingBox& outBox) const
             }
         }
     }
-    // min/maxø°º≠ π⁄Ω∫ ª˝º∫
+    // min/maxÏóêÏÑú Î∞ïÏä§ ÏÉùÏÑ±
     XMFLOAT3 center = { (vMin.x + vMax.x) * 0.5f, (vMin.y + vMax.y) * 0.5f, (vMin.z + vMax.z) * 0.5f };
     XMFLOAT3 extents = { (vMax.x - vMin.x) * 0.5f, (vMax.y - vMin.y) * 0.5f, (vMax.z - vMin.z) * 0.5f };
     outBox = BoundingBox(center, extents);
@@ -291,9 +289,9 @@ HRESULT CModel::Ready_Bones(const aiNode* pAINode, _int iParentIndex)
 
 HRESULT CModel::Ready_Animations()
 {
-    /* Ω√∞£ø° µ˚∂Û ≥ª ª¿µÈ¿Ã æÓ∂ª∞‘ øÚ¡˜ø©æﬂ«œ¥¬∞°? ø° ¥Î«— ¡§∫∏∞° « ø‰«œ¥Ÿ.  */
-    /* ¥Î±‚µø¿€¿ª ¿ß«ÿº≠¥¬ ª¿µÈ¿Ã æÓ∂≤ Ω√∞£¥Îø° æÓ∂≤ ªÛ≈¬∏¶ √Î«œ¥¬∞°? */
-    /* ∞¯∞›µø¿€¿ª ¿ß«ÿº≠¥¬ ª¿µÈ¿Ã æÓ∂≤ Ω√∞£¥Îø° æÓ∂≤ ªÛ≈¬∏¶ √Î«œ¥¬∞°? */
+    /* ÏãúÍ∞ÑÏóê Îî∞Îùº ÎÇ¥ ÎºàÎì§Ïù¥ Ïñ¥ÎñªÍ≤å ÏõÄÏßÅÏó¨ÏïºÌïòÎäîÍ∞Ä? Ïóê ÎåÄÌïú Ï†ïÎ≥¥Í∞Ä ÌïÑÏöîÌïòÎã§.  */
+    /* ÎåÄÍ∏∞ÎèôÏûëÏùÑ ÏúÑÌï¥ÏÑúÎäî ÎºàÎì§Ïù¥ Ïñ¥Îñ§ ÏãúÍ∞ÑÎåÄÏóê Ïñ¥Îñ§ ÏÉÅÌÉúÎ•º Ï∑®ÌïòÎäîÍ∞Ä? */
+    /* Í≥µÍ≤©ÎèôÏûëÏùÑ ÏúÑÌï¥ÏÑúÎäî ÎºàÎì§Ïù¥ Ïñ¥Îñ§ ÏãúÍ∞ÑÎåÄÏóê Ïñ¥Îñ§ ÏÉÅÌÉúÎ•º Ï∑®ÌïòÎäîÍ∞Ä? */
     m_iNumAnimations = m_pAIScene->mNumAnimations;
 
     for (size_t i = 0; i < m_iNumAnimations; i++)
@@ -310,98 +308,112 @@ HRESULT CModel::Ready_Animations()
 HRESULT CModel::Ready_Meshes(ifstream& ifs)
 {
     ifs.read((char*)&m_iNumMeshes, sizeof(m_iNumMeshes));
+    char dbg[128];
+    sprintf_s(dbg, "[LOAD] MeshCount=%u\n", m_iNumMeshes);
+    OutputDebugStringA(dbg);
+
     for (size_t i = 0; i < m_iNumMeshes; ++i)
     {
-        // --- BINø°º≠ vertex, index ¿–æÓø¿±‚ ---
         uint32_t vtxCount = 0, idxCount = 0;
         ifs.read((char*)&vtxCount, sizeof(vtxCount));
         ifs.read((char*)&idxCount, sizeof(idxCount));
-        vector<SimpleVertexBin> vertices(vtxCount);
-        vector<uint32_t> indices(idxCount);
-        ifs.read((char*)vertices.data(), sizeof(SimpleVertexBin) * vtxCount);
+        sprintf_s(dbg, "  [LOAD] Mesh[%zu]: vtx=%u idx=%u\n", i, vtxCount, idxCount);
+        OutputDebugStringA(dbg);
+
+        std::vector<SimpleVertex> vertices(vtxCount);
+        std::vector<uint32_t> indices(idxCount);
+        ifs.read((char*)vertices.data(), sizeof(SimpleVertex) * vtxCount);
         ifs.read((char*)indices.data(), sizeof(uint32_t) * idxCount);
 
-        // --- CMesh ª˝º∫ ---
-        CMesh* pMesh = CMesh::Create(
-            m_pDevice, m_pContext,
-            m_eModelType,
-            vertices, indices, m_Bones,XMLoadFloat4x4(&m_PreTransformMatrix)
-        );
-        if (nullptr == pMesh)
-            return E_FAIL;
+        CMesh* pMesh = CMesh::Create(m_pDevice, m_pContext, m_eModelType, vertices, indices, m_Bones, XMLoadFloat4x4(&m_PreTransformMatrix));
+        if (!pMesh) return E_FAIL;
         m_Meshes.push_back(pMesh);
     }
     return S_OK;
 }
 
-HRESULT CModel::Ready_Materials(const _char* pModelFilePath,const vector<MaterialInfoBin>& binMaterials)
+
+HRESULT CModel::Ready_Materials(const _char* pModelFilePath, const vector<MaterialInfo>& binMaterials)
 {
     m_iNumMaterials = static_cast<_uint>(binMaterials.size());
     m_Materials.reserve(m_iNumMaterials);
 
     for (size_t i = 0; i < m_iNumMaterials; ++i)
     {
-        // BINøÎ ª˝º∫¿⁄ ∂«¥¬ ∫∞µµ Create «‘ºˆ « ø‰ (∞Ê∑Œ∏∏ ¿¸¥ﬁ)
-        CMeshMaterial* pMeshMaterial = CMeshMaterial::Create(m_pDevice, m_pContext, pModelFilePath, binMaterials[i]);
-        if (nullptr == pMeshMaterial)
-            return E_FAIL;
-
+        CMeshMaterial* pMeshMaterial = CMeshMaterial::Create(
+            m_pDevice, m_pContext, pModelFilePath, binMaterials[i]);
+        if (!pMeshMaterial) return E_FAIL;
         m_Materials.push_back(pMeshMaterial);
     }
-
     return S_OK;
 }
 
-HRESULT CModel::Ready_Bones(const vector<BoneInfoBin>& binBones, _int iParentIndex)
+HRESULT CModel::Ready_Bones(const vector<BoneInfo>& binBones, _int iParentIndex)
 {
     m_Bones.clear();
     m_Bones.reserve(binBones.size());
 
-    // 1. ∫ªµÈ ∏µŒ ª˝º∫
     for (size_t i = 0; i < binBones.size(); ++i)
     {
-        // CBone ª˝º∫¿⁄/∆—≈‰∏Æø°º≠ BoneInfoBin¿ª πﬁæ∆º≠ ∏µÁ ¡§∫∏ º¬∆√«œµµ∑œ ±∏«ˆ
         CBone* pBone = CBone::Create(binBones[i], iParentIndex);
-        if (nullptr == pBone)
-            return E_FAIL;
+        if (!pBone) return E_FAIL;
         m_Bones.push_back(pBone);
     }
+    return S_OK;
 }
+
 
 HRESULT CModel::Ready_Animations(std::ifstream& ifs)
 {
     uint32_t numAnims = 0;
     ifs.read((char*)&numAnims, sizeof(numAnims));
     m_iNumAnimations = numAnims;
-    m_Animations.reserve(numAnims);
+
+    char dbg[256];
+    sprintf_s(dbg, "[LOAD] Animations=%u sizeof AnimInfo=%zu ChannelInfo=%zu KeyFrame=%zu\n",
+        numAnims, sizeof(AnimInfo), sizeof(ChannelInfo), sizeof(KeyFrame));
+    OutputDebugStringA(dbg);
 
     for (uint32_t i = 0; i < numAnims; ++i)
     {
-        AnimInfoBin animBin = {};
-        ifs.read((char*)&animBin, sizeof(AnimInfoBin));
+        AnimInfo animBin{};
+        ifs.read((char*)&animBin, sizeof(AnimInfo));
 
-        // --- √§≥Œ ¡§∫∏ ¿–±‚ ---
-        std::vector<ChannelInfoBin> channelBins(animBin.channelCount);
-        ifs.read((char*)channelBins.data(), sizeof(ChannelInfoBin) * animBin.channelCount);
+        sprintf_s(dbg, "[LOAD] Anim[%u]: name=%s Channels=%u Duration=%f TPS=%f\n",
+            i, animBin.name, animBin.channelCount, animBin.duration, animBin.ticksPerSecond);
+        OutputDebugStringA(dbg);
 
-        // --- ≈∞«¡∑π¿” ¿¸√º ¿–±‚ ---
-        std::vector<KeyFrameBin> keyframeBins;
-        keyframeBins.reserve(0);
-        for (uint32_t c = 0; c < animBin.channelCount; ++c) {
-            uint32_t kfCount = channelBins[c].keyframeCount;
-            size_t oldSize = keyframeBins.size();
-            keyframeBins.resize(oldSize + kfCount);
-            ifs.read((char*)&keyframeBins[oldSize], sizeof(KeyFrameBin) * kfCount);
+        std::vector<ChannelInfo> channelBins(animBin.channelCount);
+        ifs.read((char*)channelBins.data(), sizeof(ChannelInfo) * animBin.channelCount);
+
+        uint32_t totalKeyFrames = 0;
+        for (uint32_t c = 0; c < animBin.channelCount; ++c)
+        {
+            channelBins[c].boneName[63] = 0;
+            sprintf_s(dbg, "  [LOAD] Channel[%u]: bone=%s keyframes=%u\n",
+                c, channelBins[c].boneName, channelBins[c].keyframeCount);
+            OutputDebugStringA(dbg);
+            totalKeyFrames += channelBins[c].keyframeCount;
         }
 
-        // --- BINøÎ æ÷¥œ ª˝º∫ ---
-        CAnimation* pAnim = CAnimation::Create(animBin, channelBins, keyframeBins, m_Bones);
-        if (!pAnim)
-            return E_FAIL;
+        std::vector<KeyFrame> keyframes(totalKeyFrames);
+        ifs.read((char*)keyframes.data(), sizeof(KeyFrame) * totalKeyFrames);
+
+        sprintf_s(dbg, "  [LOAD-DEBUG] Anim[%u] totalKeyFrames=%u\n", i, totalKeyFrames);
+        OutputDebugStringA(dbg);
+
+        CAnimation* pAnim = CAnimation::Create(animBin, channelBins, keyframes, m_Bones);
+        if (!pAnim) return E_FAIL;
         m_Animations.push_back(pAnim);
     }
+
     return S_OK;
 }
+
+
+
+
+
 
 
 

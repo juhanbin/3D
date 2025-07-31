@@ -50,10 +50,12 @@ public:
     void ExportModelToBin_NonAnim(const MapObject& obj, const char* binPath);
     void PushUndo();
     void RefreshScene();
+    static void ExtractTextureFilename(const aiMaterial* material, aiTextureType type, char* outBuf, size_t bufSize, const char* dbgName);
 
     Ray CreatePickingRay(int mx, int my, int w, int h, const DirectX::XMMATRIX& view, const DirectX::XMMATRIX& proj);
     bool RayIntersectsAABB(const Ray& ray, const DirectX::BoundingBox& box, float* outDist = nullptr);
 
+    void SafeDebugOutput(const char* prefix, const char* str);
 private:
     std::vector<MapObject> m_Objects;
     std::vector<std::vector<MapObject>> m_UndoStack;

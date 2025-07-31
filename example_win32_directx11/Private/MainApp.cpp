@@ -1,22 +1,24 @@
-#include "MainApp.h"
+Ôªø#include "MainApp.h"
 #include "GameInstance.h"
 #include "Level_Loading.h"
 #include "MapObject.h"
 #include "Edit_Defines.h"
 #include "Graphic_Device.h"
 #include <direct.h>
+
+
 using namespace DirectX;
 using namespace Edit;
 
 NS_BEGIN(Edit)
-// ª˝º∫¿⁄
+// ÏÉùÏÑ±Ïûê
 CMainApp::CMainApp()
     : m_pGameInstance{ Engine::CGameInstance::GetInstance() }
 {
     Safe_AddRef(m_pGameInstance);
 }
 
-// ø£¡¯ √ ±‚»≠
+// ÏóîÏßÑ Ï¥àÍ∏∞Ìôî
 HRESULT CMainApp::Initialize()
 {
     ENGINE_DESC EngineDesc{};
@@ -99,7 +101,7 @@ HRESULT CMainApp::Start_Level(LEVEL eStartLevelID)
     return S_OK;
 }
 
-// ---------- MapTool «‘ºˆ ----------
+// ---------- MapTool Ìï®Ïàò ----------
 
 Ray CMainApp::CreatePickingRay(int mx, int my, int w, int h, const DirectX::XMMATRIX& view, const DirectX::XMMATRIX& proj)
 {
@@ -128,6 +130,23 @@ bool CMainApp::RayIntersectsAABB(const Ray& ray, const DirectX::BoundingBox& box
     bool hit = box.Intersects(XMLoadFloat3(&ray.origin), XMLoadFloat3(&ray.dir), dist);
     if (hit && outDist) *outDist = dist;
     return hit;
+}
+
+void CMainApp::SafeDebugOutput(const char* prefix, const char* str)
+{
+    char safeBuf[512];
+    size_t len = strlen(str);
+    if (len > 500) len = 500;
+
+    for (size_t i = 0; i < len; ++i) {
+        // ASCIIÎßå ÌÜµÍ≥º, ÎÇòÎ®∏ÏßÄÎäî '.' ÎåÄÏ≤¥
+        safeBuf[i] = (str[i] >= 32 && str[i] <= 126) ? str[i] : '.';
+    }
+    safeBuf[len] = 0;
+
+    OutputDebugStringA(prefix);
+    OutputDebugStringA(safeBuf);
+    OutputDebugStringA("\n");
 }
 
 void CMainApp::Render_ImGuiPanel()
@@ -169,14 +188,14 @@ void CMainApp::Render_ImGuiPanel()
                 obj.pos[0] = obj.pos[1] = obj.pos[2] = 0.0f;
                 switch (type) {
                 case EObjectType::MONSTER:
-                    // Rock_AA.fbx øπΩ√
+                    // Rock_AA.fbx ÏòàÏãú
                     strcpy(obj.fbxPath, "../Bin/Resources/Blood_Spear/Model/Hero/Hero.fbx");
 
                     strcpy(obj.binPath, "../../Mapdata/Hero.bin");
 
                     break;
                 case EObjectType::ROCK_AA:
-                    // Rock_AA.fbx øπΩ√
+                    // Rock_AA.fbx ÏòàÏãú
                     strcpy(obj.fbxPath, "../Bin/Resources/Blood_Spear/Model/Rock/Rock_AA.fbx");
 
                     strcpy(obj.binPath, "../../Mapdata/Rock_AA.bin");
@@ -195,7 +214,7 @@ void CMainApp::Render_ImGuiPanel()
         ImGui::EndPopup();
     }
 
-    // ««≈∑ (∏∂øÏΩ∫ ≈¨∏Ø)
+    // ÌîºÌÇπ (ÎßàÏö∞Ïä§ ÌÅ¥Î¶≠)
     if (ImGui::IsMouseClicked(0) && !ImGui::IsAnyItemHovered()) {
         ImVec2 pos = ImGui::GetMousePos();
         int mouseX = (int)pos.x;
@@ -275,7 +294,7 @@ void CMainApp::Render_ImGuiPanel()
             std::memcpy(m_Objects[m_Selected].pos, m_TempPos, sizeof(float) * 3);
             RefreshScene();
         }
-        // BIN ≥ª∫∏≥ª±‚ (FBX °Ê BIN)
+        // BIN ÎÇ¥Î≥¥ÎÇ¥Í∏∞ (FBX ‚Üí BIN)
         if (ImGui::Button("Export_NonAnim")) {
             ExportModelToBin_NonAnim(m_Objects[m_Selected], m_Objects[m_Selected].binPath);
         }
@@ -286,7 +305,7 @@ void CMainApp::Render_ImGuiPanel()
     ImGui::End();
 }
 
-// æ¿ ¿˙¿Â (MapObject∏∏)
+// Ïî¨ Ï†ÄÏû• (MapObjectÎßå)
 void CMainApp::SaveScene(const char* filename)
 {
     std::ofstream ofs(filename, std::ios::binary);
@@ -298,7 +317,7 @@ void CMainApp::SaveScene(const char* filename)
     }
 }
 
-// æ¿ ∫“∑Øø¿±‚
+// Ïî¨ Î∂àÎü¨Ïò§Í∏∞
 bool CMainApp::LoadScene(const char* filename)
 {
     std::ifstream ifs(filename, std::ios::binary);
@@ -310,177 +329,113 @@ bool CMainApp::LoadScene(const char* filename)
     for (size_t i = 0; i < count; ++i) {
         MapObject obj{};
         ifs.read((char*)&obj, sizeof(MapObject));
+
+        // [Ï∂îÍ∞Ä] Î™®Îì† char Î∞∞Ïó¥ null Î≥¥Ïû•
+        obj.fbxPath[sizeof(obj.fbxPath) - 1] = 0;
+        obj.binPath[sizeof(obj.binPath) - 1] = 0;
+
+        // Íµ¨Ï°∞Ï≤¥ ÎÇ¥Î∂ÄÏóê char Î∞∞Ïó¥ Îçî ÏûàÏúºÎ©¥ Ïó¨Í∏∞ÎèÑ Ï≤òÎ¶¨!
+        // Ïòà: obj.name[sizeof(obj.name)-1] = 0;
+
         m_Objects.push_back(obj);
     }
     m_Selected = -1;
 
     for (const auto& obj : m_Objects) {
-        OutputDebugStringA("∑ŒµÂµ» ø¿∫Í¡ß∆Æ fbxPath: ");
-        OutputDebugStringA(obj.fbxPath);
-        OutputDebugStringA("\n");
+        //OutputDebugStringA("Î°úÎìúÎêú Ïò§Î∏åÏ†ùÌä∏ fbxPath: ");
+        //OutputDebugStringA(obj.fbxPath);
+        //OutputDebugStringA("\n");
     }
 
     return true;
 }
 
-// æ÷¥œ∏ﬁ¿Ãº« BIN ≥ª∫∏≥ª±‚
+
+// Ïï†ÎãàÎ©îÏù¥ÏÖò BIN ÎÇ¥Î≥¥ÎÇ¥Í∏∞
 void CMainApp::ExportModelToBin_Anim(const MapObject& obj, const char* binPath)
 {
-    OutputDebugStringA("[BIN Export/Anim] fbxPath: ");
-    OutputDebugStringA(obj.fbxPath);
-    OutputDebugStringA("\n[BIN Export/Anim] binPath: ");
-    OutputDebugStringA(binPath); OutputDebugStringA("\n");
-
     if (FILE* fp = fopen(obj.fbxPath, "rb")) fclose(fp);
-    else { OutputDebugStringA("[BIN Export/Anim] Ω«∆–: FBX ∆ƒ¿œ¿Ã ¡∏¿Á«œ¡ˆ æ ¿Ω!\n"); return; }
+    else return;
 
-    _uint iFlag = aiProcess_ConvertToLeftHanded | aiProcessPreset_TargetRealtime_Fast;
+    _uint iFlag = { aiProcess_ConvertToLeftHanded | aiProcessPreset_TargetRealtime_Fast };
     m_pAIScene = m_Importer.ReadFile(obj.fbxPath, iFlag);
-
-    if (!m_pAIScene || !m_pAIScene->HasMeshes()) {
-        OutputDebugStringA("[BIN Export/Anim] Ω«∆–: FBX ∑ŒµÂ Ω«∆–!\n"); return;
-    }
+    if (!m_pAIScene || !m_pAIScene->HasMeshes()) return;
 
     std::ofstream ofs(binPath, std::ios::binary);
-    if (!ofs) { OutputDebugStringA("[BIN Export/Anim] Ω«∆–: BIN ∆ƒ¿œ ¿˙¿Â ∫“∞°!\n"); return; }
+    if (!ofs) return;
 
-    // ---- 1. ∏ﬁΩ√ ¿˙¿Â ----
     {
-        char buf[256];
-        uint32_t meshCount = m_pAIScene->mNumMeshes;
-        sprintf(buf, "[BIN/Anim] Mesh Count: %u\n", meshCount);
-        OutputDebugStringA(buf);
-        ofs.write((char*)&meshCount, sizeof(meshCount));
-        for (uint32_t m = 0; m < meshCount; ++m) {
-            aiMesh* mesh = m_pAIScene->mMeshes[m];
-            sprintf(buf, "  Mesh[%u] Name: %s  Vertex: %u  Index: %u  BoneCount: %u\n",
-                m, mesh->mName.C_Str(), mesh->mNumVertices, mesh->mNumFaces * 3, mesh->mNumBones);
-            OutputDebugStringA(buf);
-            // --- ±‚¡∏ vertex, bone ∞°¡ﬂƒ°, ¿Œµ¶Ω∫ ¿˙¿Â ƒ⁄µÂ ---
-            uint32_t vtxCount = mesh->mNumVertices;
-            uint32_t idxCount = mesh->mNumFaces * 3;
-            ofs.write((char*)&vtxCount, sizeof(vtxCount));
-            ofs.write((char*)&idxCount, sizeof(idxCount));
-            std::vector<SimpleVertex> vertices(vtxCount);
-            std::vector<std::vector<std::pair<int, float>>> vtxBones(vtxCount);
-            for (uint32_t b = 0; b < mesh->mNumBones; ++b) {
-                aiBone* bone = mesh->mBones[b];
-                for (uint32_t w = 0; w < bone->mNumWeights; ++w) {
-                    int vIdx = bone->mWeights[w].mVertexId;
-                    float weight = bone->mWeights[w].mWeight;
-                    vtxBones[vIdx].emplace_back(b, weight);
-                }
-            }
-            for (uint32_t i = 0; i < vtxCount; ++i) {
-                vertices[i].pos[0] = mesh->mVertices[i].x;
-                vertices[i].pos[1] = mesh->mVertices[i].y;
-                vertices[i].pos[2] = mesh->mVertices[i].z;
-                vertices[i].normal[0] = mesh->HasNormals() ? mesh->mNormals[i].x : 0;
-                vertices[i].normal[1] = mesh->HasNormals() ? mesh->mNormals[i].y : 0;
-                vertices[i].normal[2] = mesh->HasNormals() ? mesh->mNormals[i].z : 0;
-                if (mesh->HasTextureCoords(0)) {
-                    vertices[i].uv[0] = mesh->mTextureCoords[0][i].x;
-                    vertices[i].uv[1] = mesh->mTextureCoords[0][i].y;
-                }
-                else {
-                    vertices[i].uv[0] = vertices[i].uv[1] = 0.f;
-                }
-                for (int b = 0; b < 4; ++b) {
-                    if (b < vtxBones[i].size()) {
-                        vertices[i].blendIndex[b] = vtxBones[i][b].first;
-                        vertices[i].blendWeight[b] = vtxBones[i][b].second;
-                    }
-                    else {
-                        vertices[i].blendIndex[b] = 0;
-                        vertices[i].blendWeight[b] = 0.f;
-                    }
-                }
-            }
-            ofs.write((char*)vertices.data(), sizeof(SimpleVertex) * vtxCount);
-            std::vector<uint32_t> indices(idxCount);
-            uint32_t k = 0;
-            for (uint32_t f = 0; f < mesh->mNumFaces; ++f) {
-                aiFace& face = mesh->mFaces[f];
-                if (face.mNumIndices != 3) continue;
-                for (int j = 0; j < 3; ++j)
-                    indices[k++] = face.mIndices[j];
-            }
-            ofs.write((char*)indices.data(), sizeof(uint32_t) * idxCount);
-        }
+        char dbg[128];
+        sprintf_s(dbg, "[SAVE-DEBUG] sizeof AnimInfo=%zu ChannelInfo=%zu KeyFrame=%zu\n",
+            sizeof(AnimInfo), sizeof(ChannelInfo), sizeof(KeyFrame));
+        OutputDebugStringA(dbg);
     }
 
-    // ---- 2. ∏”∆º∏ÆæÛ ¿˙¿Â ----
-    {
-        char buf[256];
-        uint32_t matCount = m_pAIScene->mNumMaterials;
-        sprintf(buf, "[BIN/Anim] Material Count: %u\n", matCount);
-        OutputDebugStringA(buf);
-        ofs.write((char*)&matCount, sizeof(matCount));
-        for (uint32_t i = 0; i < matCount; ++i) {
-            aiMaterial* material = m_pAIScene->mMaterials[i];
-            aiString path;
-            MaterialInfo matInfo{};
+    // ---- 1. Î©îÏãú Ï†ÄÏû• ----
+    uint32_t meshCount = m_pAIScene->mNumMeshes;
+    ofs.write((char*)&meshCount, sizeof(meshCount));
+    for (uint32_t m = 0; m < meshCount; ++m) {
+        aiMesh* mesh = m_pAIScene->mMeshes[m];
 
-            // basecolor
-            if (material->GetTexture(aiTextureType_DIFFUSE, 0, &path) == AI_SUCCESS) {
-                std::string texPath = path.C_Str();
-                std::replace(texPath.begin(), texPath.end(), '#', '/');
-                strcpy_s(matInfo.basecolor, texPath.c_str());
-                sprintf(buf, "  Material[%u] Diffuse: %s -> %s\n", i, path.C_Str(), texPath.c_str());
-                OutputDebugStringA(buf);
+        uint32_t vtxCount = mesh->mNumVertices;
+        uint32_t idxCount = mesh->mNumFaces * 3;
+        ofs.write((char*)&vtxCount, sizeof(vtxCount));
+        ofs.write((char*)&idxCount, sizeof(idxCount));
+
+        std::vector<SimpleVertex> vertices(vtxCount);
+        for (uint32_t i = 0; i < vtxCount; ++i) {
+            vertices[i].pos[0] = mesh->mVertices[i].x;
+            vertices[i].pos[1] = mesh->mVertices[i].y;
+            vertices[i].pos[2] = mesh->mVertices[i].z;
+
+            vertices[i].normal[0] = mesh->HasNormals() ? mesh->mNormals[i].x : 0;
+            vertices[i].normal[1] = mesh->HasNormals() ? mesh->mNormals[i].y : 0;
+            vertices[i].normal[2] = mesh->HasNormals() ? mesh->mNormals[i].z : 0;
+
+            if (mesh->HasTextureCoords(0)) {
+                vertices[i].uv[0] = mesh->mTextureCoords[0][i].x;
+                vertices[i].uv[1] = mesh->mTextureCoords[0][i].y;
             }
             else {
-                sprintf(buf, "  Material[%u] Diffuse: (none)\n", i);
-                OutputDebugStringA(buf);
+                vertices[i].uv[0] = vertices[i].uv[1] = 0.f;
             }
-
-            // normal
-            if (material->GetTexture(aiTextureType_NORMALS, 0, &path) == AI_SUCCESS) {
-                std::string texPath = path.C_Str();
-                std::replace(texPath.begin(), texPath.end(), '#', '/');
-                strcpy_s(matInfo.normal, texPath.c_str());
-                sprintf(buf, "  Material[%u] Normal: %s -> %s\n", i, path.C_Str(), texPath.c_str());
-                OutputDebugStringA(buf);
-            }
-            else {
-                sprintf(buf, "  Material[%u] Normal: (none)\n", i);
-                OutputDebugStringA(buf);
-            }
-
-            // arm (√£æ∆º≠ ¿÷¿∏∏È)
-            matInfo.arm[0] = 0;
-            for (int j = 0; j < material->GetTextureCount(aiTextureType_UNKNOWN); ++j) {
-                if (material->GetTexture(aiTextureType_UNKNOWN, j, &path) == AI_SUCCESS) {
-                    if (strstr(path.C_Str(), "ARM") || strstr(path.C_Str(), "arm")) {
-                        std::string texPath = path.C_Str();
-                        std::replace(texPath.begin(), texPath.end(), '#', '/');
-                        strcpy_s(matInfo.arm, texPath.c_str());
-                        sprintf(buf, "  Material[%u] ARM: %s -> %s\n", i, path.C_Str(), texPath.c_str());
-                        OutputDebugStringA(buf);
-                        break;
-                    }
-                }
-            }
-            if (matInfo.arm[0] == 0) {
-                sprintf(buf, "  Material[%u] ARM: (none)\n", i);
-                OutputDebugStringA(buf);
-            }
-
-            ofs.write((char*)&matInfo, sizeof(MaterialInfo));
         }
+        ofs.write((char*)vertices.data(), sizeof(SimpleVertex) * vtxCount);
+
+        std::vector<uint32_t> indices(idxCount);
+        uint32_t k = 0;
+        for (uint32_t f = 0; f < mesh->mNumFaces; ++f) {
+            aiFace& face = mesh->mFaces[f];
+            if (face.mNumIndices != 3) continue;
+            for (int j = 0; j < 3; ++j)
+                indices[k++] = face.mIndices[j];
+        }
+        ofs.write((char*)indices.data(), sizeof(uint32_t) * idxCount);
     }
 
+    // ---- 2. Î®∏Ìã∞Î¶¨Ïñº Ï†ÄÏû• ----
+    uint32_t matCount = m_pAIScene->mNumMaterials;
+    ofs.write((char*)&matCount, sizeof(matCount));
+    for (uint32_t i = 0; i < matCount; ++i) {
+        aiMaterial* material = m_pAIScene->mMaterials[i];
+        MaterialInfo matInfo{};
+        memset(&matInfo, 0, sizeof(matInfo));
+        ExtractTextureFilename(material, aiTextureType_DIFFUSE, matInfo.basecolor, sizeof(matInfo.basecolor), "Diffuse");
+        ExtractTextureFilename(material, aiTextureType_NORMALS, matInfo.normal, sizeof(matInfo.normal), "Normal");
+        ofs.write((char*)&matInfo, sizeof(MaterialInfo));
+    }
 
-    // ---- 3. ∫ª ¿˙¿Â ----
+    // ---- 3. Î≥∏ Ï†ÄÏû• ----
     std::vector<BoneInfo> bones;
     std::function<void(const aiNode*, int)> gatherBones = [&](const aiNode* node, int parentIdx) {
         BoneInfo bi{};
-        strncpy(bi.name, node->mName.C_Str(), 63); bi.name[63] = 0;
+        memset(&bi, 0, sizeof(bi));
+        strncpy(bi.name, node->mName.C_Str(), sizeof(bi.name) - 1);
         bi.parentIdx = parentIdx;
         memcpy(bi.transform, &node->mTransformation, sizeof(float) * 16);
+
         bool foundOffset = false;
-        uint32_t meshCount = m_pAIScene->mNumMeshes;
-        for (uint32_t m = 0; m < meshCount; ++m) {
+        for (uint32_t m = 0; m < m_pAIScene->mNumMeshes; ++m) {
             aiMesh* mesh = m_pAIScene->mMeshes[m];
             for (uint32_t b = 0; b < mesh->mNumBones; ++b) {
                 aiBone* bone = mesh->mBones[b];
@@ -494,83 +449,53 @@ void CMainApp::ExportModelToBin_Anim(const MapObject& obj, const char* binPath)
         if (!foundOffset) {
             for (int i = 0; i < 16; ++i) bi.offset[i] = (i % 5 == 0) ? 1.f : 0.f;
         }
+
         int curIdx = (int)bones.size();
         bones.push_back(bi);
         for (uint32_t i = 0; i < node->mNumChildren; ++i)
             gatherBones(node->mChildren[i], curIdx);
         };
     gatherBones(m_pAIScene->mRootNode, -1);
-    {
-        char buf[256];
-        sprintf(buf, "[BIN/Anim] Bone Count: %u\n", (uint32_t)bones.size());
-        OutputDebugStringA(buf);
-        for (uint32_t i = 0; i < bones.size(); ++i) {
-            sprintf(buf, "  Bone[%u] Name: %s, Parent: %d\n", i, bones[i].name, bones[i].parentIdx);
-            OutputDebugStringA(buf);
-        }
-    }
+
     uint32_t totalBoneCount = (uint32_t)bones.size();
     ofs.write((char*)&totalBoneCount, sizeof(totalBoneCount));
     ofs.write((char*)bones.data(), sizeof(BoneInfo) * bones.size());
 
-    // ---- 4. æ÷¥œ∏ﬁ¿Ãº«+√§≥Œ ¿˙¿Â ----
-    {
-        char buf[256];
-        uint32_t animCount = m_pAIScene->mNumAnimations;
-        sprintf(buf, "[BIN/Anim] Animation Count: %u\n", animCount);
-        OutputDebugStringA(buf);
-        ofs.write((char*)&animCount, sizeof(animCount));
-        for (uint32_t a = 0; a < animCount; ++a) {
-            aiAnimation* anim = m_pAIScene->mAnimations[a];
-            sprintf(buf, "  Anim[%u] Name: %s, Duration: %.3f, Channels: %u\n", a, anim->mName.C_Str(), anim->mDuration, anim->mNumChannels);
-            OutputDebugStringA(buf);
-            AnimInfo ainfo{};
-            strncpy(ainfo.name, anim->mName.C_Str(), 63); ainfo.name[63] = 0;
-            ainfo.duration = anim->mDuration;
-            ainfo.ticksPerSecond = anim->mTicksPerSecond;
-            ainfo.channelCount = anim->mNumChannels;
-            ofs.write((char*)&ainfo, sizeof(AnimInfo));
-            for (uint32_t c = 0; c < anim->mNumChannels; ++c) {
-                aiNodeAnim* chan = anim->mChannels[c];
-                sprintf(buf, "    Channel[%u] Bone: %s, Pos:%u Rot:%u Scale:%u\n", c, chan->mNodeName.C_Str(),
-                    chan->mNumPositionKeys, chan->mNumRotationKeys, chan->mNumScalingKeys);
-                OutputDebugStringA(buf);
-                ChannelInfo cinfo{};
-                strncpy(cinfo.boneName, chan->mNodeName.C_Str(), 63); cinfo.boneName[63] = 0;
-                uint32_t n1 = chan->mNumPositionKeys;
-                uint32_t n2 = chan->mNumRotationKeys;
-                uint32_t n3 = chan->mNumScalingKeys;
-                cinfo.keyframeCount = max3(n1, n2, n3);
-                ofs.write((char*)&cinfo, sizeof(ChannelInfo));
-                for (uint32_t k = 0; k < cinfo.keyframeCount; ++k) {
-                    KeyFrame kf{};
-                    if (k < chan->mNumScalingKeys) {
-                        kf.time = chan->mScalingKeys[k].mTime;
-                        kf.scale[0] = chan->mScalingKeys[k].mValue.x;
-                        kf.scale[1] = chan->mScalingKeys[k].mValue.y;
-                        kf.scale[2] = chan->mScalingKeys[k].mValue.z;
-                    }
-                    if (k < chan->mNumRotationKeys) {
-                        kf.time = chan->mRotationKeys[k].mTime;
-                        kf.rotation[0] = chan->mRotationKeys[k].mValue.x;
-                        kf.rotation[1] = chan->mRotationKeys[k].mValue.y;
-                        kf.rotation[2] = chan->mRotationKeys[k].mValue.z;
-                        kf.rotation[3] = chan->mRotationKeys[k].mValue.w;
-                    }
-                    if (k < chan->mNumPositionKeys) {
-                        kf.time = chan->mPositionKeys[k].mTime;
-                        kf.translation[0] = chan->mPositionKeys[k].mValue.x;
-                        kf.translation[1] = chan->mPositionKeys[k].mValue.y;
-                        kf.translation[2] = chan->mPositionKeys[k].mValue.z;
-                    }
-                    ofs.write((char*)&kf, sizeof(KeyFrame));
-                }
-            }
+    // ---- 4. Ïï†ÎãàÎ©îÏù¥ÏÖò Ï†ÄÏû• ----
+    // ÎîîÎ≤ÑÍ∑∏: ÏÑ∏Ïù¥Î∏å ÏãúÏ†ê ÌÅ¨Í∏∞ ÌôïÏù∏
+    char dbg[128];
+    sprintf_s(dbg, "[SAVE-DEBUG] sizeof AnimInfo=%zu ChannelInfo=%zu KeyFrame=%zu\n",
+        sizeof(AnimInfo), sizeof(ChannelInfo), sizeof(KeyFrame));
+    OutputDebugStringA(dbg);
+
+    // [Ï§ëÎûµ: Mesh/Material/Bone Ï†ÄÏû• Î°úÏßÅ]
+
+    uint32_t animCount = m_pAIScene->mNumAnimations;
+    ofs.write((char*)&animCount, sizeof(animCount));
+    for (uint32_t a = 0; a < animCount; ++a) {
+        aiAnimation* anim = m_pAIScene->mAnimations[a];
+        AnimInfo ainfo{};
+        strncpy(ainfo.name, anim->mName.C_Str(), sizeof(ainfo.name) - 1);
+        ainfo.duration = anim->mDuration;
+        ainfo.ticksPerSecond = anim->mTicksPerSecond;
+        ainfo.channelCount = anim->mNumChannels;
+        ofs.write((char*)&ainfo, sizeof(AnimInfo));
+
+        for (uint32_t c = 0; c < anim->mNumChannels; ++c) {
+            aiNodeAnim* chan = anim->mChannels[c];
+            ChannelInfo cinfo{};
+            strncpy(cinfo.boneName, chan->mNodeName.C_Str(), sizeof(cinfo.boneName) - 1);
+            cinfo.keyframeCount = max3(chan->mNumPositionKeys, chan->mNumRotationKeys, chan->mNumScalingKeys);
+            ofs.write((char*)&cinfo, sizeof(ChannelInfo));
+
+            char dbg2[256];
+            sprintf_s(dbg2, "[SAVE] Channel[%u]: bone=%s keyframes=%u\n", c, cinfo.boneName, cinfo.keyframeCount);
+            OutputDebugStringA(dbg2);
+
+            // [KeyFrame Ï†ÄÏû• Î°úÏßÅ Í∑∏ÎåÄÎ°ú]
         }
     }
-
     ofs.close();
-    OutputDebugStringA("æ÷¥œ∏ﬁ¿Ãº« BIN ¿˙¿Â øœ∑·!\n");
 }
 
 
@@ -578,150 +503,70 @@ void CMainApp::ExportModelToBin_Anim(const MapObject& obj, const char* binPath)
 
 void CMainApp::ExportModelToBin_NonAnim(const MapObject& obj, const char* binPath)
 {
-    char curdir[512] = { 0 };
-    _getcwd(curdir, 511);
-    OutputDebugStringA("[BIN Export] «ˆ¿Á ¿€æ˜ µ∑∫≈‰∏Æ: ");
-    OutputDebugStringA(curdir);
-    OutputDebugStringA("\n");
+    if (FILE* fp = fopen(obj.fbxPath, "rb")) fclose(fp);
+    else return;
 
-    OutputDebugStringA("[BIN Export] fbxPath: ");
-    OutputDebugStringA(obj.fbxPath);
-    OutputDebugStringA("\n");
-    OutputDebugStringA("[BIN Export] binPath: ");
-    OutputDebugStringA(binPath);
-    OutputDebugStringA("\n");
-
-    if (FILE* fp = fopen(obj.fbxPath, "rb")) {
-        fclose(fp);
-    }
-    else {
-        OutputDebugStringA("[BIN Export] Ω«∆–: FBX ∆ƒ¿œ¿Ã ¡∏¿Á«œ¡ˆ æ ¿Ω!\n");
-        return;
-    }
-
-    _uint iFlag = { aiProcess_ConvertToLeftHanded | aiProcessPreset_TargetRealtime_Fast | aiProcess_PreTransformVertices };
+    _uint iFlag = { aiProcess_ConvertToLeftHanded | aiProcessPreset_TargetRealtime_Fast };
     m_pAIScene = m_Importer.ReadFile(obj.fbxPath, iFlag);
-
-    if (!m_pAIScene || !m_pAIScene->HasMeshes()) {
-        OutputDebugStringA("[BIN Export] Ω«∆–: FBX ∑ŒµÂ Ω«∆–!\n");
-        return;
-    }
+    if (!m_pAIScene || !m_pAIScene->HasMeshes()) return;
 
     std::ofstream ofs(binPath, std::ios::binary);
-    if (!ofs) {
-        OutputDebugStringA("[BIN Export] Ω«∆–: BIN ∆ƒ¿œ ¿˙¿Â ∫“∞°!\n");
-        return;
-    }
+    if (!ofs) return;
 
-    // ---- 1. ∏ﬁΩ√ ¿˙¿Â ----
-    {
-        char buf[256];
-        uint32_t meshCount = m_pAIScene->mNumMeshes;
-        sprintf(buf, "[BIN/NonAnim] Mesh Count: %u\n", meshCount);
-        OutputDebugStringA(buf);
-        ofs.write((char*)&meshCount, sizeof(meshCount));
-        for (uint32_t m = 0; m < meshCount; ++m) {
-            aiMesh* mesh = m_pAIScene->mMeshes[m];
-            sprintf(buf, "  Mesh[%u] Name: %s  Vertex: %u  Index: %u\n",
-                m, mesh->mName.C_Str(), mesh->mNumVertices, mesh->mNumFaces * 3);
-            OutputDebugStringA(buf);
-            uint32_t vtxCount = mesh->mNumVertices;
-            uint32_t idxCount = mesh->mNumFaces * 3;
-            ofs.write((char*)&vtxCount, sizeof(vtxCount));
-            ofs.write((char*)&idxCount, sizeof(idxCount));
-            std::vector<SimpleVertex> vertices(vtxCount);
-            for (uint32_t i = 0; i < vtxCount; ++i) {
-                vertices[i].pos[0] = mesh->mVertices[i].x;
-                vertices[i].pos[1] = mesh->mVertices[i].y;
-                vertices[i].pos[2] = mesh->mVertices[i].z;
-                vertices[i].normal[0] = mesh->HasNormals() ? mesh->mNormals[i].x : 0;
-                vertices[i].normal[1] = mesh->HasNormals() ? mesh->mNormals[i].y : 0;
-                vertices[i].normal[2] = mesh->HasNormals() ? mesh->mNormals[i].z : 0;
-                if (mesh->HasTextureCoords(0)) {
-                    vertices[i].uv[0] = mesh->mTextureCoords[0][i].x;
-                    vertices[i].uv[1] = mesh->mTextureCoords[0][i].y;
-                }
-                else {
-                    vertices[i].uv[0] = vertices[i].uv[1] = 0.f;
-                }
-            }
-            ofs.write((char*)vertices.data(), sizeof(SimpleVertex) * vtxCount);
-            std::vector<uint32_t> indices(idxCount);
-            uint32_t k = 0;
-            for (uint32_t f = 0; f < mesh->mNumFaces; ++f) {
-                aiFace& face = mesh->mFaces[f];
-                if (face.mNumIndices != 3) continue;
-                for (int j = 0; j < 3; ++j)
-                    indices[k++] = face.mIndices[j];
-            }
-            ofs.write((char*)indices.data(), sizeof(uint32_t) * idxCount);
-        }
-    }
+    // ---- Î©îÏãú Ï†ÄÏû• ----
+    uint32_t meshCount = m_pAIScene->mNumMeshes;
+    ofs.write((char*)&meshCount, sizeof(meshCount));
+    for (uint32_t m = 0; m < meshCount; ++m) {
+        aiMesh* mesh = m_pAIScene->mMeshes[m];
+        uint32_t vtxCount = mesh->mNumVertices;
+        uint32_t idxCount = mesh->mNumFaces * 3;
+        ofs.write((char*)&vtxCount, sizeof(vtxCount));
+        ofs.write((char*)&idxCount, sizeof(idxCount));
 
-    // ---- 2. ∏”≈◊∏ÆæÛ ¿˙¿Â ----
-    {
-        char buf[256];
-        uint32_t matCount = m_pAIScene->mNumMaterials;
-        sprintf(buf, "[BIN/Anim] Material Count: %u\n", matCount);
-        OutputDebugStringA(buf);
-        ofs.write((char*)&matCount, sizeof(matCount));
-        for (uint32_t i = 0; i < matCount; ++i) {
-            aiMaterial* material = m_pAIScene->mMaterials[i];
-            aiString path;
-            MaterialInfo matInfo{};
-
-            // basecolor
-            if (material->GetTexture(aiTextureType_DIFFUSE, 0, &path) == AI_SUCCESS) {
-                std::string texPath = path.C_Str();
-                std::replace(texPath.begin(), texPath.end(), '#', '/');
-                strcpy_s(matInfo.basecolor, texPath.c_str());
-                sprintf(buf, "  Material[%u] Diffuse: %s -> %s\n", i, path.C_Str(), texPath.c_str());
-                OutputDebugStringA(buf);
+        std::vector<SimpleVertex> vertices(vtxCount);
+        for (uint32_t i = 0; i < vtxCount; ++i) {
+            vertices[i].pos[0] = mesh->mVertices[i].x;
+            vertices[i].pos[1] = mesh->mVertices[i].y;
+            vertices[i].pos[2] = mesh->mVertices[i].z;
+            vertices[i].normal[0] = mesh->HasNormals() ? mesh->mNormals[i].x : 0;
+            vertices[i].normal[1] = mesh->HasNormals() ? mesh->mNormals[i].y : 0;
+            vertices[i].normal[2] = mesh->HasNormals() ? mesh->mNormals[i].z : 0;
+            if (mesh->HasTextureCoords(0)) {
+                vertices[i].uv[0] = mesh->mTextureCoords[0][i].x;
+                vertices[i].uv[1] = mesh->mTextureCoords[0][i].y;
             }
             else {
-                sprintf(buf, "  Material[%u] Diffuse: (none)\n", i);
-                OutputDebugStringA(buf);
+                vertices[i].uv[0] = vertices[i].uv[1] = 0.f;
             }
-
-            // normal
-            if (material->GetTexture(aiTextureType_NORMALS, 0, &path) == AI_SUCCESS) {
-                std::string texPath = path.C_Str();
-                std::replace(texPath.begin(), texPath.end(), '#', '/');
-                strcpy_s(matInfo.normal, texPath.c_str());
-                sprintf(buf, "  Material[%u] Normal: %s -> %s\n", i, path.C_Str(), texPath.c_str());
-                OutputDebugStringA(buf);
-            }
-            else {
-                sprintf(buf, "  Material[%u] Normal: (none)\n", i);
-                OutputDebugStringA(buf);
-            }
-
-            // arm (√£æ∆º≠ ¿÷¿∏∏È)
-            matInfo.arm[0] = 0;
-            for (int j = 0; j < material->GetTextureCount(aiTextureType_UNKNOWN); ++j) {
-                if (material->GetTexture(aiTextureType_UNKNOWN, j, &path) == AI_SUCCESS) {
-                    if (strstr(path.C_Str(), "ARM") || strstr(path.C_Str(), "arm")) {
-                        std::string texPath = path.C_Str();
-                        std::replace(texPath.begin(), texPath.end(), '#', '/');
-                        strcpy_s(matInfo.arm, texPath.c_str());
-                        sprintf(buf, "  Material[%u] ARM: %s -> %s\n", i, path.C_Str(), texPath.c_str());
-                        OutputDebugStringA(buf);
-                        break;
-                    }
-                }
-            }
-            if (matInfo.arm[0] == 0) {
-                sprintf(buf, "  Material[%u] ARM: (none)\n", i);
-                OutputDebugStringA(buf);
-            }
-
-            ofs.write((char*)&matInfo, sizeof(MaterialInfo));
         }
+        ofs.write((char*)vertices.data(), sizeof(SimpleVertex) * vtxCount);
+
+        std::vector<uint32_t> indices(idxCount);
+        uint32_t k = 0;
+        for (uint32_t f = 0; f < mesh->mNumFaces; ++f) {
+            aiFace& face = mesh->mFaces[f];
+            if (face.mNumIndices != 3) continue;
+            for (int j = 0; j < 3; ++j)
+                indices[k++] = face.mIndices[j];
+        }
+        ofs.write((char*)indices.data(), sizeof(uint32_t) * idxCount);
+    }
+
+    // ---- Î®∏Ìã∞Î¶¨Ïñº Ï†ÄÏû• ----
+    uint32_t matCount = m_pAIScene->mNumMaterials;
+    ofs.write((char*)&matCount, sizeof(matCount));
+    for (uint32_t i = 0; i < matCount; ++i) {
+        aiMaterial* material = m_pAIScene->mMaterials[i];
+        MaterialInfo matInfo{};
+        memset(&matInfo, 0, sizeof(matInfo));
+        ExtractTextureFilename(material, aiTextureType_DIFFUSE, matInfo.basecolor, sizeof(matInfo.basecolor), "Diffuse");
+        ExtractTextureFilename(material, aiTextureType_NORMALS, matInfo.normal, sizeof(matInfo.normal), "Normal");
+        ofs.write((char*)&matInfo, sizeof(MaterialInfo));
     }
 
     ofs.close();
-    OutputDebugStringA("NonAnim BIN ¿˙¿Â øœ∑·!\n");
 }
+
 
 
 // Undo
@@ -732,7 +577,7 @@ void CMainApp::PushUndo()
         m_UndoStack.erase(m_UndoStack.begin());
 }
 
-// æ¿ ∞ªΩ≈
+// Ïî¨ Í∞±Ïã†
 void CMainApp::RefreshScene()
 {
     m_pGameInstance->Clear_Layer(ENUM_CLASS(LEVEL::EDIT), L"Layer_MapObject");
@@ -751,7 +596,30 @@ void CMainApp::RefreshScene()
     }
 }
 
-// ¿ŒΩ∫≈œΩ∫ ª˝º∫
+void CMainApp::ExtractTextureFilename(const aiMaterial* material, aiTextureType type, char* outBuf, size_t bufSize, const char* dbgName)
+{
+    aiString path;
+    if (material->GetTexture(type, 0, &path) == AI_SUCCESS) {
+        std::string texPath = path.C_Str();
+        std::replace(texPath.begin(), texPath.end(), '#', '/');
+        auto lastSlash = texPath.find_last_of("/\\");
+        if (lastSlash != std::string::npos)
+            texPath = texPath.substr(lastSlash + 1);
+        strncpy(outBuf, texPath.c_str(), bufSize - 1);
+        outBuf[bufSize - 1] = 0;
+        char buf[256];
+        //sprintf(buf, "[%s]%s->%s\n", dbgName, path.C_Str(), texPath.c_str());
+        //OutputDebugStringA(buf);
+    }
+    else {
+        outBuf[0] = 0;
+        char buf[128];
+        //sprintf(buf, "[%s](none)\n", dbgName);
+        //OutputDebugStringA(buf);
+    }
+}
+
+// Ïù∏Ïä§ÌÑ¥Ïä§ ÏÉùÏÑ±
 CMainApp* CMainApp::Create()
 {
     CMainApp* pInstance = new CMainApp();

@@ -1,9 +1,9 @@
-#include "Animation.h"
+Ôªø#include "Animation.h"
 #include "Channel.h"
 
 CAnimation::CAnimation()
 {
-    /*   XMMatrixDecompose(Ω∫ƒ…¿œ, ∑Œ≈◊¿Ãº«, ¿Ãµø, «‡∑ƒ);*/
+    /*   XMMatrixDecompose(Ïä§ÏºÄÏùº, Î°úÌÖåÏù¥ÏÖò, Ïù¥Îèô, ÌñâÎ†¨);*/
 }
 
 CAnimation::CAnimation(const CAnimation& Prototype)
@@ -20,18 +20,15 @@ CAnimation::CAnimation(const CAnimation& Prototype)
 
 HRESULT CAnimation::Initialize(const aiAnimation* pAIAnimation, const vector<class CBone*>& Bones)
 {
-
     m_fDuration = pAIAnimation->mDuration;
     m_fTickPerSecond = pAIAnimation->mTicksPerSecond;
-
     m_iNumChannels = pAIAnimation->mNumChannels;
-
     m_CurrentKeyFrameIndices.resize(m_iNumChannels);
 
-    char buf[256];
-    sprintf_s(buf, "[CAnimation] Animation ª˝º∫: name=%s, Duration=%.3f, TicksPerSec=%.3f, ChannelCount=%d\n",
-        pAIAnimation->mName.data, m_fDuration, m_fTickPerSecond, m_iNumChannels);
-    //OutputDebugStringA(buf);
+    //char buf[256];
+    ////sprintf_s(buf, "[CAnimation] Animation ÏÉùÏÑ±: name=%s, Duration=%.3f, TicksPerSec=%.3f, ChannelCount=%d\n",
+    ////    pAIAnimation->mName.data, m_fDuration, m_fTickPerSecond, m_iNumChannels);
+    ////OutputDebugStringA(buf);
 
     for (size_t i = 0; i < m_iNumChannels; i++)
     {
@@ -45,7 +42,7 @@ HRESULT CAnimation::Initialize(const aiAnimation* pAIAnimation, const vector<cla
     return S_OK;
 }
 
-HRESULT CAnimation::Initialize(const AnimInfoBin& animInfo, const std::vector<ChannelInfoBin>& channels, const std::vector<KeyFrameBin>& keyframes, const std::vector<class CBone*>& Bones)
+HRESULT CAnimation::Initialize(const AnimInfo& animInfo, const std::vector<ChannelInfo >& channels, const std::vector<KeyFrame >& keyframes, const std::vector<class CBone*>& Bones)
 {
     m_fDuration = static_cast<float>(animInfo.duration);
     m_fTickPerSecond = static_cast<float>(animInfo.ticksPerSecond);
@@ -55,15 +52,13 @@ HRESULT CAnimation::Initialize(const AnimInfoBin& animInfo, const std::vector<Ch
     size_t keyframeOffset = 0;
     for (size_t i = 0; i < m_iNumChannels; ++i)
     {
-        // √§≥Œ∫∞ ≈∞«¡∑π¿” ∫–∏Æ
-        const ChannelInfoBin& chInfo = channels[i];
-        std::vector<KeyFrameBin> chKeyframes(
+        const ChannelInfo& chInfo = channels[i];
+        std::vector<KeyFrame > chKeyframes(
             keyframes.begin() + keyframeOffset,
             keyframes.begin() + keyframeOffset + chInfo.keyframeCount
         );
         keyframeOffset += chInfo.keyframeCount;
 
-        // BINøÎ CChannel ª˝º∫
         CChannel* pChannel = CChannel::Create(chInfo, chKeyframes, Bones);
         if (!pChannel)
             return E_FAIL;
@@ -86,9 +81,7 @@ void CAnimation::Update_TransformationMatrices(const vector<class CBone*>& Bones
         }
         else
             m_fCurrentTrackPosition = 0.f;
-
     }
-
 
     for (_uint i = 0; i < m_iNumChannels; ++i)
     {
@@ -109,7 +102,7 @@ CAnimation* CAnimation::Create(const aiAnimation* pAIAnimation, const vector<cla
     return pInstance;
 }
 
-CAnimation* CAnimation::Create(const AnimInfoBin& animInfo, const std::vector<ChannelInfoBin>& channels, const std::vector<KeyFrameBin>& keyframes, const std::vector<class CBone*>& Bones)
+CAnimation* CAnimation::Create(const AnimInfo& animInfo, const std::vector<ChannelInfo >& channels, const std::vector<KeyFrame >& keyframes, const std::vector<class CBone*>& Bones)
 {
     CAnimation* pInstance = new CAnimation();
     if (FAILED(pInstance->Initialize(animInfo, channels, keyframes, Bones)))
@@ -119,8 +112,6 @@ CAnimation* CAnimation::Create(const AnimInfoBin& animInfo, const std::vector<Ch
     }
     return pInstance;
 }
-
-
 
 CAnimation* CAnimation::Clone()
 {

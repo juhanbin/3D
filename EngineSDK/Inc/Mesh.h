@@ -20,7 +20,7 @@ public:
 
 public:
 	virtual HRESULT Initialize_Prototype(MODELTYPE eType, const aiMesh* pAIMesh, const vector<class CBone*>& Bones, _fmatrix PreTransformMatrix);
-	virtual HRESULT Initialize_Prototype(MODELTYPE eType, const vector<SimpleVertexBin>& verts, const vector<uint32_t>& indices, const vector<CBone*>& Bones, _fmatrix PreTransformMatrix);
+	virtual HRESULT Initialize_Prototype(MODELTYPE eType, const vector<SimpleVertex>& verts, const vector<uint32_t>& indices, const vector<CBone*>& Bones, _fmatrix PreTransformMatrix);
 	virtual HRESULT Initialize(void* pArg) override;
 
 public:
@@ -50,14 +50,14 @@ public:
 	
 private:
 	HRESULT Ready_Vertices_For_NonAnim(const aiMesh* pAIMesh, _fmatrix PreTransformMatrix);
-	HRESULT Ready_Vertices_For_NonAnim(const vector<SimpleVertexBin>& verts, _fmatrix PreTransformMatrix);
+	HRESULT Ready_Vertices_For_NonAnim(const vector<SimpleVertex>& verts, _fmatrix PreTransformMatrix);
 	HRESULT Ready_Vertices_For_Anim(const aiMesh* pAIMesh, const vector<CBone*>& Bones);
-	HRESULT Ready_Vertices_For_Anim(const vector<SimpleVertexBin>& verts, const vector<CBone*>& Bones);
+	HRESULT Ready_Vertices_For_Anim(const vector<SimpleVertex>& verts, const vector<CBone*>& Bones);
 
 public:
 	static CMesh* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, MODELTYPE eType, const aiMesh* pAIMesh, const vector<class CBone*>& Bones, _fmatrix PreTransformMatrix);
 	static CMesh* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, MODELTYPE eType,
-		const vector<SimpleVertexBin>& verts, const vector<uint32_t>& indices, const vector<CBone*>& Bones, _fmatrix PreTransformMatrix);
+		const vector<SimpleVertex>& verts, const vector<uint32_t>& indices, const vector<CBone*>& Bones, _fmatrix PreTransformMatrix);
 
 	virtual CComponent* Clone(void* pArg) override;
 	virtual void Free() override;

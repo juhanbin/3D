@@ -62,6 +62,7 @@ private:
 	_bool							m_isLoop = {};
 	_bool							m_isFinished = {};
 
+
 private:
 	HRESULT Ready_Meshes();
 	HRESULT Ready_Materials(const _char* pModelFilePath);
@@ -70,8 +71,8 @@ private:
 
 private:
 	HRESULT Ready_Meshes(ifstream& ifs);
-	HRESULT Ready_Materials(const _char* pModelFilePath,const vector<MaterialInfoBin>& binMaterials);
-	HRESULT Ready_Bones(const vector<BoneInfoBin>& binBones, _int iParentIndex);
+	HRESULT Ready_Materials(const _char* pModelFilePath,const vector<MaterialInfo>& binMaterials);
+	HRESULT Ready_Bones(const vector<BoneInfo>& binBones, _int iParentIndex);
 	HRESULT Ready_Animations(ifstream& ifs);
 
 public:

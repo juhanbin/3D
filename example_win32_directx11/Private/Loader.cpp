@@ -101,7 +101,9 @@ HRESULT CLoader::Loading_For_Edit()
 		return E_FAIL;
 
 	/* Prototype_Component_Model_Rock_AA */
-	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+	PreTransformMatrix =
+		XMMatrixScaling(0.01f, 0.01f, 0.01f) *
+		XMMatrixRotationX(XMConvertToRadians(-90.0f));
 	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Model_Rock_AA"),
 		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::FBX, "../Bin/Resources/Blood_Spear/Model/Rock/Rock_AA.fbx", PreTransformMatrix))))
 		return E_FAIL;

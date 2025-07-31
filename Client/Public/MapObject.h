@@ -8,12 +8,12 @@ class CModel;
 NS_END
 
 NS_BEGIN(Client)
-enum class EObjectType : int
-{
-    //MONSTER ,
-    ROCK_AA ,
-    // ...추가 오브젝트 타입
-};
+//enum class EObjectType : int
+//{
+//    MONSTER ,
+//    ROCK_AA ,
+//    // ...추가 오브젝트 타입
+//};
 
 class CMapObject final : public CGameObject
 {

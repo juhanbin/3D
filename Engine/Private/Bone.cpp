@@ -1,4 +1,4 @@
-#include "Bone.h"
+ï»¿#include "Bone.h"
 
 CBone::CBone()
 {
@@ -11,7 +11,7 @@ HRESULT CBone::Initialize(const aiNode* pAINode, _int iParentBoneIndex)
 	strcpy_s(m_szName, pAINode->mName.data);
 
 	char buf[256];
-	sprintf_s(buf, "[CBone] Bone »ý¼º: name=%s, parentIdx=%d\n", m_szName, iParentBoneIndex);
+	//sprintf_s(buf, "[CBone] Bone ìƒì„±: name=%s, parentIdx=%d\n", m_szName, iParentBoneIndex);
 	//OutputDebugStringA(buf);
 
 	memcpy(&m_TransformationMatrix, &pAINode->mTransformation, sizeof(_float4x4));
@@ -25,7 +25,7 @@ HRESULT CBone::Initialize(const aiNode* pAINode, _int iParentBoneIndex)
 	return S_OK;
 }
 
-HRESULT CBone::Initialize(const BoneInfoBin& bin, _int iParentBoneIndex)
+HRESULT CBone::Initialize(const BoneInfo& bin, _int iParentBoneIndex)
 {
 	strcpy_s(m_szName, bin.name);
 
@@ -67,7 +67,7 @@ CBone* CBone::Create(const aiNode* pAINode, _int iParentBoneIndex)
 	return pInstance;
 }
 
-CBone* CBone::Create(const BoneInfoBin& bin, _int iParentBoneIndex)
+CBone* CBone::Create(const BoneInfo& bin, _int iParentBoneIndex)
 {
 	CBone* pInstance = new CBone();
 
