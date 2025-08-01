@@ -11,25 +11,6 @@ namespace Client
 
 	enum class LEVEL { STATIC, LOADING, LOGO, GAMEPLAY, END };
 	enum  class FILETYPE { FBX, BIN };
-
-	enum class EObjectType
-	{
-		MONSTER,
-		ROCK_AA,
-		// ...추가 오브젝트 타입
-	};
-
-	struct MapObject
-	{
-		int id;
-		int type;
-		float size[3];
-		float rot[3];
-		float pos[3];
-		char fbxPath[260];
-		char binPath[260];
-	};
-	extern MapObject obj;
 }
 
 extern HWND g_hWnd;

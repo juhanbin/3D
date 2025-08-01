@@ -14,7 +14,7 @@ private:
 
 public:
 	HRESULT Initialize(const aiNodeAnim* pAIChannel, const vector<class CBone*>& Bones);
-	HRESULT Initialize(const ChannelInfo& chInfo, const std::vector<KeyFrame >& keyframes, const std::vector<CBone*>& Bones);
+	HRESULT Initialize(const ChannelInfoBin& chInfo, const std::vector<KeyFrameBin>& keyframes, const std::vector<CBone*>& Bones);
 	void Update_TransformationMatrix(const vector<class CBone*>& Bones, _float fCurrentTrackPosition, _uint* pCurrentKeyFrameIndex);
 private:
 	_char							m_szName[MAX_PATH] = { };
@@ -27,7 +27,7 @@ private:
 
 public:
 	static CChannel* Create(const aiNodeAnim* pAIChannel, const vector<class CBone*>& Bones);
-	static CChannel* Create(const ChannelInfo& chInfo, const std::vector<KeyFrame >& keyframes, const std::vector<CBone*>& Bones);
+	static CChannel* Create(const ChannelInfoBin& chInfo, const std::vector<KeyFrameBin>& keyframes, const std::vector<CBone*>& Bones);
 	virtual void Free() override;
 };
 

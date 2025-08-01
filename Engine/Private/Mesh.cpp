@@ -66,12 +66,12 @@ HRESULT CMesh::Initialize_Prototype(MODELTYPE eType, const aiMesh* pAIMesh, cons
 
 HRESULT CMesh::Initialize_Prototype(
 	MODELTYPE eType,
-	const vector<SimpleVertex>& verts,
+	const vector<SimpleVertexBin>& verts,
 	const vector<uint32_t>& indices,
 	const vector<CBone*>& Bones,
 	_fmatrix PreTransformMatrix
 ) {
-	//strcpy_s(m_szName, "BinMesh");
+	strcpy_s(m_szName, "BinMesh");
 
 	m_iMaterialIndex = 0; // BIN에 별도 저장된 게 있으면 따로 세팅
 	m_iNumVertices = (UINT)verts.size();
@@ -165,36 +165,30 @@ HRESULT CMesh::Ready_Vertices_For_NonAnim(const aiMesh* pAIMesh, _fmatrix PreTra
 	return S_OK;
 }
 
-HRESULT CMesh::Ready_Vertices_For_NonAnim(const vector<SimpleVertex>& verts, _fmatrix PreTransformMatrix)
+HRESULT CMesh::Ready_Vertices_For_NonAnim(const vector<SimpleVertexBin>& verts, _fmatrix PreTransformMatrix)
 {
-	m_iVertexStride = sizeof(VTXMESH); // 반드시 VTXMESH!
+	m_iVertexStride = sizeof(SimpleVertexBin);
 
-	std::vector<VTXMESH> vtxMesh(verts.size());
-	for (size_t i = 0; i < verts.size(); ++i)
-	{
-		vtxMesh[i].vPosition = XMFLOAT3(verts[i].pos[0], verts[i].pos[1], verts[i].pos[2]);
-		vtxMesh[i].vNormal = XMFLOAT3(verts[i].normal[0], verts[i].normal[1], verts[i].normal[2]);
-		vtxMesh[i].vTangent = XMFLOAT3(0, 0, 0);      // BIN에 없으니 0으로
-		vtxMesh[i].vBinormal = XMFLOAT3(0, 0, 0);      // BIN에 없으니 0으로
-		vtxMesh[i].vTexcoord = XMFLOAT2(verts[i].uv[0], verts[i].uv[1]);
-	}
+	// BIN에서 좌표 변환은 저장 당시 이미 적용된 것이 일반적(추가변환 불필요)
+	// 필요시 여기에 변환 넣기
 
+	// 버텍스 버퍼 생성
 	D3D11_BUFFER_DESC VBDesc{};
-	VBDesc.ByteWidth = (UINT)(vtxMesh.size() * sizeof(VTXMESH));
+	VBDesc.ByteWidth = (UINT)(verts.size() * sizeof(SimpleVertexBin));
 	VBDesc.Usage = D3D11_USAGE_DEFAULT;
 	VBDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	VBDesc.CPUAccessFlags = 0;
 
 	D3D11_SUBRESOURCE_DATA VBInit{};
-	VBInit.pSysMem = vtxMesh.data();
+	VBInit.pSysMem = verts.data();
 
 	if (FAILED(m_pDevice->CreateBuffer(&VBDesc, &VBInit, &m_pVB)))
 		return E_FAIL;
 
-	// (m_vecPositions도 vtxMesh 기준으로 채워주면 OK)
+	// m_vecPositions 세팅
 	m_vecPositions.clear();
-	for (const auto& v : vtxMesh)
-		m_vecPositions.push_back(v.vPosition);
+	for (const auto& v : verts)
+		m_vecPositions.push_back(_float3(v.pos[0], v.pos[1], v.pos[2]));
 
 	return S_OK;
 }
@@ -319,13 +313,13 @@ HRESULT CMesh::Ready_Vertices_For_Anim(const aiMesh* pAIMesh, const vector<CBone
 	return S_OK;
 }
 
-HRESULT CMesh::Ready_Vertices_For_Anim(const vector<SimpleVertex>& verts, const vector<CBone*>& Bones)
+HRESULT CMesh::Ready_Vertices_For_Anim(const vector<SimpleVertexBin>& verts, const vector<CBone*>& Bones)
 {
-	m_iVertexStride = sizeof(SimpleVertex);
+	m_iVertexStride = sizeof(SimpleVertexBin);
 
 	// 버텍스 버퍼 생성
 	D3D11_BUFFER_DESC VBDesc{};
-	VBDesc.ByteWidth = (UINT)(verts.size() * sizeof(SimpleVertex));
+	VBDesc.ByteWidth = (UINT)(verts.size() * sizeof(SimpleVertexBin));
 	VBDesc.Usage = D3D11_USAGE_DEFAULT;
 	VBDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	VBDesc.CPUAccessFlags = 0;
@@ -361,7 +355,7 @@ CMesh* CMesh::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, MODEL
 	return pInstance;
 }
 
-CMesh* CMesh::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, MODELTYPE eType,const vector<SimpleVertex>& verts, const vector<uint32_t>& indices, const vector<CBone*>& Bones, _fmatrix PreTransformMatrix)
+CMesh* CMesh::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, MODELTYPE eType,const vector<SimpleVertexBin>& verts, const vector<uint32_t>& indices, const vector<CBone*>& Bones, _fmatrix PreTransformMatrix)
 {
 	CMesh* pInstance = new CMesh(pDevice, pContext);
 

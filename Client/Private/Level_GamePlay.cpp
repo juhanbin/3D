@@ -109,73 +109,85 @@ HRESULT CLevel_GamePlay::Ready_Layer_Player(const _wstring& strLayerTag)
 
 HRESULT CLevel_GamePlay::Ready_Layer_Monster(const _wstring& strLayerTag)
 {
-	std::ifstream ifs("../../Mapdata/scene.bin", std::ios::binary);
-	if (!ifs.is_open())
-	{
-		OutputDebugStringW(L"[SCENE] scene.bin 파일을 열 수 없습니다.\n");
-		return S_OK;
-	}
-
-	size_t count = 0;
-	ifs.read((char*)&count, sizeof(count));
-	for (size_t i = 0; i < count; ++i) {
-		Client::MapObject obj{};
-		ifs.read((char*)&obj, sizeof(obj));
-
-		auto type = static_cast<EObjectType>(obj.type);
-		if (type == EObjectType::MONSTER)
+        std::ifstream ifs("../../Mapdata/scene.bin");
+        if (!ifs.is_open())
+        {
+                if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::GAMEPLAY), strLayerTag,
+                        ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Monster"))))
+                        return E_FAIL;
+                return S_OK;
+        }
+		struct MapObject
 		{
+			int id; 
+			int type; 
+			float size[3]; 
+			float rot[3]; 
+			float pos[3];
+			char fbxPath[260];
+			char binPath[260];
+		} obj{};
+
+		while (ifs >> obj.id >> obj.type
+			>> obj.size[0] >> obj.size[1] >> obj.size[2]
+			>> obj.rot[0] >> obj.rot[1] >> obj.rot[2]
+			>> obj.pos[0] >> obj.pos[1] >> obj.pos[2])
+		{
+			if (obj.type != 4)
+				continue;
+
 			CMonster::MONSTER_DESC desc{};
+			
 			desc.vScale = _float3(obj.size[0], obj.size[1], obj.size[2]);
 			desc.vRot = _float3(obj.rot[0], obj.rot[1], obj.rot[2]);
 			desc.vPos = _float3(obj.pos[0], obj.pos[1], obj.pos[2]);
 
-			if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(
-				ENUM_CLASS(LEVEL::GAMEPLAY), strLayerTag,
+			if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::GAMEPLAY), strLayerTag,
 				ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Monster"), &desc)))
-			{
 				OutputDebugStringW(L"[SCENE] 몬스터 Add 실패!\n");
-			}
 		}
-	}
-	return S_OK;
-}
 
+        return S_OK;
+}
 HRESULT CLevel_GamePlay::Ready_Layer_MapObjects(const _wstring& strLayerTag)
 {
-	std::ifstream ifs("../../Mapdata/scene.bin", std::ios::binary);
+	std::ifstream ifs("../../Mapdata/scene.bin");
 	if (!ifs.is_open())
 	{
 		OutputDebugStringW(L"[SCENE] scene.bin 파일을 열 수 없습니다.\n");
 		return S_OK;
 	}
 
+	struct MapObject
+		{
+			int id; 
+			int type; 
+			float size[3]; 
+			float rot[3]; 
+			float pos[3];
+			char fbxPath[260];
+			char binPath[260];
+		} obj{};
+
 	size_t count = 0;
 	ifs.read((char*)&count, sizeof(count));
 	for (size_t i = 0; i < count; ++i) {
-		Client::MapObject obj{};
+		MapObject obj{};
 		ifs.read((char*)&obj, sizeof(obj));
-
-		auto type = static_cast<EObjectType>(obj.type);
-		if (type == EObjectType::ROCK_AA)
+		CMapObject::MAPOBJECT_DESC desc{};
+		desc.type = static_cast<EObjectType>(obj.type);
+		desc.vScale = _float3(obj.size[0], obj.size[1], obj.size[2]);
+		desc.vRot = _float3(obj.rot[0], obj.rot[1], obj.rot[2]);
+		desc.vPos = _float3(obj.pos[0], obj.pos[1], obj.pos[2]);
+		if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(
+			ENUM_CLASS(LEVEL::GAMEPLAY), strLayerTag,
+			ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_MapObject"), &desc)))
 		{
-			CMapObject::MAPOBJECT_DESC desc{};
-			desc.type = type;
-			desc.vScale = _float3(obj.size[0], obj.size[1], obj.size[2]);
-			desc.vRot = _float3(obj.rot[0], obj.rot[1], obj.rot[2]);
-			desc.vPos = _float3(obj.pos[0], obj.pos[1], obj.pos[2]);
-
-			if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(
-				ENUM_CLASS(LEVEL::GAMEPLAY), strLayerTag,
-				ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_MapObject"), &desc)))
-			{
-				OutputDebugStringW(L"[SCENE] MapObject Add 실패!\n");
-			}
+			OutputDebugStringW(L"[SCENE] MapObject Add 실패!\n");
 		}
 	}
 	return S_OK;
 }
-
 
 
 HRESULT CLevel_GamePlay::Ready_Layer_Effect(const _wstring& strLayerTag)

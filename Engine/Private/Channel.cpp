@@ -1,4 +1,4 @@
-ï»¿#include "Channel.h"
+#include "Channel.h"
 #include "Bone.h"
 
 CChannel::CChannel()
@@ -17,9 +17,9 @@ HRESULT CChannel::Initialize(const aiNodeAnim* pAIChannel, const vector<class CB
             return false;
         });
 
-    //char buf[256];
-    ////sprintf_s(buf, "[CChannel] Channel ìƒì„±: boneName=%s, ë§¤í•‘ëœ BoneIndex=%d (Bones.size()=%d)\n", pAIChannel->mNodeName.data, m_iBoneIndex, (int)Bones.size());
-    ////OutputDebugStringA(buf);
+    char buf[256];
+    sprintf_s(buf, "[CChannel] Channel »ý¼º: boneName=%s, ¸ÅÇÎµÈ BoneIndex=%d (Bones.size()=%d)\n", pAIChannel->mNodeName.data, m_iBoneIndex, (int)Bones.size());
+    //OutputDebugStringA(buf);
 
     m_iNumKeyFrames = max(pAIChannel->mNumScalingKeys, pAIChannel->mNumRotationKeys);
     m_iNumKeyFrames = max(m_iNumKeyFrames, pAIChannel->mNumPositionKeys);
@@ -61,10 +61,11 @@ HRESULT CChannel::Initialize(const aiNodeAnim* pAIChannel, const vector<class CB
         m_KeyFrames.push_back(KeyFrame);
     }
 
+
     return S_OK;
 }
 
-HRESULT CChannel::Initialize(const ChannelInfo& chInfo, const std::vector<KeyFrame >& keyframes, const std::vector<CBone*>& Bones)
+HRESULT CChannel::Initialize(const ChannelInfoBin& chInfo, const std::vector<KeyFrameBin>& keyframes, const std::vector<CBone*>& Bones)
 {
     m_iBoneIndex = -1;
     for (size_t i = 0; i < Bones.size(); ++i)
@@ -74,11 +75,6 @@ HRESULT CChannel::Initialize(const ChannelInfo& chInfo, const std::vector<KeyFra
             break;
         }
     }
-
-    //char dbg[256];
-    //sprintf_s(dbg, "[BIN] Channel BoneName=%s -> BoneIndex=%d KeyFrames=%u\n",
-    //    chInfo.boneName, m_iBoneIndex, chInfo.keyframeCount);
-    //OutputDebugStringA(dbg);
 
     m_iNumKeyFrames = chInfo.keyframeCount;
 
@@ -91,26 +87,19 @@ HRESULT CChannel::Initialize(const ChannelInfo& chInfo, const std::vector<KeyFra
         k.fTrackPosition = static_cast<float>(kf.time);
         m_KeyFrames.push_back(k);
     }
-
     return S_OK;
 }
 
 void CChannel::Update_TransformationMatrix(const vector<class CBone*>& Bones, _float fCurrentTrackPosition, _uint* pCurrentKeyFrameIndex)
 {
-    if (m_iBoneIndex < 0 || m_iBoneIndex >= Bones.size()) {
-        //OutputDebugStringA("[ERR] Invalid BoneIndex!\n");
-        return;
-    }
-
-    //char dbg[128];
-    ////sprintf_s(dbg, "[AnimUpdate] BoneIndex=%d KeyFrames=%zu CurrentTime=%.3f\n", m_iBoneIndex, m_KeyFrames.size(), fCurrentTrackPosition);
-    //OutputDebugStringA(dbg);
-
     if (fCurrentTrackPosition == 0.f)
         *pCurrentKeyFrameIndex = 0;
 
-    _vector vScale, vRotation, vTranslation;
-    KEYFRAME LastKeyFrame = m_KeyFrames.back();
+    /* ¼±ÅÃµÈ ¾Ö´Ï¸ÞÀÌ¼ÇÀÌ ÀÌ¿ëÇÏ°í ÀÖ´Â ÀÌ »À(Channel)ÀÇ ÇöÀç Àç»ýµÈ À§Ä¡(fCurrrentTrackPosition)¿¡ ¸Â´Â »óÅÂÇà·ÄÀ» ¸¸µé¾î ÁØ´Ù. */
+    _vector         vScale, vRotation, vTranslation;
+
+    /* ¸¶Áö¸· Å°ÇÁ·¹ÀÓ»óÅÂ¸¦ ÃëÇÏ³®. */
+    KEYFRAME        LastKeyFrame = m_KeyFrames.back();
 
     if (fCurrentTrackPosition >= LastKeyFrame.fTrackPosition)
     {
@@ -118,34 +107,39 @@ void CChannel::Update_TransformationMatrix(const vector<class CBone*>& Bones, _f
         vRotation = XMLoadFloat4(&LastKeyFrame.vRotation);
         vTranslation = XMVectorSetW(XMLoadFloat3(&LastKeyFrame.vTranslation), 1.f);
     }
+
+    /* ¾çÂÊ Å°ÇÁ·¹ÀÓ»çÀÌ¿¡¼­ÀÇ Áß°£»óÅÂ¸¦ º¸°£ÇÏ¿© ¸¸µç´Ù. */
     else
     {
-        while (*pCurrentKeyFrameIndex + 1 < m_KeyFrames.size() &&
-            fCurrentTrackPosition >= m_KeyFrames[*pCurrentKeyFrameIndex + 1].fTrackPosition)
-        {
+        while (fCurrentTrackPosition >= m_KeyFrames[*pCurrentKeyFrameIndex + 1].fTrackPosition)
             ++*pCurrentKeyFrameIndex;
-        }
 
-        _vector vSourScale = XMLoadFloat3(&m_KeyFrames[*pCurrentKeyFrameIndex].vScale);
-        _vector vSourRotation = XMLoadFloat4(&m_KeyFrames[*pCurrentKeyFrameIndex].vRotation);
-        _vector vSourTranslation = XMVectorSetW(XMLoadFloat3(&m_KeyFrames[*pCurrentKeyFrameIndex].vTranslation), 1.f);
+        _vector    vSourScale, vDestScale;
+        _vector    vSourRotation, vDestRotation;
+        _vector    vSourTranslation, vDestTranslation;
 
-        _vector vDestScale = XMLoadFloat3(&m_KeyFrames[*pCurrentKeyFrameIndex + 1].vScale);
-        _vector vDestRotation = XMLoadFloat4(&m_KeyFrames[*pCurrentKeyFrameIndex + 1].vRotation);
-        _vector vDestTranslation = XMVectorSetW(XMLoadFloat3(&m_KeyFrames[*pCurrentKeyFrameIndex + 1].vTranslation), 1.f);
+        vSourScale = XMLoadFloat3(&m_KeyFrames[*pCurrentKeyFrameIndex].vScale);
+        vSourRotation = XMLoadFloat4(&m_KeyFrames[*pCurrentKeyFrameIndex].vRotation);
+        vSourTranslation = XMVectorSetW(XMLoadFloat3(&m_KeyFrames[*pCurrentKeyFrameIndex].vTranslation), 1.f);
 
-        _float fRatio = (fCurrentTrackPosition - m_KeyFrames[*pCurrentKeyFrameIndex].fTrackPosition) /
-            (m_KeyFrames[*pCurrentKeyFrameIndex + 1].fTrackPosition - m_KeyFrames[*pCurrentKeyFrameIndex].fTrackPosition);
+        vDestScale = XMLoadFloat3(&m_KeyFrames[*pCurrentKeyFrameIndex + 1].vScale);
+        vDestRotation = XMLoadFloat4(&m_KeyFrames[*pCurrentKeyFrameIndex + 1].vRotation);
+        vDestTranslation = XMVectorSetW(XMLoadFloat3(&m_KeyFrames[*pCurrentKeyFrameIndex + 1].vTranslation), 1.f);
+
+        _float      fRatio = (fCurrentTrackPosition - m_KeyFrames[*pCurrentKeyFrameIndex].fTrackPosition) / (m_KeyFrames[*pCurrentKeyFrameIndex + 1].fTrackPosition - m_KeyFrames[*pCurrentKeyFrameIndex].fTrackPosition);
 
         vScale = XMVectorLerp(vSourScale, vDestScale, fRatio);
         vRotation = XMQuaternionSlerp(vSourRotation, vDestRotation, fRatio);
         vTranslation = XMVectorSetW(XMVectorLerp(vSourTranslation, vDestTranslation, fRatio), 1.f);
+
+
     }
 
-    _matrix TransformationMatrix = XMMatrixAffineTransformation(vScale, XMVectorSet(0.f, 0.f, 0.f, 1.f), vRotation, vTranslation);
+    /*_matrix         TransformationMatrix = XMMatrixScaling() * XMMatrixRotationQuaternion() * XMMatrixTranslation();*/
+    _matrix         TransformationMatrix = XMMatrixAffineTransformation(vScale, XMVectorSet(0.f, 0.f, 0.f, 1.f), vRotation, vTranslation);
+
     Bones[m_iBoneIndex]->Set_TransformationMatrix(TransformationMatrix);
 }
-
 
 CChannel* CChannel::Create(const aiNodeAnim* pAIChannel, const vector<class CBone*>& Bones)
 {
@@ -160,7 +154,7 @@ CChannel* CChannel::Create(const aiNodeAnim* pAIChannel, const vector<class CBon
     return pInstance;
 }
 
-CChannel* CChannel::Create(const ChannelInfo& chInfo, const std::vector<KeyFrame >& keyframes, const std::vector<CBone*>& Bones)
+CChannel* CChannel::Create(const ChannelInfoBin& chInfo, const std::vector<KeyFrameBin>& keyframes, const std::vector<CBone*>& Bones)
 {
     CChannel* pInstance = new CChannel();
     if (FAILED(pInstance->Initialize(chInfo, keyframes, Bones)))
@@ -174,3 +168,4 @@ CChannel* CChannel::Create(const ChannelInfo& chInfo, const std::vector<KeyFrame
 void CChannel::Free()
 {
 }
+
