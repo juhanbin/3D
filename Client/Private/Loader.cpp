@@ -156,7 +156,7 @@ HRESULT CLoader::Loading_For_GamePlay_Level()
 	_matrix		PreTransformMatrix = XMMatrixIdentity();
 
 
-	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+	/*PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
 	if (FAILED(m_pGameInstance->Add_Prototype(
 		ENUM_CLASS(LEVEL::GAMEPLAY),
 		TEXT("Prototype_Component_Model_Hero"),
@@ -165,11 +165,11 @@ HRESULT CLoader::Loading_For_GamePlay_Level()
 	{
 		OutputDebugStringA("[LOADER] Hero 모델 프로토타입 등록 실패!\n");
 		return E_FAIL;
-	}
+	}*/
 
 
 	// Hero 프로토타입 등록
-   /*	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+   	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
 	if (FAILED(m_pGameInstance->Add_Prototype(
 		ENUM_CLASS(LEVEL::GAMEPLAY),
 		TEXT("Prototype_Component_Model_Hero"),
@@ -178,7 +178,7 @@ HRESULT CLoader::Loading_For_GamePlay_Level()
 	{
 		OutputDebugStringA("[LOADER] Hero 모델 프로토타입 등록 실패!\n");
 		return E_FAIL;
-	}*/
+	}
 
 	// Rock_AA 프로토타입 등록
 	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
