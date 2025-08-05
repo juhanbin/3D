@@ -14,6 +14,7 @@ class CMonster final :public CGameObject
 public:
 	struct MONSTER_DESC : public CGameObject::GAMEOBJECT_DESC
 	{
+		EObjectType type{ EObjectType::MONSTER };
 		_float3 vScale{ 1.f,1.f,1.f };
 		_float3 vRot{ 0.f,0.f,0.f };
 		_float3 vPos{ 0.f,0.f,0.f };
@@ -35,7 +36,7 @@ public:
 private:
 	CShader* m_pShaderCom = { nullptr };
 	CModel* m_pModelCom = { nullptr };
-
+	EObjectType m_eType = { EObjectType::MONSTER };
 private:
 	HRESULT Ready_Components();
 	HRESULT Bind_ShaderResources();

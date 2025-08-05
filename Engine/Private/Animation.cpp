@@ -1,6 +1,6 @@
 #include "Animation.h"
 #include "Channel.h"
-
+#include <fstream>
 CAnimation::CAnimation()
 {
     /*   XMMatrixDecompose(스케일, 로테이션, 이동, 행렬);*/
@@ -28,9 +28,9 @@ HRESULT CAnimation::Initialize(const aiAnimation* pAIAnimation, const vector<cla
 
     m_CurrentKeyFrameIndices.resize(m_iNumChannels);
 
-    char buf[256];
+    /*char buf[256];
     sprintf_s(buf, "[CAnimation] Animation 생성: name=%s, Duration=%.3f, TicksPerSec=%.3f, ChannelCount=%d\n",
-        pAIAnimation->mName.data, m_fDuration, m_fTickPerSecond, m_iNumChannels);
+        pAIAnimation->mName.data, m_fDuration, m_fTickPerSecond, m_iNumChannels);*/
     //OutputDebugStringA(buf);
 
     for (size_t i = 0; i < m_iNumChannels; i++)
@@ -45,32 +45,66 @@ HRESULT CAnimation::Initialize(const aiAnimation* pAIAnimation, const vector<cla
     return S_OK;
 }
 
-HRESULT CAnimation::Initialize(const AnimInfoBin& animInfo, const std::vector<ChannelInfoBin>& channels, const std::vector<KeyFrameBin>& keyframes, const std::vector<class CBone*>& Bones)
+HRESULT CAnimation::Initialize(std::ifstream& ifs, const AnimInfoBin& animBin, const std::vector<CBone*>& Bones)
 {
-    m_fDuration = static_cast<float>(animInfo.duration);
-    m_fTickPerSecond = static_cast<float>(animInfo.ticksPerSecond);
-    m_iNumChannels = animInfo.channelCount;
+    m_fDuration = (float)animBin.duration;
+    m_fTickPerSecond = (float)animBin.ticksPerSecond;
+    m_iNumChannels = animBin.channelCount;
     m_CurrentKeyFrameIndices.resize(m_iNumChannels);
 
-    size_t keyframeOffset = 0;
-    for (size_t i = 0; i < m_iNumChannels; ++i)
-    {
-        // 채널별 키프레임 분리
-        const ChannelInfoBin& chInfo = channels[i];
-        std::vector<KeyFrameBin> chKeyframes(
-            keyframes.begin() + keyframeOffset,
-            keyframes.begin() + keyframeOffset + chInfo.keyframeCount
-        );
-        keyframeOffset += chInfo.keyframeCount;
+   char buf[256];
+    /*sprintf_s(buf, "  [CAnimation::Initialize] 이름='%s', 채널수=%d, duration=%.2f\n", animBin.name, animBin.channelCount, animBin.duration);
+    OutputDebugStringA(buf);*/
 
-        // BIN용 CChannel 생성
-        CChannel* pChannel = CChannel::Create(chInfo, chKeyframes, Bones);
-        if (!pChannel)
-            return E_FAIL;
-        m_Channels.push_back(pChannel);
-    }
-    return S_OK;
+   for (size_t i = 0; i < m_iNumChannels; ++i)
+   {
+       // 1. 채널정보 한개씩 읽기
+       ChannelInfoBin channelBin{};
+       ifs.read(reinterpret_cast<char*>(&channelBin), sizeof(ChannelInfoBin));
+       if (!ifs) {
+           OutputDebugStringA("채널 정보 읽기 실패!\n");
+           return E_FAIL;
+       }
+
+      //sprintf_s(buf, "    [Anim->Channel] [%zu] boneName='%s' keyCount=%u\n", i, channelBin.boneName, channelBin.keyframeCount);
+      //OutputDebugStringA(buf);
+
+       // 2. 키프레임들 바로 읽기
+       uint32_t keyCount = channelBin.keyframeCount;
+       std::vector<KEYFRAME> keyframes(keyCount);
+       if (keyCount > 0)
+           ifs.read(reinterpret_cast<char*>(keyframes.data()), sizeof(KEYFRAME) * keyCount);
+
+       if (channelBin.keyframeCount > 0) {
+          // sprintf_s(buf, "      첫 keyframe pos=(%.2f,%.2f,%.2f) time=%.2f\n",
+          //     keyframes[0].vTranslation.x, keyframes[0].vTranslation.y, keyframes[0].vTranslation.z, keyframes[0].fTrackPosition);
+          // OutputDebugStringA(buf);
+
+           if (!ifs) {
+               /* sprintf_s(buf, "키프레임 읽기 실패! (i=%zu, keyCount=%u)\n", i, keyCount);
+                OutputDebugStringA(buf);*/
+               return E_FAIL;
+           }
+
+           // 3. 채널 생성
+           CChannel* pChannel = CChannel::Create(channelBin, keyframes, Bones);
+           if (nullptr == pChannel) {
+               /* sprintf_s(buf, "  [Anim->Channel] Channel 생성 실패! (i=%zu, boneName=%s, keyframeCount=%u)\n", i, channelBin.boneName, channelBin.keyframeCount);
+                OutputDebugStringA(buf);*/
+               return E_FAIL;
+           }
+           m_Channels.push_back(pChannel);
+
+           /*sprintf_s(buf, "    [Anim->Channel] 채널[%zu] bone='%s' keyCount=%u\n", i, channelBin.boneName, keyCount);
+           OutputDebugStringA(buf);*/
+       }
+       
+   }
+   return S_OK;
 }
+
+
+
 
 void CAnimation::Update_TransformationMatrices(const vector<class CBone*>& Bones, _bool isLoop, _bool* pFinished, _float fTimeDelta)
 {
@@ -109,18 +143,16 @@ CAnimation* CAnimation::Create(const aiAnimation* pAIAnimation, const vector<cla
     return pInstance;
 }
 
-CAnimation* CAnimation::Create(const AnimInfoBin& animInfo, const std::vector<ChannelInfoBin>& channels, const std::vector<KeyFrameBin>& keyframes, const std::vector<class CBone*>& Bones)
+CAnimation* CAnimation::Create(ifstream& ifs, const AnimInfoBin& animBin, const std::vector<CBone*>& Bones)
 {
     CAnimation* pInstance = new CAnimation();
-    if (FAILED(pInstance->Initialize(animInfo, channels, keyframes, Bones)))
+    if (FAILED(pInstance->Initialize(ifs, animBin, Bones)))
     {
-        MSG_BOX(TEXT("Failed to Created : CAnimation (BIN)"));
+        MSG_BOX(TEXT("Failed to Created : CAnimation(bin)"));
         Safe_Release(pInstance);
     }
     return pInstance;
 }
-
-
 
 CAnimation* CAnimation::Clone()
 {

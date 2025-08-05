@@ -29,6 +29,7 @@ public:
 	void Set_TransformationMatrix(_fmatrix Matrix) {
 		XMStoreFloat4x4(&m_TransformationMatrix, Matrix);
 	}
+
 public:
 
 	HRESULT Initialize(const aiNode* pAINode, _int iParentBoneIndex);
@@ -38,6 +39,11 @@ public:
 	_bool Compare_Name(const _char* pName) {
 		return !strcmp(pName, m_szName);
 	}
+
+private:
+	_float4x4    m_OffsetMatrix = {};
+public:
+	const _float4x4& Get_OffsetMatrix() const { return m_OffsetMatrix; }
 
 private:
 	_char				m_szName[MAX_PATH] = {};

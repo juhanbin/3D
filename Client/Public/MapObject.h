@@ -8,13 +8,6 @@ class CModel;
 NS_END
 
 NS_BEGIN(Client)
-enum class EObjectType : int
-{
-    //MONSTER ,
-    ROCK_AA ,
-    // ...추가 오브젝트 타입
-};
-
 class CMapObject final : public CGameObject
 {
 public:
@@ -42,7 +35,7 @@ public:
 private:
     CShader* m_pShaderCom = nullptr;
     CModel* m_pModelCom = nullptr;
-    EObjectType m_eType = {}/*EObjectType::MONSTER*/;
+    EObjectType m_eType = { EObjectType::ROCK_AA }/*EObjectType::MONSTER*/;
 
 private:
     HRESULT Ready_Components();

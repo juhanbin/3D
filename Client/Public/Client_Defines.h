@@ -11,6 +11,26 @@ namespace Client
 
 	enum class LEVEL { STATIC, LOADING, LOGO, GAMEPLAY, END };
 	enum  class FILETYPE { FBX, BIN };
+
+	enum class EObjectType : int
+	{
+		MONSTER = 0,
+		ROCK_AA,
+		END
+	};
+
+#pragma pack(push,1)
+	struct MapObject
+	{
+		int id;
+		EObjectType type;
+		float size[3];
+		float rot[3];
+		float pos[3];
+		char fbxPath[260];
+		char binPath[260];
+	};
+#pragma pack(pop)
 }
 
 extern HWND g_hWnd;

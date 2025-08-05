@@ -8,6 +8,7 @@ CMonster::CMonster(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 
 CMonster::CMonster(const CMonster& Prototype)
     :CGameObject{ Prototype }
+    , m_eType(Prototype.m_eType)
 {
 }
 
@@ -24,7 +25,7 @@ HRESULT CMonster::Initialize(void* pArg)
     if (pArg)
     {
         MONSTER_DESC* pDesc = static_cast<MONSTER_DESC*>(pArg);
-
+        m_eType = pDesc->type;
         //크기
         XMMATRIX matScale = XMMatrixScaling(pDesc->vScale.x, pDesc->vScale.y, pDesc->vScale.z);
 
@@ -48,16 +49,14 @@ HRESULT CMonster::Initialize(void* pArg)
         m_pTransformCom->Set_State(STATE::POSITION, XMLoadFloat4((XMFLOAT4*)&matWorld4x4.m[3]));
 
         char szDbg[256];
-        sprintf_s(szDbg,sizeof(szDbg), "scale=(%.2f,%.2f,%.2f) rot=(%.2f,%.2f,%.2f) [MON::Init] pos=(%.2f,%.2f,%.2f)\n",
+        sprintf_s(szDbg, sizeof(szDbg), "type=%d scale=(%.2f,%.2f,%.2f) rot=(%.2f,%.2f,%.2f) pos=(%.2f,%.2f,%.2f)\n",
+            (int)m_eType,
             pDesc->vScale.x, pDesc->vScale.y, pDesc->vScale.z,
             pDesc->vRot.x, pDesc->vRot.y, pDesc->vRot.z,
             pDesc->vPos.x, pDesc->vPos.y, pDesc->vPos.z);
         OutputDebugStringA(szDbg);
     }
 
-    XMMATRIX world = m_pTransformCom->Get_WorldMatrix();
-    char szWorld[256];
-    XMStoreFloat4x4((XMFLOAT4X4*)&szWorld, world);
 
     if (FAILED(Ready_Components()))
         return E_FAIL;
@@ -97,14 +96,19 @@ HRESULT CMonster::Render()
 
     for (size_t i = 0; i < iNumMeshes; i++)
     {
-        if (FAILED(m_pModelCom->Bind_Materials(m_pShaderCom, "g_DiffuseTexture", i, aiTextureType_DIFFUSE, 0)))
+        if (FAILED(m_pModelCom->Bind_Materials_Bin(m_pShaderCom, "g_DiffuseTexture", i, aiTextureType_DIFFUSE, 0))) // 0: DIFFUSE
         {
-            OutputDebugStringA("머티리얼 바인딩 실패!\n");
+            OutputDebugStringA("d머티리얼 바인딩 실패!\n");
+            return E_FAIL;
+        }
+
+        if (FAILED(m_pModelCom->Bind_Materials_Bin(m_pShaderCom, "g_NormalTexture", i, 1, 0))) // 1: NORMAL
+        {
+            OutputDebugStringA("n머티리얼 바인딩 실패!\n");
             return E_FAIL;
         }
 
         m_pShaderCom->Begin(0);
-
         m_pModelCom->Render(i);
     }
 
@@ -113,7 +117,7 @@ HRESULT CMonster::Render()
 
 HRESULT CMonster::Ready_Components()
 {
-    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Shader_VtxMesh"),
+    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Shader_VtxAnimMesh"),
         TEXT("Com_Shader"), reinterpret_cast<CComponent**>(&m_pShaderCom), nullptr)))
         return E_FAIL;
 
@@ -121,10 +125,27 @@ HRESULT CMonster::Ready_Components()
         TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom), nullptr)))
         return E_FAIL;
 
-    /*if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Model_ForkLift"),
-        TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom), nullptr)))
-        return E_FAIL;*/
+    /*const wchar_t* modelProto = nullptr;
+    switch (m_eType)
+    {
+    case EObjectType::MONSTER:
+        modelProto = TEXT("Prototype_Component_Model_Hero");
+        break;
+    default:
+        OutputDebugStringA("Unknown EObjectType in Ready_Components!\n");
+        return E_FAIL;
+    }
+    if (FAILED(CGameObject::Add_Component(
+        ENUM_CLASS(LEVEL::GAMEPLAY),
+        modelProto,
+        TEXT("Com_Model"),
+        reinterpret_cast<CComponent**>(&m_pModelCom), nullptr)))
+    {
+        OutputDebugStringA("CMonster: 모델 Add_Component 실패!\n");
+        return E_FAIL;
+    }*/
 
+    OutputDebugStringA("CMonster: Ready_Components 정상 종료\n");
     return S_OK;
 }
 

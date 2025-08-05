@@ -9,6 +9,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include "BinType.h"
 
 NS_BEGIN(Engine)
 class CGameInstance;
@@ -40,6 +41,10 @@ private:
 private:
     HRESULT Ready_Prototype_ForStatic();
     HRESULT Start_Level(LEVEL eStartLevelID);
+
+    //bone
+public:
+    void GatherBones(const aiScene* scene, const aiNode* node, int parentIdx, std::vector<BoneInfoBin>& bones);
 
 public:
     // MapTool ÇÔ¼ö

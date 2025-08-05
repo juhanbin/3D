@@ -154,20 +154,33 @@ HRESULT CLoader::Loading_For_GamePlay_Level()
 		return E_FAIL;
 
 	_matrix		PreTransformMatrix = XMMatrixIdentity();
-	// Hero 프로토타입 등록
+
+
 	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
 	if (FAILED(m_pGameInstance->Add_Prototype(
 		ENUM_CLASS(LEVEL::GAMEPLAY),
 		TEXT("Prototype_Component_Model_Hero"),
-		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::BIN,
-			"../../Mapdata/Hero.bin", PreTransformMatrix))))
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::ANIM, Engine::FILETYPE::FBX,
+			"../Bin/Resources/Blood_Spear/Model/Hero/Hero.fbx", PreTransformMatrix))))
 	{
 		OutputDebugStringA("[LOADER] Hero 모델 프로토타입 등록 실패!\n");
 		return E_FAIL;
 	}
 
-	// Rock_AA 프로토타입 등록
 
+	// Hero 프로토타입 등록
+   /*	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::GAMEPLAY),
+		TEXT("Prototype_Component_Model_Hero"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::ANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/Hero.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] Hero 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}*/
+
+	// Rock_AA 프로토타입 등록
 	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
 	if (FAILED(m_pGameInstance->Add_Prototype(
 		ENUM_CLASS(LEVEL::GAMEPLAY),

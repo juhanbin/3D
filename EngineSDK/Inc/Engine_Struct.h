@@ -28,40 +28,13 @@ namespace Engine
 		float		fRange;
 	}LIGHT_DESC;
 
-	typedef struct tagKeyFrame
-	{
-		XMFLOAT3	vScale;
-		XMFLOAT4	vRotation;
-		XMFLOAT3	vTranslation;
-
-		float		fTrackPosition;
-	}KEYFRAME;
-
-	typedef struct tagVertexPositionTexcoord
-	{
-		XMFLOAT3		vPosition;
-		XMFLOAT2		vTexcoord;
-
-		static const unsigned int	iNumElements = { 2 };
-		static constexpr D3D11_INPUT_ELEMENT_DESC	Elements[iNumElements] = {
-			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		};
-	}VTXPOSTEX;
-
-	typedef struct tagVertexNormalTexcoord
-	{
-		XMFLOAT3		vPosition;
-		XMFLOAT3		vNormal;
-		XMFLOAT2		vTexcoord;
-
-		static const unsigned int	iNumElements = { 3 };
-		static constexpr D3D11_INPUT_ELEMENT_DESC	Elements[iNumElements] = {
-			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		};
-	}VTXNORTEX;
+#pragma pack(push, 1)
+	typedef struct tagKeyFrame {
+		DirectX::XMFLOAT3 vScale;         // 12
+		DirectX::XMFLOAT4 vRotation;      // 16
+		DirectX::XMFLOAT3 vTranslation;   // 12
+		float    fTrackPosition;          // 4
+	} KEYFRAME;
 
 	typedef struct tagVertexMesh
 	{
@@ -103,6 +76,35 @@ namespace Engine
 			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 80, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		};
 	}VTXANIMMESH;
+#pragma pack(pop)
+
+	typedef struct tagVertexPositionTexcoord
+	{
+		XMFLOAT3		vPosition;
+		XMFLOAT2		vTexcoord;
+
+		static const unsigned int	iNumElements = { 2 };
+		static constexpr D3D11_INPUT_ELEMENT_DESC	Elements[iNumElements] = {
+			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		};
+	}VTXPOSTEX;
+
+	typedef struct tagVertexNormalTexcoord
+	{
+		XMFLOAT3		vPosition;
+		XMFLOAT3		vNormal;
+		XMFLOAT2		vTexcoord;
+
+		static const unsigned int	iNumElements = { 3 };
+		static constexpr D3D11_INPUT_ELEMENT_DESC	Elements[iNumElements] = {
+			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		};
+	}VTXNORTEX;
+
+	
 }
 
 

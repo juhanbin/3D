@@ -20,7 +20,8 @@ public:
 
 public:
 	virtual HRESULT Initialize_Prototype(MODELTYPE eType, const aiMesh* pAIMesh, const vector<class CBone*>& Bones, _fmatrix PreTransformMatrix);
-	virtual HRESULT Initialize_Prototype(MODELTYPE eType, const vector<SimpleVertexBin>& verts, const vector<uint32_t>& indices, const vector<CBone*>& Bones, _fmatrix PreTransformMatrix);
+	virtual HRESULT Initialize_Prototype(MODELTYPE eType, MeshInfoBin& meshInfos, const std::vector<VTXMESH>& verts, const vector<uint32_t>& indices, const vector<CBone*>& Bones, _fmatrix PreTransformMatrix);
+	virtual HRESULT Initialize_Prototype(MODELTYPE eType, MeshInfoBin& meshInfos, const std::vector<VTXANIMMESH>& verts, const vector<uint32_t>& indices, const vector<CBone*>& Bones, _fmatrix PreTransformMatrix);
 	virtual HRESULT Initialize(void* pArg) override;
 
 public:
@@ -38,27 +39,26 @@ private:
 	/* 전체 뼈기준 인덱스를 저장해주는 이유? */
 	/* 이 뼈에게 기대하는 데이터 -> 행렬(CombinedTransformationMatrix)을 가져오고자한다. */
 	/* 행렬은 CBone에 저장되어있다. */
-	vector<_int>	m_BoneIndices;
-	_float4x4		m_BoneMatrices[g_iMaxNumBones] = {};
+	vector<_int>			m_BoneIndices;
+	_float4x4				m_BoneMatrices[g_iMaxNumBones] = {};
 
 	vector<_float4x4>		m_OffsetMatrices;
 
-	vector<_float3> m_vecPositions;
+	vector<_float3>			m_vecPositions;
 
 public:
 	const vector<_float3>& GetPositions() const { return m_vecPositions; }
-	
+
 private:
 	HRESULT Ready_Vertices_For_NonAnim(const aiMesh* pAIMesh, _fmatrix PreTransformMatrix);
-	HRESULT Ready_Vertices_For_NonAnim(const vector<SimpleVertexBin>& verts, _fmatrix PreTransformMatrix);
+	HRESULT Ready_Vertices_For_NonAnim(const vector<VTXMESH>& verts, _fmatrix PreTransformMatrix);
 	HRESULT Ready_Vertices_For_Anim(const aiMesh* pAIMesh, const vector<CBone*>& Bones);
-	HRESULT Ready_Vertices_For_Anim(const vector<SimpleVertexBin>& verts, const vector<CBone*>& Bones);
+	HRESULT Ready_Vertices_For_Anim(const vector<VTXANIMMESH>& verts, const vector<CBone*>& Bones);
 
 public:
 	static CMesh* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, MODELTYPE eType, const aiMesh* pAIMesh, const vector<class CBone*>& Bones, _fmatrix PreTransformMatrix);
-	static CMesh* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, MODELTYPE eType,
-		const vector<SimpleVertexBin>& verts, const vector<uint32_t>& indices, const vector<CBone*>& Bones, _fmatrix PreTransformMatrix);
-
+	static CMesh* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, MODELTYPE eType, MeshInfoBin& meshInfos, const vector<VTXMESH>& verts, const vector<uint32_t>& indices, const vector<CBone*>& Bones, _fmatrix PreTransformMatrix);
+	static CMesh* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, MODELTYPE eType, MeshInfoBin& meshInfos, const vector<VTXANIMMESH>& verts, const vector<uint32_t>& indices, const vector<CBone*>& Bones, _fmatrix PreTransformMatrix);
 	virtual CComponent* Clone(void* pArg) override;
 	virtual void Free() override;
 };

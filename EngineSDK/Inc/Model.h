@@ -28,6 +28,7 @@ public:
 
 public:
 	HRESULT Bind_Materials(class CShader* pShader, const _char* pConstantName, _uint iMeshIndex, aiTextureType eTextureType, _uint iIndex);
+	HRESULT Bind_Materials_Bin(CShader* pShader, const _char* pConstantName, _uint iMeshIndex, int texType, _uint iIndex);
 	HRESULT Bind_BoneMatrices(class CShader* pShader, const _char* pConstantName, _uint iMeshIndex);
 	_bool Play_Animation(_float fTimeDelta);
 
@@ -41,14 +42,11 @@ private:
 	MODELTYPE				m_eModelType = {};
 	_float4x4				m_PreTransformMatrix = {};
 
-	// m_pAIScene = m_Importer.ReadFile(°æ·Î);
-
 private:
 	_uint					m_iNumMeshes = {};
 	vector<class CMesh*>	m_Meshes;
 
 private:
-	/* Diffuse, Ambient, Specular */
 	_uint							m_iNumMaterials = {};
 	vector<class CMeshMaterial*>	m_Materials;
 
@@ -69,8 +67,8 @@ private:
 	HRESULT Ready_Animations();
 
 private:
-	HRESULT Ready_Meshes(ifstream& ifs);
-	HRESULT Ready_Materials(const _char* pModelFilePath,const vector<MaterialInfoBin>& binMaterials);
+	HRESULT Ready_Meshes(ifstream& ifs, MODELTYPE eModelType);
+	HRESULT Ready_Materials(const _char* pModelFilePath,const vector<MaterialInfoBin2>& binMaterials);
 	HRESULT Ready_Bones(const vector<BoneInfoBin>& binBones, _int iParentIndex);
 	HRESULT Ready_Animations(ifstream& ifs);
 

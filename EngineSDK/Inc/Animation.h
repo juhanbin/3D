@@ -15,11 +15,7 @@ private:
 
 public:
 	HRESULT Initialize(const aiAnimation* pAIAnimation, const vector<class CBone*>& Bones);
-	HRESULT Initialize(
-		const AnimInfoBin& animInfo,
-		const std::vector<ChannelInfoBin>& binChannels,
-		const std::vector<KeyFrameBin>& binKeyframes,
-		const std::vector<class CBone*>& Bones);
+	HRESULT Initialize(ifstream& ifs, const AnimInfoBin& animBin, const std::vector<CBone*>& Bones);
 	void Update_TransformationMatrices(const vector<class CBone*>& Bones, _bool isLoop, _bool* pFinished, _float fTimeDelta);
 
 private:
@@ -42,11 +38,7 @@ private:
 
 public:
 	static CAnimation* Create(const aiAnimation* pAIAnimation, const vector<class CBone*>& Bones);
-	static CAnimation* Create(
-		const AnimInfoBin& animInfo,
-		const std::vector<ChannelInfoBin>& channels,
-		const std::vector<KeyFrameBin>& keyframes,
-		const std::vector<class CBone*>& Bones);
+	static CAnimation* Create(ifstream& ifs,const AnimInfoBin& animBin, const std::vector<CBone*>& Bones);
 	CAnimation* Clone();
 	virtual void Free() override;
 };

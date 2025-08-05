@@ -5,6 +5,8 @@
 #include "Edit_Defines.h"
 #include "Graphic_Device.h"
 #include <direct.h>
+#include "BinType.h"
+#include <vector>
 using namespace DirectX;
 using namespace Edit;
 
@@ -129,6 +131,42 @@ bool CMainApp::RayIntersectsAABB(const Ray& ray, const DirectX::BoundingBox& box
     if (hit && outDist) *outDist = dist;
     return hit;
 }
+
+void CMainApp::GatherBones(const aiScene* scene, const aiNode* node, int parentIdx, std::vector<BoneInfoBin>& bones)
+{
+    BoneInfoBin bi{};
+    // 본 이름
+    strncpy(bi.name, node->mName.C_Str(), 63); bi.name[63] = 0;
+    // 부모 인덱스
+    bi.parentIdx = parentIdx;
+    // 바인드포즈(로컬 행렬)
+    memcpy(bi.transform, &node->mTransformation, sizeof(float) * 16);
+
+    // 오프셋 행렬(초기값 단위행렬)
+    for (int i = 0; i < 16; ++i)
+        bi.offset[i] = (i % 5 == 0) ? 1.f : 0.f;
+
+    // mBones에서 이름 일치하면 오프셋 복사
+    for (unsigned m = 0; m < scene->mNumMeshes; ++m) {
+        aiMesh* mesh = scene->mMeshes[m];
+        for (unsigned b = 0; b < mesh->mNumBones; ++b) {
+            aiBone* bone = mesh->mBones[b];
+            if (strcmp(bone->mName.C_Str(), node->mName.C_Str()) == 0) {
+                memcpy(bi.offset, &bone->mOffsetMatrix, sizeof(float) * 16);
+                break; // 매칭되면 바로 종료
+            }
+        }
+    }
+
+    int thisIdx = static_cast<int>(bones.size());
+    bones.push_back(bi);
+
+    // 자식 노드 순회 (재귀)
+    for (unsigned i = 0; i < node->mNumChildren; ++i) {
+        GatherBones(scene, node->mChildren[i], thisIdx, bones);
+    }
+}
+
 
 void CMainApp::Render_ImGuiPanel()
 {
@@ -290,12 +328,11 @@ void CMainApp::Render_ImGuiPanel()
 void CMainApp::SaveScene(const char* filename)
 {
     std::ofstream ofs(filename, std::ios::binary);
-    if (!ofs) return;
-    size_t count = m_Objects.size();
+    uint32_t count = m_Objects.size();
     ofs.write((const char*)&count, sizeof(count));
-    for (const auto& obj : m_Objects) {
+    for (const auto& obj : m_Objects)
         ofs.write((const char*)&obj, sizeof(MapObject));
-    }
+
 }
 
 // 씬 불러오기
@@ -326,401 +363,413 @@ bool CMainApp::LoadScene(const char* filename)
 // 애니메이션 BIN 내보내기
 void CMainApp::ExportModelToBin_Anim(const MapObject& obj, const char* binPath)
 {
-    OutputDebugStringA("[BIN Export/Anim] fbxPath: ");
-    OutputDebugStringA(obj.fbxPath);
-    OutputDebugStringA("\n[BIN Export/Anim] binPath: ");
-    OutputDebugStringA(binPath); OutputDebugStringA("\n");
-
-    if (FILE* fp = fopen(obj.fbxPath, "rb")) fclose(fp);
-    else { OutputDebugStringA("[BIN Export/Anim] 실패: FBX 파일이 존재하지 않음!\n"); return; }
-
-    _uint iFlag = aiProcess_ConvertToLeftHanded | aiProcessPreset_TargetRealtime_Fast;
-    m_pAIScene = m_Importer.ReadFile(obj.fbxPath, iFlag);
-
-    if (!m_pAIScene || !m_pAIScene->HasMeshes()) {
-        OutputDebugStringA("[BIN Export/Anim] 실패: FBX 로드 실패!\n"); return;
+    Assimp::Importer importer;
+    const aiScene* scene = importer.ReadFile(
+        obj.fbxPath,
+        aiProcess_ConvertToLeftHanded |
+        aiProcessPreset_TargetRealtime_Fast
+    );
+    if (!scene) {
+        printf("FBX 로드 실패: %s\n", importer.GetErrorString());
+        return;
     }
 
-    std::ofstream ofs(binPath, std::ios::binary);
-    if (!ofs) { OutputDebugStringA("[BIN Export/Anim] 실패: BIN 파일 저장 불가!\n"); return; }
+    FILE* fp = fopen(binPath, "wb");
+    if (!fp) {
+        printf("BIN 파일 열기 실패: %s\n", binPath);
+        return;
+    }
 
-    // ---- 1. 메시 저장 ----
-    {
+    // 1. 본
+    std::vector<BoneInfoBin> bones;
+    GatherBones(scene, scene->mRootNode, -1, bones);
+
+    uint32_t boneCount = static_cast<uint32_t>(bones.size());
+    fwrite(&boneCount, sizeof(uint32_t), 1, fp);
+    fwrite(bones.data(), sizeof(BoneInfoBin), boneCount, fp);
+
+    for (size_t i = 0; i < bones.size(); ++i) {
         char buf[256];
-        uint32_t meshCount = m_pAIScene->mNumMeshes;
-        sprintf(buf, "[BIN/Anim] Mesh Count: %u\n", meshCount);
-        OutputDebugStringA(buf);
-        ofs.write((char*)&meshCount, sizeof(meshCount));
-        for (uint32_t m = 0; m < meshCount; ++m) {
-            aiMesh* mesh = m_pAIScene->mMeshes[m];
-            sprintf(buf, "  Mesh[%u] Name: %s  Vertex: %u  Index: %u  BoneCount: %u\n",
-                m, mesh->mName.C_Str(), mesh->mNumVertices, mesh->mNumFaces * 3, mesh->mNumBones);
-            OutputDebugStringA(buf);
-            // --- 기존 vertex, bone 가중치, 인덱스 저장 코드 ---
-            uint32_t vtxCount = mesh->mNumVertices;
-            uint32_t idxCount = mesh->mNumFaces * 3;
-            ofs.write((char*)&vtxCount, sizeof(vtxCount));
-            ofs.write((char*)&idxCount, sizeof(idxCount));
-            std::vector<SimpleVertex> vertices(vtxCount);
-            std::vector<std::vector<std::pair<int, float>>> vtxBones(vtxCount);
-            for (uint32_t b = 0; b < mesh->mNumBones; ++b) {
-                aiBone* bone = mesh->mBones[b];
-                for (uint32_t w = 0; w < bone->mNumWeights; ++w) {
-                    int vIdx = bone->mWeights[w].mVertexId;
-                    float weight = bone->mWeights[w].mWeight;
-                    vtxBones[vIdx].emplace_back(b, weight);
-                }
+       // sprintf_s(buf, "[Export] Bone %zu: name='%s', parent=%d\n", i, bones[i].name, bones[i].parentIdx);
+       // OutputDebugStringA(buf);
+       // for (int j = 0; j < 16; ++j) {
+       //     sprintf_s(buf, "    transform[%d]=%.3f\n", j, bones[i].transform[j]);
+       //     OutputDebugStringA(buf);
+       // }
+    }
+
+    // 2. 메시
+    uint32_t numMeshes = scene->mNumMeshes;
+    fwrite(&numMeshes, sizeof(uint32_t), 1, fp);
+
+    vector<MeshInfoBin> meshInfos(numMeshes);
+    vector<vector<VTXANIMMESH>> allVertices(numMeshes);
+    vector<vector<uint32_t>> allIndices(numMeshes);
+
+    for (uint32_t i = 0; i < numMeshes; ++i) {
+        aiMesh* mesh = scene->mMeshes[i];
+        MeshInfoBin& info = meshInfos[i];
+        memset(&info, 0, sizeof(MeshInfoBin));
+        strncpy(info.Name, mesh->mName.C_Str(), 63);
+        info.MaterialIndex = mesh->mMaterialIndex;
+        info.NumVertices = mesh->mNumVertices;
+        info.NumFaces = mesh->mNumFaces;
+        info.NumIndices = mesh->mNumFaces * 3;
+
+        // 버텍스 데이터 저장
+        auto& vertices = allVertices[i];
+        vertices.resize(info.NumVertices);
+
+        for (uint32_t v = 0; v < info.NumVertices; ++v) {
+            VTXANIMMESH& vert = vertices[v];
+            vert.vPosition.x = mesh->mVertices[v].x;
+            vert.vPosition.y = mesh->mVertices[v].y;
+            vert.vPosition.z = mesh->mVertices[v].z;
+
+            // 노멀: 있으면 저장, 없으면 0
+            if (mesh->HasNormals()) {
+                vert.vNormal.x = mesh->mNormals[v].x;
+                vert.vNormal.y = mesh->mNormals[v].y;
+                vert.vNormal.z = mesh->mNormals[v].z;
             }
-            for (uint32_t i = 0; i < vtxCount; ++i) {
-                vertices[i].pos[0] = mesh->mVertices[i].x;
-                vertices[i].pos[1] = mesh->mVertices[i].y;
-                vertices[i].pos[2] = mesh->mVertices[i].z;
-                vertices[i].normal[0] = mesh->HasNormals() ? mesh->mNormals[i].x : 0;
-                vertices[i].normal[1] = mesh->HasNormals() ? mesh->mNormals[i].y : 0;
-                vertices[i].normal[2] = mesh->HasNormals() ? mesh->mNormals[i].z : 0;
-                if (mesh->HasTextureCoords(0)) {
-                    vertices[i].uv[0] = mesh->mTextureCoords[0][i].x;
-                    vertices[i].uv[1] = mesh->mTextureCoords[0][i].y;
-                }
-                else {
-                    vertices[i].uv[0] = vertices[i].uv[1] = 0.f;
-                }
-                for (int b = 0; b < 4; ++b) {
-                    if (b < vtxBones[i].size()) {
-                        vertices[i].blendIndex[b] = vtxBones[i][b].first;
-                        vertices[i].blendWeight[b] = vtxBones[i][b].second;
-                    }
-                    else {
-                        vertices[i].blendIndex[b] = 0;
-                        vertices[i].blendWeight[b] = 0.f;
-                    }
-                }
+            else {
+                vert.vNormal.x = vert.vNormal.y = vert.vNormal.z = 0.0f;
             }
-            ofs.write((char*)vertices.data(), sizeof(SimpleVertex) * vtxCount);
-            std::vector<uint32_t> indices(idxCount);
-            uint32_t k = 0;
-            for (uint32_t f = 0; f < mesh->mNumFaces; ++f) {
-                aiFace& face = mesh->mFaces[f];
-                if (face.mNumIndices != 3) continue;
-                for (int j = 0; j < 3; ++j)
-                    indices[k++] = face.mIndices[j];
+            // 탄젠트/바이노멀: 있으면 저장, 없으면 0
+            if (mesh->HasTangentsAndBitangents()) {
+                vert.vTangent.x = mesh->mTangents[v].x;
+                vert.vTangent.y = mesh->mTangents[v].y;
+                vert.vTangent.z = mesh->mTangents[v].z;
+
+                vert.vBinormal.x = mesh->mBitangents[v].x;
+                vert.vBinormal.y = mesh->mBitangents[v].y;
+                vert.vBinormal.z = mesh->mBitangents[v].z;
             }
-            ofs.write((char*)indices.data(), sizeof(uint32_t) * idxCount);
+            else {
+                vert.vTangent.x = vert.vTangent.y = vert.vTangent.z = 0.0f;
+                vert.vBinormal.x = vert.vBinormal.y = vert.vBinormal.z = 0.0f;
+            }
+            // UV: 있으면 저장, 없으면 0
+            if (mesh->HasTextureCoords(0)) {
+                vert.vTexcoord.x = mesh->mTextureCoords[0][v].x;
+                vert.vTexcoord.y = mesh->mTextureCoords[0][v].y;
+            }
+            else {
+                vert.vTexcoord.x = vert.vTexcoord.y = 0.0f;
+            }
+            vert.vBlendIndex = XMUINT4(0, 0, 0, 0);
+            vert.vBlendWeight = XMFLOAT4(0, 0, 0, 0);
         }
-    }
 
-    // ---- 2. 머티리얼 저장 ----
-    {
-        char buf[256];
-        uint32_t matCount = m_pAIScene->mNumMaterials;
-        sprintf(buf, "[BIN/Anim] Material Count: %u\n", matCount);
-        OutputDebugStringA(buf);
-        ofs.write((char*)&matCount, sizeof(matCount));
-        for (uint32_t i = 0; i < matCount; ++i) {
-            aiMaterial* material = m_pAIScene->mMaterials[i];
-            aiString path;
-            MaterialInfo matInfo{};
+        // BlendIndex/BlendWeight 세팅 (본-버텍스 영향)
+        for (uint32_t b = 0; b < mesh->mNumBones; ++b) {
+            aiBone* bone = mesh->mBones[b];
 
-            // basecolor
-            if (material->GetTexture(aiTextureType_DIFFUSE, 0, &path) == AI_SUCCESS) {
-                std::string texPath = path.C_Str();
-                std::replace(texPath.begin(), texPath.end(), '#', '/');
-                strcpy_s(matInfo.basecolor, texPath.c_str());
-                sprintf(buf, "  Material[%u] Diffuse: %s -> %s\n", i, path.C_Str(), texPath.c_str());
-                OutputDebugStringA(buf);
+            // bone 이름을 전체 bone 배열 인덱스(boneIdx)로 변환
+            int boneIdx = -1;
+            for (uint32_t j = 0; j < bones.size(); ++j) {
+                if (strcmp(bones[j].name, bone->mName.C_Str()) == 0) {
+                    boneIdx = j;
+                    break;
+                }
             }
-            else {
-                sprintf(buf, "  Material[%u] Diffuse: (none)\n", i);
-                OutputDebugStringA(buf);
-            }
+            if (boneIdx == -1) continue; // 매칭 본이 없으면 패스
 
-            // normal
-            if (material->GetTexture(aiTextureType_NORMALS, 0, &path) == AI_SUCCESS) {
-                std::string texPath = path.C_Str();
-                std::replace(texPath.begin(), texPath.end(), '#', '/');
-                strcpy_s(matInfo.normal, texPath.c_str());
-                sprintf(buf, "  Material[%u] Normal: %s -> %s\n", i, path.C_Str(), texPath.c_str());
-                OutputDebugStringA(buf);
-            }
-            else {
-                sprintf(buf, "  Material[%u] Normal: (none)\n", i);
-                OutputDebugStringA(buf);
-            }
+            for (uint32_t w = 0; w < bone->mNumWeights; ++w) {
+                uint32_t vertIdx = bone->mWeights[w].mVertexId;
+                float weight = bone->mWeights[w].mWeight;
 
-            // arm (찾아서 있으면)
-            matInfo.arm[0] = 0;
-            for (int j = 0; j < material->GetTextureCount(aiTextureType_UNKNOWN); ++j) {
-                if (material->GetTexture(aiTextureType_UNKNOWN, j, &path) == AI_SUCCESS) {
-                    if (strstr(path.C_Str(), "ARM") || strstr(path.C_Str(), "arm")) {
-                        std::string texPath = path.C_Str();
-                        std::replace(texPath.begin(), texPath.end(), '#', '/');
-                        strcpy_s(matInfo.arm, texPath.c_str());
-                        sprintf(buf, "  Material[%u] ARM: %s -> %s\n", i, path.C_Str(), texPath.c_str());
-                        OutputDebugStringA(buf);
+                VTXANIMMESH& vert = vertices[vertIdx];
+                float* pWeight = reinterpret_cast<float*>(&vert.vBlendWeight);
+                uint32_t* pIndex = reinterpret_cast<uint32_t*>(&vert.vBlendIndex);
+
+                for (int k = 0; k < 4; ++k) {
+                    if (pWeight[k] == 0.0f) {
+                        pIndex[k] = boneIdx;
+                        pWeight[k] = weight;
                         break;
                     }
                 }
             }
-            if (matInfo.arm[0] == 0) {
-                sprintf(buf, "  Material[%u] ARM: (none)\n", i);
-                OutputDebugStringA(buf);
-            }
+        }
 
-            ofs.write((char*)&matInfo, sizeof(MaterialInfo));
+        // 인덱스 데이터 저장
+        auto& indices = allIndices[i];
+        indices.resize(info.NumIndices);
+        uint32_t idx = 0;
+        for (uint32_t f = 0; f < mesh->mNumFaces; ++f) {
+            aiFace& face = mesh->mFaces[f];
+            indices[idx++] = face.mIndices[0];
+            indices[idx++] = face.mIndices[1];
+            indices[idx++] = face.mIndices[2];
         }
     }
 
+    // 메시 정보 배열 저장
+    for (uint32_t i = 0; i < numMeshes; ++i)
+        fwrite(&meshInfos[i], sizeof(MeshInfoBin), 1, fp);
 
-    // ---- 3. 본 저장 ----
-    std::vector<BoneInfo> bones;
-    std::function<void(const aiNode*, int)> gatherBones = [&](const aiNode* node, int parentIdx) {
-        BoneInfo bi{};
-        strncpy(bi.name, node->mName.C_Str(), 63); bi.name[63] = 0;
-        bi.parentIdx = parentIdx;
-        memcpy(bi.transform, &node->mTransformation, sizeof(float) * 16);
-        bool foundOffset = false;
-        uint32_t meshCount = m_pAIScene->mNumMeshes;
-        for (uint32_t m = 0; m < meshCount; ++m) {
-            aiMesh* mesh = m_pAIScene->mMeshes[m];
-            for (uint32_t b = 0; b < mesh->mNumBones; ++b) {
-                aiBone* bone = mesh->mBones[b];
-                if (bone->mName == node->mName) {
-                    memcpy(bi.offset, &bone->mOffsetMatrix, sizeof(float) * 16);
-                    foundOffset = true; break;
+    // 각 메시의 버텍스 배열 저장
+    for (uint32_t i = 0; i < numMeshes; ++i)
+        fwrite(allVertices[i].data(), sizeof(VTXANIMMESH), meshInfos[i].NumVertices, fp);
+
+    // 각 메시의 인덱스 배열 저장
+    for (uint32_t i = 0; i < numMeshes; ++i)
+        fwrite(allIndices[i].data(), sizeof(uint32_t), meshInfos[i].NumIndices, fp);
+
+    // 3. 머티리얼 정보 저장 
+    uint32_t numMaterials = scene->mNumMaterials;
+    fwrite(&numMaterials, sizeof(uint32_t), 1, fp);
+
+    vector<MaterialInfoBin2> matInfos(numMaterials);
+    for (uint32_t i = 0; i < numMaterials; ++i) {
+        aiMaterial* material = scene->mMaterials[i];
+        MaterialInfoBin2& matInfo = matInfos[i];
+        memset(&matInfo, 0, sizeof(MaterialInfoBin2));
+        matInfo.numTextures = 0;
+
+        // Diffuse
+        aiString path;
+        if (material->GetTexture(aiTextureType_DIFFUSE, 0, &path) == AI_SUCCESS) {
+            matInfo.textures[matInfo.numTextures].type = (int)TextureType::DIFFUSE;
+            strncpy(matInfo.textures[matInfo.numTextures].path, path.C_Str(), 259);
+            matInfo.textures[matInfo.numTextures].path[259] = 0;
+            matInfo.numTextures++;
+        }
+        // Normal
+        if (material->GetTexture(aiTextureType_NORMALS, 0, &path) == AI_SUCCESS) {
+            matInfo.textures[matInfo.numTextures].type = (int)TextureType::NORMAL;
+            strncpy(matInfo.textures[matInfo.numTextures].path, path.C_Str(), 259);
+            matInfo.textures[matInfo.numTextures].path[259] = 0;
+            matInfo.numTextures++;
+        }
+    }
+    fwrite(matInfos.data(), sizeof(MaterialInfoBin2), numMaterials, fp);
+
+    // 4. 애니메이션
+    uint32_t animCount = scene->mNumAnimations;
+    fwrite(&animCount, sizeof(animCount), 1, fp);
+
+    for (uint32_t a = 0; a < animCount; ++a) {
+        aiAnimation* anim = scene->mAnimations[a];
+
+        // AnimInfoBin
+        AnimInfoBin ainfo{};
+        strncpy(ainfo.name, anim->mName.C_Str(), 63);
+        ainfo.duration = anim->mDuration;
+        ainfo.ticksPerSecond = anim->mTicksPerSecond;
+        ainfo.channelCount = anim->mNumChannels;
+        fwrite(&ainfo, sizeof(AnimInfoBin), 1, fp);
+
+       // char buf[256];
+       // sprintf_s(buf, "[Export] Animation %d: name='%s', duration=%.2f, tickPerSec=%.2f, channelCount=%d\n",
+       //     a, ainfo.name, ainfo.duration, ainfo.ticksPerSecond, ainfo.channelCount);
+       // OutputDebugStringA(buf);
+
+
+        for (uint32_t c = 0; c < anim->mNumChannels; ++c) {
+            aiNodeAnim* chan = anim->mChannels[c];
+
+
+            // ChannelInfoBin
+            ChannelInfoBin cinfo{};
+            strncpy(cinfo.boneName, chan->mNodeName.C_Str(), 63);
+            cinfo.boneName[63] = 0;
+            uint32_t nScale = chan->mNumScalingKeys;
+            uint32_t nRot = chan->mNumRotationKeys;
+            uint32_t nPos = chan->mNumPositionKeys;
+
+            uint32_t max12 = (nScale > nRot) ? nScale : nRot;
+            cinfo.keyframeCount = (max12 > nPos) ? max12 : nPos;
+
+            fwrite(&cinfo, sizeof(ChannelInfoBin), 1, fp);
+
+           // sprintf_s(buf, "  [Export] Channel %d: bone='%s', keyframeCount=%d\n", c, cinfo.boneName, cinfo.keyframeCount);
+           // OutputDebugStringA(buf);
+
+            KEYFRAME kf = {};
+
+            // KEYFRAME 저장
+            for (uint32_t k = 0; k < cinfo.keyframeCount; ++k) {
+                // 스케일
+                if (k < nScale) {
+                    kf.vScale.x = static_cast<float>(chan->mScalingKeys[k].mValue.x);
+                    kf.vScale.y = static_cast<float>(chan->mScalingKeys[k].mValue.y);
+                    kf.vScale.z = static_cast<float>(chan->mScalingKeys[k].mValue.z);
+                    kf.fTrackPosition = static_cast<float>(chan->mScalingKeys[k].mTime);
                 }
-            }
-            if (foundOffset) break;
-        }
-        if (!foundOffset) {
-            for (int i = 0; i < 16; ++i) bi.offset[i] = (i % 5 == 0) ? 1.f : 0.f;
-        }
-        int curIdx = (int)bones.size();
-        bones.push_back(bi);
-        for (uint32_t i = 0; i < node->mNumChildren; ++i)
-            gatherBones(node->mChildren[i], curIdx);
-        };
-    gatherBones(m_pAIScene->mRootNode, -1);
-    {
-        char buf[256];
-        sprintf(buf, "[BIN/Anim] Bone Count: %u\n", (uint32_t)bones.size());
-        OutputDebugStringA(buf);
-        for (uint32_t i = 0; i < bones.size(); ++i) {
-            sprintf(buf, "  Bone[%u] Name: %s, Parent: %d\n", i, bones[i].name, bones[i].parentIdx);
-            OutputDebugStringA(buf);
-        }
-    }
-    uint32_t totalBoneCount = (uint32_t)bones.size();
-    ofs.write((char*)&totalBoneCount, sizeof(totalBoneCount));
-    ofs.write((char*)bones.data(), sizeof(BoneInfo) * bones.size());
-
-    // ---- 4. 애니메이션+채널 저장 ----
-    {
-        char buf[256];
-        uint32_t animCount = m_pAIScene->mNumAnimations;
-        sprintf(buf, "[BIN/Anim] Animation Count: %u\n", animCount);
-        OutputDebugStringA(buf);
-        ofs.write((char*)&animCount, sizeof(animCount));
-        for (uint32_t a = 0; a < animCount; ++a) {
-            aiAnimation* anim = m_pAIScene->mAnimations[a];
-            sprintf(buf, "  Anim[%u] Name: %s, Duration: %.3f, Channels: %u\n", a, anim->mName.C_Str(), anim->mDuration, anim->mNumChannels);
-            OutputDebugStringA(buf);
-            AnimInfo ainfo{};
-            strncpy(ainfo.name, anim->mName.C_Str(), 63); ainfo.name[63] = 0;
-            ainfo.duration = anim->mDuration;
-            ainfo.ticksPerSecond = anim->mTicksPerSecond;
-            ainfo.channelCount = anim->mNumChannels;
-            ofs.write((char*)&ainfo, sizeof(AnimInfo));
-            for (uint32_t c = 0; c < anim->mNumChannels; ++c) {
-                aiNodeAnim* chan = anim->mChannels[c];
-                sprintf(buf, "    Channel[%u] Bone: %s, Pos:%u Rot:%u Scale:%u\n", c, chan->mNodeName.C_Str(),
-                    chan->mNumPositionKeys, chan->mNumRotationKeys, chan->mNumScalingKeys);
-                OutputDebugStringA(buf);
-                ChannelInfo cinfo{};
-                strncpy(cinfo.boneName, chan->mNodeName.C_Str(), 63); cinfo.boneName[63] = 0;
-                uint32_t n1 = chan->mNumPositionKeys;
-                uint32_t n2 = chan->mNumRotationKeys;
-                uint32_t n3 = chan->mNumScalingKeys;
-                cinfo.keyframeCount = max3(n1, n2, n3);
-                ofs.write((char*)&cinfo, sizeof(ChannelInfo));
-                for (uint32_t k = 0; k < cinfo.keyframeCount; ++k) {
-                    KeyFrame kf{};
-                    if (k < chan->mNumScalingKeys) {
-                        kf.time = chan->mScalingKeys[k].mTime;
-                        kf.scale[0] = chan->mScalingKeys[k].mValue.x;
-                        kf.scale[1] = chan->mScalingKeys[k].mValue.y;
-                        kf.scale[2] = chan->mScalingKeys[k].mValue.z;
-                    }
-                    if (k < chan->mNumRotationKeys) {
-                        kf.time = chan->mRotationKeys[k].mTime;
-                        kf.rotation[0] = chan->mRotationKeys[k].mValue.x;
-                        kf.rotation[1] = chan->mRotationKeys[k].mValue.y;
-                        kf.rotation[2] = chan->mRotationKeys[k].mValue.z;
-                        kf.rotation[3] = chan->mRotationKeys[k].mValue.w;
-                    }
-                    if (k < chan->mNumPositionKeys) {
-                        kf.time = chan->mPositionKeys[k].mTime;
-                        kf.translation[0] = chan->mPositionKeys[k].mValue.x;
-                        kf.translation[1] = chan->mPositionKeys[k].mValue.y;
-                        kf.translation[2] = chan->mPositionKeys[k].mValue.z;
-                    }
-                    ofs.write((char*)&kf, sizeof(KeyFrame));
+                // 회전
+                if (k < nRot) {
+                    kf.vRotation.x = static_cast<float>(chan->mRotationKeys[k].mValue.x);
+                    kf.vRotation.y = static_cast<float>(chan->mRotationKeys[k].mValue.y);
+                    kf.vRotation.z = static_cast<float>(chan->mRotationKeys[k].mValue.z);
+                    kf.vRotation.w = static_cast<float>(chan->mRotationKeys[k].mValue.w);
+                    kf.fTrackPosition = static_cast<float>(chan->mRotationKeys[k].mTime);
                 }
+                // 이동
+                if (k < nPos) {
+                    kf.vTranslation.x = static_cast<float>(chan->mPositionKeys[k].mValue.x);
+                    kf.vTranslation.y = static_cast<float>(chan->mPositionKeys[k].mValue.y);
+                    kf.vTranslation.z = static_cast<float>(chan->mPositionKeys[k].mValue.z);
+                    kf.fTrackPosition = static_cast<float>(chan->mPositionKeys[k].mTime);
+                }
+                //printf("sizeof(ChannelInfoBin) = %zu\n", sizeof(ChannelInfoBin));
+                char buf[256];
+                sprintf_s(buf, "sizeof(ChannelInfoBin) = %zu\n", sizeof(ChannelInfoBin));
+                OutputDebugStringA(buf);
+               // sprintf_s(buf, "    [Export] KeyFrame %d: scale=(%.2f,%.2f,%.2f) rot=(%.2f,%.2f,%.2f,%.2f) trans=(%.2f,%.2f,%.2f) time=%.2f\n",
+               //     k, kf.vScale.x, kf.vScale.y, kf.vScale.z, kf.vRotation.x, kf.vRotation.y, kf.vRotation.z, kf.vRotation.w,
+               //     kf.vTranslation.x, kf.vTranslation.y, kf.vTranslation.z, kf.fTrackPosition);
+               // OutputDebugStringA(buf);
+
+                fwrite(&kf, sizeof(KEYFRAME), 1, fp);
             }
         }
-    }
 
-    ofs.close();
-    OutputDebugStringA("애니메이션 BIN 저장 완료!\n");
+    }
+    fclose(fp);
+    printf("BIN에 뼈 정보 저장 완료!\n");
 }
-
-
-
 
 void CMainApp::ExportModelToBin_NonAnim(const MapObject& obj, const char* binPath)
 {
-    char curdir[512] = { 0 };
-    _getcwd(curdir, 511);
-    OutputDebugStringA("[BIN Export] 현재 작업 디렉토리: ");
-    OutputDebugStringA(curdir);
-    OutputDebugStringA("\n");
+    Assimp::Importer importer;
+    const aiScene* scene = importer.ReadFile(
+        obj.fbxPath,
+        aiProcess_ConvertToLeftHanded |
+        aiProcessPreset_TargetRealtime_Fast |
+        aiProcess_PreTransformVertices
+    );
 
-    OutputDebugStringA("[BIN Export] fbxPath: ");
-    OutputDebugStringA(obj.fbxPath);
-    OutputDebugStringA("\n");
-    OutputDebugStringA("[BIN Export] binPath: ");
-    OutputDebugStringA(binPath);
-    OutputDebugStringA("\n");
-
-    if (FILE* fp = fopen(obj.fbxPath, "rb")) {
-        fclose(fp);
-    }
-    else {
-        OutputDebugStringA("[BIN Export] 실패: FBX 파일이 존재하지 않음!\n");
+    if (!scene) {
+        printf("FBX 로드 실패: %s\n", importer.GetErrorString());
         return;
     }
 
-    _uint iFlag = { aiProcess_ConvertToLeftHanded | aiProcessPreset_TargetRealtime_Fast | aiProcess_PreTransformVertices };
-    m_pAIScene = m_Importer.ReadFile(obj.fbxPath, iFlag);
+    uint32_t numMeshes = scene->mNumMeshes;
 
-    if (!m_pAIScene || !m_pAIScene->HasMeshes()) {
-        OutputDebugStringA("[BIN Export] 실패: FBX 로드 실패!\n");
+    FILE* fp = fopen(binPath, "wb");
+    if (!fp) {
+        printf("BIN 파일 열기 실패: %s\n", binPath);
         return;
     }
 
-    std::ofstream ofs(binPath, std::ios::binary);
-    if (!ofs) {
-        OutputDebugStringA("[BIN Export] 실패: BIN 파일 저장 불가!\n");
-        return;
-    }
+    // 1. 메시 개수 저장
+    fwrite(&numMeshes, sizeof(uint32_t), 1, fp);
 
-    // ---- 1. 메시 저장 ----
-    {
-        char buf[256];
-        uint32_t meshCount = m_pAIScene->mNumMeshes;
-        sprintf(buf, "[BIN/NonAnim] Mesh Count: %u\n", meshCount);
-        OutputDebugStringA(buf);
-        ofs.write((char*)&meshCount, sizeof(meshCount));
-        for (uint32_t m = 0; m < meshCount; ++m) {
-            aiMesh* mesh = m_pAIScene->mMeshes[m];
-            sprintf(buf, "  Mesh[%u] Name: %s  Vertex: %u  Index: %u\n",
-                m, mesh->mName.C_Str(), mesh->mNumVertices, mesh->mNumFaces * 3);
-            OutputDebugStringA(buf);
-            uint32_t vtxCount = mesh->mNumVertices;
-            uint32_t idxCount = mesh->mNumFaces * 3;
-            ofs.write((char*)&vtxCount, sizeof(vtxCount));
-            ofs.write((char*)&idxCount, sizeof(idxCount));
-            std::vector<SimpleVertex> vertices(vtxCount);
-            for (uint32_t i = 0; i < vtxCount; ++i) {
-                vertices[i].pos[0] = mesh->mVertices[i].x;
-                vertices[i].pos[1] = mesh->mVertices[i].y;
-                vertices[i].pos[2] = mesh->mVertices[i].z;
-                vertices[i].normal[0] = mesh->HasNormals() ? mesh->mNormals[i].x : 0;
-                vertices[i].normal[1] = mesh->HasNormals() ? mesh->mNormals[i].y : 0;
-                vertices[i].normal[2] = mesh->HasNormals() ? mesh->mNormals[i].z : 0;
-                if (mesh->HasTextureCoords(0)) {
-                    vertices[i].uv[0] = mesh->mTextureCoords[0][i].x;
-                    vertices[i].uv[1] = mesh->mTextureCoords[0][i].y;
-                }
-                else {
-                    vertices[i].uv[0] = vertices[i].uv[1] = 0.f;
-                }
+    // 2. 메시 정보, 버텍스/인덱스 데이터 준비
+    vector<MeshInfoBin> meshInfos(numMeshes);
+    vector<vector<VTXMESH>> allVertices(numMeshes);
+    vector<vector<uint32_t>> allIndices(numMeshes);
+
+    for (uint32_t i = 0; i < numMeshes; ++i) {
+        aiMesh* mesh = scene->mMeshes[i];
+        MeshInfoBin& info = meshInfos[i];
+        memset(&info, 0, sizeof(MeshInfoBin));
+        strncpy(info.Name, mesh->mName.C_Str(), 63);
+        info.MaterialIndex = mesh->mMaterialIndex;
+        info.NumVertices = mesh->mNumVertices;
+        info.NumFaces = mesh->mNumFaces;
+        info.NumIndices = mesh->mNumFaces * 3;
+
+        // 버텍스 데이터 저장
+        auto& vertices = allVertices[i];
+        vertices.resize(info.NumVertices);
+
+        for (uint32_t v = 0; v < info.NumVertices; ++v) {
+            VTXMESH& vert = vertices[v];
+            vert.vPosition.x = mesh->mVertices[v].x;
+            vert.vPosition.y = mesh->mVertices[v].y;
+            vert.vPosition.z = mesh->mVertices[v].z;
+
+            // 노멀: 있으면 저장, 없으면 0
+            if (mesh->HasNormals()) {
+                vert.vNormal.x = mesh->mNormals[v].x;
+                vert.vNormal.y = mesh->mNormals[v].y;
+                vert.vNormal.z = mesh->mNormals[v].z;
             }
-            ofs.write((char*)vertices.data(), sizeof(SimpleVertex) * vtxCount);
-            std::vector<uint32_t> indices(idxCount);
-            uint32_t k = 0;
-            for (uint32_t f = 0; f < mesh->mNumFaces; ++f) {
-                aiFace& face = mesh->mFaces[f];
-                if (face.mNumIndices != 3) continue;
-                for (int j = 0; j < 3; ++j)
-                    indices[k++] = face.mIndices[j];
+            else {
+                vert.vNormal.x = vert.vNormal.y = vert.vNormal.z = 0.0f;
             }
-            ofs.write((char*)indices.data(), sizeof(uint32_t) * idxCount);
+            // 탄젠트/바이노멀: 있으면 저장, 없으면 0
+            if (mesh->HasTangentsAndBitangents()) {
+                vert.vTangent.x = mesh->mTangents[v].x;
+                vert.vTangent.y = mesh->mTangents[v].y;
+                vert.vTangent.z = mesh->mTangents[v].z;
+
+                vert.vBinormal.x = mesh->mBitangents[v].x;
+                vert.vBinormal.y = mesh->mBitangents[v].y;
+                vert.vBinormal.z = mesh->mBitangents[v].z;
+            }
+            else {
+                vert.vTangent.x = vert.vTangent.y = vert.vTangent.z = 0.0f;
+                vert.vBinormal.x = vert.vBinormal.y = vert.vBinormal.z = 0.0f;
+            }
+            // UV: 있으면 저장, 없으면 0
+            if (mesh->HasTextureCoords(0)) {
+                vert.vTexcoord.x = mesh->mTextureCoords[0][v].x;
+                vert.vTexcoord.y = mesh->mTextureCoords[0][v].y;
+            }
+            else {
+                vert.vTexcoord.x = vert.vTexcoord.y = 0.0f;
+            }
+        }
+
+        // 인덱스 데이터 저장
+        auto& indices = allIndices[i];
+        indices.resize(info.NumIndices);
+        uint32_t idx = 0;
+        for (uint32_t f = 0; f < mesh->mNumFaces; ++f) {
+            aiFace& face = mesh->mFaces[f];
+            indices[idx++] = face.mIndices[0];
+            indices[idx++] = face.mIndices[1];
+            indices[idx++] = face.mIndices[2];
         }
     }
 
-    // ---- 2. 머테리얼 저장 ----
-    {
-        char buf[256];
-        uint32_t matCount = m_pAIScene->mNumMaterials;
-        sprintf(buf, "[BIN/Anim] Material Count: %u\n", matCount);
-        OutputDebugStringA(buf);
-        ofs.write((char*)&matCount, sizeof(matCount));
-        for (uint32_t i = 0; i < matCount; ++i) {
-            aiMaterial* material = m_pAIScene->mMaterials[i];
-            aiString path;
-            MaterialInfo matInfo{};
+    // 3. 메시 정보 배열 저장
+    for (uint32_t i = 0; i < numMeshes; ++i)
+        fwrite(&meshInfos[i], sizeof(MeshInfoBin), 1, fp);
 
-            // basecolor
-            if (material->GetTexture(aiTextureType_DIFFUSE, 0, &path) == AI_SUCCESS) {
-                std::string texPath = path.C_Str();
-                std::replace(texPath.begin(), texPath.end(), '#', '/');
-                strcpy_s(matInfo.basecolor, texPath.c_str());
-                sprintf(buf, "  Material[%u] Diffuse: %s -> %s\n", i, path.C_Str(), texPath.c_str());
-                OutputDebugStringA(buf);
-            }
-            else {
-                sprintf(buf, "  Material[%u] Diffuse: (none)\n", i);
-                OutputDebugStringA(buf);
-            }
+    // 4. 각 메시의 버텍스 배열 저장
+    for (uint32_t i = 0; i < numMeshes; ++i)
+        fwrite(allVertices[i].data(), sizeof(VTXMESH), meshInfos[i].NumVertices, fp);
 
-            // normal
-            if (material->GetTexture(aiTextureType_NORMALS, 0, &path) == AI_SUCCESS) {
-                std::string texPath = path.C_Str();
-                std::replace(texPath.begin(), texPath.end(), '#', '/');
-                strcpy_s(matInfo.normal, texPath.c_str());
-                sprintf(buf, "  Material[%u] Normal: %s -> %s\n", i, path.C_Str(), texPath.c_str());
-                OutputDebugStringA(buf);
-            }
-            else {
-                sprintf(buf, "  Material[%u] Normal: (none)\n", i);
-                OutputDebugStringA(buf);
-            }
+    // 5. 각 메시의 인덱스 배열 저장
+    for (uint32_t i = 0; i < numMeshes; ++i)
+        fwrite(allIndices[i].data(), sizeof(uint32_t), meshInfos[i].NumIndices, fp);
 
-            // arm (찾아서 있으면)
-            matInfo.arm[0] = 0;
-            for (int j = 0; j < material->GetTextureCount(aiTextureType_UNKNOWN); ++j) {
-                if (material->GetTexture(aiTextureType_UNKNOWN, j, &path) == AI_SUCCESS) {
-                    if (strstr(path.C_Str(), "ARM") || strstr(path.C_Str(), "arm")) {
-                        std::string texPath = path.C_Str();
-                        std::replace(texPath.begin(), texPath.end(), '#', '/');
-                        strcpy_s(matInfo.arm, texPath.c_str());
-                        sprintf(buf, "  Material[%u] ARM: %s -> %s\n", i, path.C_Str(), texPath.c_str());
-                        OutputDebugStringA(buf);
-                        break;
-                    }
-                }
-            }
-            if (matInfo.arm[0] == 0) {
-                sprintf(buf, "  Material[%u] ARM: (none)\n", i);
-                OutputDebugStringA(buf);
-            }
+    // ---- 6. 머티리얼 정보 저장 ----
+    uint32_t numMaterials = scene->mNumMaterials;
+    fwrite(&numMaterials, sizeof(uint32_t), 1, fp);
 
-            ofs.write((char*)&matInfo, sizeof(MaterialInfo));
+    vector<MaterialInfoBin2> matInfos(numMaterials);
+    for (uint32_t i = 0; i < numMaterials; ++i) {
+        aiMaterial* material = scene->mMaterials[i];
+        MaterialInfoBin2& matInfo = matInfos[i];
+        memset(&matInfo, 0, sizeof(MaterialInfoBin2));
+        matInfo.numTextures = 0;
+
+        // Diffuse
+        aiString path;
+        if (material->GetTexture(aiTextureType_DIFFUSE, 0, &path) == AI_SUCCESS) {
+            matInfo.textures[matInfo.numTextures].type = (int)TextureType::DIFFUSE;
+            strncpy(matInfo.textures[matInfo.numTextures].path, path.C_Str(), 259);
+            matInfo.textures[matInfo.numTextures].path[259] = 0;
+            matInfo.numTextures++;
+        }
+        // Normal
+        if (material->GetTexture(aiTextureType_NORMALS, 0, &path) == AI_SUCCESS) {
+            matInfo.textures[matInfo.numTextures].type = (int)TextureType::NORMAL;
+            strncpy(matInfo.textures[matInfo.numTextures].path, path.C_Str(), 259);
+            matInfo.textures[matInfo.numTextures].path[259] = 0;
+            matInfo.numTextures++;
         }
     }
+    fwrite(matInfos.data(), sizeof(MaterialInfoBin2), numMaterials, fp);
 
-    ofs.close();
-    OutputDebugStringA("NonAnim BIN 저장 완료!\n");
+    fclose(fp);
+    printf("BIN 파일로 저장 완료: %s\n", binPath);
 }
 
 

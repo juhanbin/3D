@@ -7,12 +7,7 @@ CBone::CBone()
 
 HRESULT CBone::Initialize(const aiNode* pAINode, _int iParentBoneIndex)
 {
-
 	strcpy_s(m_szName, pAINode->mName.data);
-
-	char buf[256];
-	sprintf_s(buf, "[CBone] Bone 생성: name=%s, parentIdx=%d\n", m_szName, iParentBoneIndex);
-	//OutputDebugStringA(buf);
 
 	memcpy(&m_TransformationMatrix, &pAINode->mTransformation, sizeof(_float4x4));
 
@@ -28,14 +23,13 @@ HRESULT CBone::Initialize(const aiNode* pAINode, _int iParentBoneIndex)
 HRESULT CBone::Initialize(const BoneInfoBin& bin, _int iParentBoneIndex)
 {
 	strcpy_s(m_szName, bin.name);
+	// BIN에서 오프셋 행렬도 읽어야 한다!
+	memcpy(&m_OffsetMatrix, bin.offset, sizeof(_float4x4));
 
 	memcpy(&m_TransformationMatrix, bin.transform, sizeof(_float4x4));
-
 	XMStoreFloat4x4(&m_TransformationMatrix, XMMatrixTranspose(XMLoadFloat4x4(&m_TransformationMatrix)));
-
 	XMStoreFloat4x4(&m_CombinedTransformationMatrix, XMMatrixIdentity());
-
-	m_iParentBoneIndex = bin.parentIdx;
+	m_iParentBoneIndex = bin.parentIdx; // BIN에 저장된 값을 그대로 사용
 
 	return S_OK;
 }

@@ -25,6 +25,8 @@ private:
 	HRESULT Ready_Layer_MapObjects(const _wstring& strLayerTag);
 	HRESULT Ready_Layer_Effect(const _wstring& strLayerTag);
 
+	vector<MapObject> m_SceneObjects;
+	vector<MapObject> LoadSceneObjects(const char* file);
 public:
 	static CLevel_GamePlay* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	virtual void Free() override;

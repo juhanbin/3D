@@ -35,7 +35,9 @@ HRESULT CMapObject::Initialize(void* pArg)
             XMConvertToRadians(pDesc->vRot.x),
             XMConvertToRadians(pDesc->vRot.y),
             XMConvertToRadians(pDesc->vRot.z));
+
         XMMATRIX matTrans = XMMatrixTranslation(pDesc->vPos.x, pDesc->vPos.y, pDesc->vPos.z);
+
         XMMATRIX matWorld = matScale * matRot * matTrans;
         XMFLOAT4X4 matWorld4x4;
         XMStoreFloat4x4(&matWorld4x4, matWorld);
@@ -74,19 +76,22 @@ HRESULT CMapObject::Render()
         return E_FAIL;
 
     _uint iNumMeshes = m_pModelCom->Get_NumMeshes();
-    if (iNumMeshes == 0)
-    {
-        OutputDebugStringA("MapObject Model의 Mesh가 0개입니다!\n");
-        return E_FAIL;
-    }
 
     for (size_t i = 0; i < iNumMeshes; i++)
     {
-        if (FAILED(m_pModelCom->Bind_Materials(m_pShaderCom, "g_DiffuseTexture", i, aiTextureType_DIFFUSE, 0)))
+        // BIN 데이터니까 직접 type 인덱스(0=Diffuse, 1=Normal)로 바인딩
+        if (FAILED(m_pModelCom->Bind_Materials_Bin(m_pShaderCom, "g_DiffuseTexture", i, 0, 0))) // 0: DIFFUSE
         {
-            OutputDebugStringA("머티리얼 바인딩 실패!\n");
+            OutputDebugStringA("d머티리얼 바인딩 실패!\n");
             return E_FAIL;
         }
+
+        if (FAILED(m_pModelCom->Bind_Materials_Bin(m_pShaderCom, "g_NormalTexture", i, 1, 0))) // 1: NORMAL
+        {
+            OutputDebugStringA("n머티리얼 바인딩 실패!\n");
+            return E_FAIL;
+        }
+
         m_pShaderCom->Begin(0);
         m_pModelCom->Render(i);
     }
@@ -114,6 +119,7 @@ HRESULT CMapObject::Ready_Components()
     case EObjectType::ROCK_AA:
         modelProto = TEXT("Prototype_Component_Model_Rock_AA");
         break;
+
     default:
         OutputDebugStringA("Unknown EObjectType in Ready_Components!\n");
         return E_FAIL;

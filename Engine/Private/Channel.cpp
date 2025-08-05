@@ -1,6 +1,6 @@
 #include "Channel.h"
 #include "Bone.h"
-
+#include <fstream>
 CChannel::CChannel()
 {
 }
@@ -16,10 +16,6 @@ HRESULT CChannel::Initialize(const aiNodeAnim* pAIChannel, const vector<class CB
 
             return false;
         });
-
-    char buf[256];
-    sprintf_s(buf, "[CChannel] Channel 생성: boneName=%s, 매핑된 BoneIndex=%d (Bones.size()=%d)\n", pAIChannel->mNodeName.data, m_iBoneIndex, (int)Bones.size());
-    //OutputDebugStringA(buf);
 
     m_iNumKeyFrames = max(pAIChannel->mNumScalingKeys, pAIChannel->mNumRotationKeys);
     m_iNumKeyFrames = max(m_iNumKeyFrames, pAIChannel->mNumPositionKeys);
@@ -65,28 +61,20 @@ HRESULT CChannel::Initialize(const aiNodeAnim* pAIChannel, const vector<class CB
     return S_OK;
 }
 
-HRESULT CChannel::Initialize(const ChannelInfoBin& chInfo, const std::vector<KeyFrameBin>& keyframes, const std::vector<CBone*>& Bones)
+HRESULT CChannel::Initialize(const ChannelInfoBin& channelBin, const std::vector<KEYFRAME>& keyframes, const std::vector<CBone*>& Bones)
 {
-    m_iBoneIndex = -1;
-    for (size_t i = 0; i < Bones.size(); ++i)
-    {
-        if (Bones[i]->Compare_Name(chInfo.boneName)) {
-            m_iBoneIndex = static_cast<int>(i);
-            break;
-        }
-    }
+    strcpy_s(m_szName, channelBin.boneName);
+    m_iNumKeyFrames = channelBin.keyframeCount;
+    m_KeyFrames = keyframes;
 
-    m_iNumKeyFrames = chInfo.keyframeCount;
-
-    for (auto& kf : keyframes)
-    {
-        KEYFRAME k;
-        k.vScale = _float3(kf.scale[0], kf.scale[1], kf.scale[2]);
-        k.vRotation = _float4(kf.rotation[0], kf.rotation[1], kf.rotation[2], kf.rotation[3]);
-        k.vTranslation = _float3(kf.translation[0], kf.translation[1], kf.translation[2]);
-        k.fTrackPosition = static_cast<float>(kf.time);
-        m_KeyFrames.push_back(k);
-    }
+    // 본 인덱스 찾기
+    m_iBoneIndex = 0;
+    auto iter = std::find_if(Bones.begin(), Bones.end(), [&](CBone* pBone) {
+        return pBone->Compare_Name(m_szName);
+        });
+    if (iter == Bones.end())
+        return E_FAIL;
+    m_iBoneIndex = static_cast<uint32_t>(std::distance(Bones.begin(), iter));
     return S_OK;
 }
 
@@ -154,12 +142,12 @@ CChannel* CChannel::Create(const aiNodeAnim* pAIChannel, const vector<class CBon
     return pInstance;
 }
 
-CChannel* CChannel::Create(const ChannelInfoBin& chInfo, const std::vector<KeyFrameBin>& keyframes, const std::vector<CBone*>& Bones)
+CChannel* CChannel::Create(const ChannelInfoBin& channelBin, const std::vector<KEYFRAME>& keyframes, const std::vector<CBone*>& Bones)
 {
     CChannel* pInstance = new CChannel();
-    if (FAILED(pInstance->Initialize(chInfo, keyframes, Bones)))
+    if (FAILED(pInstance->Initialize(channelBin, keyframes, Bones)))
     {
-        MSG_BOX(TEXT("Failed to Created : CChannel (BIN)"));
+        MSG_BOX(TEXT("Failed to Created : CChannel(bin)"));
         Safe_Release(pInstance);
     }
     return pInstance;

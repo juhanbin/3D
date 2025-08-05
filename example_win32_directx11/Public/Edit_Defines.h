@@ -30,12 +30,27 @@ extern HINSTANCE g_hInst;
 using namespace Edit;
 
 // ---- 오브젝트 타입 enum 및 변환 ----
-enum class EObjectType
+enum class EObjectType : int
 {
-    MONSTER,
+    MONSTER = 0,
     ROCK_AA,
     END
 };
+
+// --- 맵 오브젝트 구조체 (BIN 파일명 포함) ---
+// "씬 에디터"에 배치/메타데이터 용도
+#pragma pack(push,1)
+struct MapObject
+{
+    int id;
+    EObjectType type;
+    float size[3];
+    float rot[3];
+    float pos[3];
+    char fbxPath[260];
+    char binPath[260];
+};
+#pragma pack(pop)
 
 inline const char* ToObjectTypeString(EObjectType type)
 {
@@ -48,24 +63,12 @@ inline const char* ToObjectTypeString(EObjectType type)
 }
 static constexpr int NumObjectTypes = static_cast<int>(EObjectType::END);
 
-// --- 맵 오브젝트 구조체 (BIN 파일명 포함) ---
-// "씬 에디터"에 배치/메타데이터 용도
-struct MapObject
-{
-    int         id;
-    EObjectType type;
-    float       size[3];
-    float       rot[3];
-    float       pos[3];
-    char        fbxPath[260];   // 원본 FBX 파일 경로 (임포트용)
-    char        binPath[260];   // BIN 결과 경로 (실제 모델 데이터)
-};
-
 inline uint32_t max3(uint32_t a, uint32_t b, uint32_t c)
 {
     return max(max(a, b), c);
 }
 enum class FILETYPE { FBX, BIN };
+
 #pragma pack(push, 1)
 struct SimpleVertex {
     float pos[3];
