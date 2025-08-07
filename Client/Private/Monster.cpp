@@ -63,6 +63,8 @@ HRESULT CMonster::Initialize(void* pArg)
 
     m_pModelCom->Set_Animation(0, true);
 
+    _float3 test = { 0.000000001f, 0.000000001f, 0.000000001f };
+    m_pTransformCom->Scaling(test);
     return S_OK;
 }
 
@@ -98,7 +100,7 @@ HRESULT CMonster::Render()
     {
         if (FAILED(m_pModelCom->Bind_Materials_Bin(m_pShaderCom, "g_DiffuseTexture", i, aiTextureType_DIFFUSE, 0))) // 0: DIFFUSE
         {
-            OutputDebugStringA("d머티리얼 바인딩 실패!\n");
+            OutputDebugStringA("dif머티리얼 바인딩 실패!\n");
             return E_FAIL;
         }
 
@@ -107,6 +109,9 @@ HRESULT CMonster::Render()
             OutputDebugStringA("n머티리얼 바인딩 실패!\n");
             return E_FAIL;
         }
+
+        if (FAILED(m_pModelCom->Bind_BoneMatrices(m_pShaderCom, "g_BoneMatrices", i)))
+            return E_FAIL;
 
         m_pShaderCom->Begin(0);
         m_pModelCom->Render(i);
@@ -117,33 +122,13 @@ HRESULT CMonster::Render()
 
 HRESULT CMonster::Ready_Components()
 {
-    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Shader_VtxAnimMesh"),
+    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Shader_VtxAnimMesh_ani"),
         TEXT("Com_Shader"), reinterpret_cast<CComponent**>(&m_pShaderCom), nullptr)))
         return E_FAIL;
 
     if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Model_Hero"),
         TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom), nullptr)))
         return E_FAIL;
-
-    /*const wchar_t* modelProto = nullptr;
-    switch (m_eType)
-    {
-    case EObjectType::MONSTER:
-        modelProto = TEXT("Prototype_Component_Model_Hero");
-        break;
-    default:
-        OutputDebugStringA("Unknown EObjectType in Ready_Components!\n");
-        return E_FAIL;
-    }
-    if (FAILED(CGameObject::Add_Component(
-        ENUM_CLASS(LEVEL::GAMEPLAY),
-        modelProto,
-        TEXT("Com_Model"),
-        reinterpret_cast<CComponent**>(&m_pModelCom), nullptr)))
-    {
-        OutputDebugStringA("CMonster: 모델 Add_Component 실패!\n");
-        return E_FAIL;
-    }*/
 
     OutputDebugStringA("CMonster: Ready_Components 정상 종료\n");
     return S_OK;

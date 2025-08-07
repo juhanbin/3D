@@ -109,6 +109,12 @@
     <Filter Include="01.Utility\03.Component\Model\Animation\Channel">
       <UniqueIdentifier>{97eb0ef7-3a9f-4f01-a0fa-1db921504de1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01.Utility\02.GameObject\ContainerObject">
+      <UniqueIdentifier>{56ec8d12-60e0-4b0a-811f-1a47e165d025}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Utility\02.GameObject\ContainerObject\PartObject">
+      <UniqueIdentifier>{fe59b9d5-7552-49c1-af3b-4a48d3229fe6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Private\Timer.cpp">
@@ -206,6 +212,12 @@
     </ClCompile>
     <ClCompile Include="..\Private\Animation.cpp">
       <Filter>01.Utility\03.Component\Model\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ContainerObject.cpp">
+      <Filter>01.Utility\02.GameObject\ContainerObject</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\PartObject.cpp">
+      <Filter>01.Utility\02.GameObject\ContainerObject\PartObject</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -325,6 +337,12 @@
     </ClInclude>
     <ClInclude Include="..\Public\BinType.h">
       <Filter>99.Defines</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\ContainerObject.h">
+      <Filter>01.Utility\02.GameObject\ContainerObject</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\PartObject.h">
+      <Filter>01.Utility\02.GameObject\ContainerObject\PartObject</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

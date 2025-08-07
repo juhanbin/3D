@@ -34,6 +34,20 @@ CModel::CModel(const CModel& Prototype)
         Safe_AddRef(pMaterial);
 }
 
+_float4x4* CModel::Get_BoneMatrix(const _char* pBoneName)
+{
+    auto    iter = find_if(m_Bones.begin(), m_Bones.end(), [&](CBone* pBone) {
+        if (true == pBone->Compare_Name(pBoneName))
+            return true;
+        return false;
+        });
+
+    if (iter == m_Bones.end())
+        return nullptr;
+
+    return (*iter)->Get_CombinedTransformationMatrixPtr();
+}
+
 HRESULT CModel::Initialize_Prototype(MODELTYPE eModelType, FILETYPE eFileType, const _char* pModelFilePath, _fmatrix PreTransformMatrix)
 {
     m_eModelType = eModelType;
@@ -81,8 +95,6 @@ HRESULT CModel::Initialize_Prototype(MODELTYPE eModelType, FILETYPE eFileType, c
             ifs.read((char*)&boneCount, sizeof(boneCount));
             vector<BoneInfoBin> binBones(boneCount);
             ifs.read((char*)binBones.data(), sizeof(BoneInfoBin) * boneCount);
-
-           
 
             if (FAILED(Ready_Bones(binBones, -1)))
                 return E_FAIL;
@@ -173,6 +185,7 @@ HRESULT CModel::Bind_Materials_Bin(CShader* pShader, const _char* pConstantName,
 
 HRESULT CModel::Bind_BoneMatrices(CShader* pShader, const _char* pConstantName, _uint iMeshIndex)
 {
+
     if (iMeshIndex >= m_iNumMeshes)
         return E_FAIL;
 
@@ -343,10 +356,10 @@ HRESULT CModel::Ready_Meshes(ifstream& ifs, MODELTYPE eModelType)
     {
         // 2. 메시 정보 구조체 배열 읽기
         vector<MeshInfoBin> meshInfos(meshCount);
-        ifs.read((char*)meshInfos.data(), sizeof(MeshInfoBin) * meshCount);
+        ifs.read((char*)meshInfos.data(), sizeof(MeshInfoBin) * m_iNumMeshes);
 
         // 3. 각 메시 생성
-        for (uint32_t i = 0; i < meshCount; ++i) {
+        for (uint32_t i = 0; i < m_iNumMeshes; ++i) {
 
             vector<VTXMESH> verts(meshInfos[i].NumVertices);
             ifs.read((char*)verts.data(), sizeof(VTXMESH) * meshInfos[i].NumVertices);
@@ -380,6 +393,7 @@ HRESULT CModel::Ready_Meshes(ifstream& ifs, MODELTYPE eModelType)
 
             m_Meshes.push_back(pMesh);
         }
+
     }
     return S_OK;
 }

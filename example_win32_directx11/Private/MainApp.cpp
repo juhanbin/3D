@@ -388,16 +388,6 @@ void CMainApp::ExportModelToBin_Anim(const MapObject& obj, const char* binPath)
     fwrite(&boneCount, sizeof(uint32_t), 1, fp);
     fwrite(bones.data(), sizeof(BoneInfoBin), boneCount, fp);
 
-    for (size_t i = 0; i < bones.size(); ++i) {
-        char buf[256];
-       // sprintf_s(buf, "[Export] Bone %zu: name='%s', parent=%d\n", i, bones[i].name, bones[i].parentIdx);
-       // OutputDebugStringA(buf);
-       // for (int j = 0; j < 16; ++j) {
-       //     sprintf_s(buf, "    transform[%d]=%.3f\n", j, bones[i].transform[j]);
-       //     OutputDebugStringA(buf);
-       // }
-    }
-
     // 2. 메시
     uint32_t numMeshes = scene->mNumMeshes;
     fwrite(&numMeshes, sizeof(uint32_t), 1, fp);
@@ -414,7 +404,6 @@ void CMainApp::ExportModelToBin_Anim(const MapObject& obj, const char* binPath)
         info.MaterialIndex = mesh->mMaterialIndex;
         info.NumVertices = mesh->mNumVertices;
         info.NumFaces = mesh->mNumFaces;
-        info.NumIndices = mesh->mNumFaces * 3;
 
         // 버텍스 데이터 저장
         auto& vertices = allVertices[i];
@@ -495,7 +484,7 @@ void CMainApp::ExportModelToBin_Anim(const MapObject& obj, const char* binPath)
 
         // 인덱스 데이터 저장
         auto& indices = allIndices[i];
-        indices.resize(info.NumIndices);
+        indices.resize(info.NumFaces * 3);
         uint32_t idx = 0;
         for (uint32_t f = 0; f < mesh->mNumFaces; ++f) {
             aiFace& face = mesh->mFaces[f];
@@ -514,8 +503,8 @@ void CMainApp::ExportModelToBin_Anim(const MapObject& obj, const char* binPath)
         fwrite(allVertices[i].data(), sizeof(VTXANIMMESH), meshInfos[i].NumVertices, fp);
 
     // 각 메시의 인덱스 배열 저장
-    for (uint32_t i = 0; i < numMeshes; ++i)
-        fwrite(allIndices[i].data(), sizeof(uint32_t), meshInfos[i].NumIndices, fp);
+   // for (uint32_t i = 0; i < numMeshes; ++i)
+   //     fwrite(allIndices[i].data(), sizeof(uint32_t), meshInfos[i].NumIndices, fp);
 
     // 3. 머티리얼 정보 저장 
     uint32_t numMaterials = scene->mNumMaterials;

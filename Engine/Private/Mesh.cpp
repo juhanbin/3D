@@ -348,7 +348,7 @@ HRESULT CMesh::Ready_Vertices_For_Anim(const aiMesh* pAIMesh, const vector<CBone
 HRESULT CMesh::Ready_Vertices_For_Anim(const std::vector<VTXANIMMESH>& verts, const std::vector<CBone*>& Bones)
 {
 	m_iVertexStride = sizeof(VTXANIMMESH);
-	m_iNumVertices = static_cast<UINT>(verts.size());
+	m_iNumVertices = static_cast<uint32_t>(verts.size());
 
 	// 1. 정점 버퍼 생성
 	D3D11_BUFFER_DESC VBDesc{};

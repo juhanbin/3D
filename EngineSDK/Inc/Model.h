@@ -11,13 +11,14 @@ class ENGINE_DLL CModel final : public CComponent
 private:
 	CModel(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	CModel(const CModel& Prototype);
+	
 	virtual ~CModel() = default;
 
 public:
 	_uint Get_NumMeshes() const {
 		return m_iNumMeshes;
 	}
-
+	_float4x4* Get_BoneMatrix(const _char* pBoneName);
 public:
 	virtual HRESULT Initialize_Prototype(MODELTYPE eModelType, FILETYPE eFileType, const _char* pModelFilePath, _fmatrix PreTransformMatrix);
 	virtual HRESULT Initialize(void* pArg);
