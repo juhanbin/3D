@@ -196,9 +196,9 @@ void CMainApp::Render_ImGuiPanel()
                 switch (type) {
                 case EObjectType::MONSTER:
                     // Rock_AA.fbx 예시
-                    strcpy(obj.fbxPath, "../Bin/Resources/Blood_Spear/Model/Hero/Hero.fbx");
+                    strcpy(obj.fbxPath, "../Bin/Resources/Blood_Spear/Model/Monster/Monster.fbx");
 
-                    strcpy(obj.binPath, "../../Mapdata/Hero.bin");
+                    strcpy(obj.binPath, "../../Mapdata/Monster.bin");
 
                     break;
                 case EObjectType::ROCK_AA:
@@ -206,6 +206,34 @@ void CMainApp::Render_ImGuiPanel()
                     strcpy(obj.fbxPath, "../Bin/Resources/Blood_Spear/Model/Rock/Rock_AA.fbx");
 
                     strcpy(obj.binPath, "../../Mapdata/Rock_AA.bin");
+
+                    break;
+                case EObjectType::HERO:
+                    // Rock_AA.fbx 예시
+                    strcpy(obj.fbxPath, "../Bin/Resources/Blood_Spear/Model/Hero/Hero.fbx");
+
+                    strcpy(obj.binPath, "../../Mapdata/Hero.bin");
+
+                    break;
+                case EObjectType::SPEAR:
+                    // Rock_AA.fbx 예시
+                    strcpy(obj.fbxPath, "../Bin/Resources/Blood_Spear/Model/Spear/Spear.fbx");
+
+                    strcpy(obj.binPath, "../../Mapdata/Spear.bin");
+
+                    break;
+                case EObjectType::MONSTER_SPEAR:
+                    // Rock_AA.fbx 예시
+                    strcpy(obj.fbxPath, "../Bin/Resources/Blood_Spear/Model/Monster_Spear/Monster_Spear.fbx");
+
+                    strcpy(obj.binPath, "../../Mapdata/Monster_Spear.bin");
+
+                    break;
+                case EObjectType::MONSTER_BOW:
+                    // Rock_AA.fbx 예시
+                    strcpy(obj.fbxPath, "../Bin/Resources/Blood_Spear/Model/Monster_Bow/Monster_Bow.fbx");
+
+                    strcpy(obj.binPath, "../../Mapdata/Monster_Bow.bin");
 
                     break;
                 default:

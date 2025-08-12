@@ -65,7 +65,14 @@ HRESULT CMapObject::Initialize(void* pArg)
     {
         m_pModelCom->Set_Animation(0, true);
     }
-
+    if ((m_eType == EObjectType::HERO))
+    {
+        m_pModelCom->Set_Animation(0, true);
+    }
+    if ((m_eType == EObjectType::SPEAR))
+    {
+        m_pModelCom->Set_Animation(0, true);
+    }
     return S_OK;
 }
 
@@ -73,6 +80,14 @@ void CMapObject::Priority_Update(_float fTimeDelta) {}
 void CMapObject::Update(_float fTimeDelta) 
 {
     if ((m_eType == EObjectType::MONSTER))
+    {
+        m_pModelCom->Play_Animation(fTimeDelta);
+    }
+    if ((m_eType == EObjectType::HERO))
+    {
+        m_pModelCom->Play_Animation(fTimeDelta);
+    }
+    if ((m_eType == EObjectType::SPEAR))
     {
         m_pModelCom->Play_Animation(fTimeDelta);
     }
@@ -100,6 +115,16 @@ HRESULT CMapObject::Render()
             if (FAILED(m_pModelCom->Bind_BoneMatrices(m_pShaderCom, "g_BoneMatrices", i)))
                 return E_FAIL;
         }
+        if (m_eType == EObjectType::HERO)
+        {
+            if (FAILED(m_pModelCom->Bind_BoneMatrices(m_pShaderCom, "g_BoneMatrices", i)))
+                return E_FAIL;
+        }
+        if (m_eType == EObjectType::SPEAR)
+        {
+            if (FAILED(m_pModelCom->Bind_BoneMatrices(m_pShaderCom, "g_BoneMatrices", i)))
+                return E_FAIL;
+        }
         m_pShaderCom->Begin(0);
         m_pModelCom->Render(i);
     }
@@ -113,7 +138,7 @@ HRESULT CMapObject::Ready_Components()
     switch (m_eType)
     {
     case EObjectType::MONSTER:
-        modelProto = TEXT("Prototype_Component_Model_Hero");
+        modelProto = TEXT("Prototype_Component_Model_Monster");
 
         if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Shader_VtxAnimMesh"),
             TEXT("Com_Shader"), reinterpret_cast<CComponent**>(&m_pShaderCom), nullptr)))
@@ -126,6 +151,35 @@ HRESULT CMapObject::Ready_Components()
             TEXT("Com_Shader"), reinterpret_cast<CComponent**>(&m_pShaderCom), nullptr)))
             return E_FAIL;
         break;
+    case EObjectType::HERO:
+        modelProto = TEXT("Prototype_Component_Model_Hero");
+
+        if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Shader_VtxAnimMesh"),
+            TEXT("Com_Shader"), reinterpret_cast<CComponent**>(&m_pShaderCom), nullptr)))
+            return E_FAIL;
+        break;
+    case EObjectType::SPEAR:
+        modelProto = TEXT("Prototype_Component_Model_Spear");
+
+        if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Shader_VtxAnimMesh"),
+            TEXT("Com_Shader"), reinterpret_cast<CComponent**>(&m_pShaderCom), nullptr)))
+            return E_FAIL;
+        break;
+    case EObjectType::MONSTER_SPEAR:
+        modelProto = TEXT("Prototype_Component_Model_Monster_Spear");
+
+        if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Shader_VtxMesh"),
+            TEXT("Com_Shader"), reinterpret_cast<CComponent**>(&m_pShaderCom), nullptr)))
+            return E_FAIL;
+        break;
+    case EObjectType::MONSTER_BOW:
+        modelProto = TEXT("Prototype_Component_Model_Monster_Bow");
+
+        if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Shader_VtxMesh"),
+            TEXT("Com_Shader"), reinterpret_cast<CComponent**>(&m_pShaderCom), nullptr)))
+            return E_FAIL;
+        break;
+
     default:
         OutputDebugStringA("Unknown EObjectType in Ready_Components!\n");
         return E_FAIL;

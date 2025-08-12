@@ -34,6 +34,10 @@ enum class EObjectType : int
 {
     MONSTER = 0,
     ROCK_AA,
+    HERO,
+    SPEAR,
+    MONSTER_SPEAR,
+    MONSTER_BOW,
     END
 };
 
@@ -56,9 +60,13 @@ inline const char* ToObjectTypeString(EObjectType type)
 {
     switch (type)
     {
-    case EObjectType::MONSTER:  return "Monster";
-    case EObjectType::ROCK_AA:  return "Rock_AA";
-    default:                    return "Unknown";
+    case EObjectType::MONSTER:          return "Monster";
+    case EObjectType::ROCK_AA:          return "Rock_AA";
+    case EObjectType::HERO:             return "Hero";
+    case EObjectType::SPEAR:            return "Spear";
+    case EObjectType::MONSTER_SPEAR:    return "Monster_Spear";
+    case EObjectType::MONSTER_BOW:      return "Monster_Bow";
+    default:                            return "Unknown";
     }
 }
 static constexpr int NumObjectTypes = static_cast<int>(EObjectType::END);

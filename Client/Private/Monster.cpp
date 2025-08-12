@@ -61,7 +61,7 @@ HRESULT CMonster::Initialize(void* pArg)
     if (FAILED(Ready_Components()))
         return E_FAIL;
 
-    m_pModelCom->Set_Animation(0, true);
+    m_pModelCom->Set_Animation(2, true);
 
     //_float3 test = { 0.000000001f, 0.000000001f, 0.000000001f };
     _float3 test = { 1.f, 1.f, 1.f };
@@ -127,7 +127,7 @@ HRESULT CMonster::Ready_Components()
         TEXT("Com_Shader"), reinterpret_cast<CComponent**>(&m_pShaderCom), nullptr)))
         return E_FAIL;
 
-    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Model_Hero"),
+    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Model_Monster"),
         TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom), nullptr)))
         return E_FAIL;
 

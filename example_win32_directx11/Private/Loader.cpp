@@ -94,23 +94,42 @@ HRESULT CLoader::Loading_For_Edit()
 	//	CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, "../Bin/Resources/Models/ForkLift/ForkLift.fbx", PreTransformMatrix))))
 	//	return E_FAIL;
 
-	/* Prototype_Component_Model_Hero */
-	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
-	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Model_Hero"),
-		CModel::Create(m_pDevice, m_pContext, MODELTYPE::ANIM, Engine::FILETYPE::FBX,"../Bin/Resources/Blood_Spear/Model/Hero/Hero.fbx", PreTransformMatrix))))
-		return E_FAIL;
-
 	/* Prototype_Component_Model_Rock_AA */
 	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
 	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Model_Rock_AA"),
 		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::FBX, "../Bin/Resources/Blood_Spear/Model/Rock/Rock_AA.fbx", PreTransformMatrix))))
 		return E_FAIL;
-	///* Prototype_Component_VIBuffer_Cube */
-	//if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::LEVEL_GAMEPLAY), TEXT("Prototype_Component_VIBuffer_Cube"),
-	//	CVIBuffer_Cube::Create(m_pDevice, m_pContext))))
-	//	return E_FAIL;
 
-	//
+	/* Prototype_Component_Model_Hero */
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Model_Hero"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::ANIM, Engine::FILETYPE::FBX, "../Bin/Resources/Blood_Spear/Model/Hero/Hero.fbx", PreTransformMatrix))))
+		return E_FAIL;
+
+	/* Prototype_Component_Model_Spear */
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Model_Spear"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::ANIM, Engine::FILETYPE::FBX, "../Bin/Resources/Blood_Spear/Model/Spear/Spear.fbx", PreTransformMatrix))))
+		return E_FAIL;
+
+	/* Prototype_Component_Model_Monster */
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Model_Monster"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::ANIM, Engine::FILETYPE::FBX, "../Bin/Resources/Blood_Spear/Model/Monster/Monster.fbx", PreTransformMatrix))))
+		return E_FAIL;
+
+	/* Prototype_Component_Model_Monster_Spear */
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Model_Monster_Spear"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::FBX, "../Bin/Resources/Blood_Spear/Model/Monster_Spear/Monster_Spear.fbx", PreTransformMatrix))))
+		return E_FAIL;
+
+	/* Prototype_Component_Model_Monster_Bow */
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Model_Monster_Bow"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::FBX, "../Bin/Resources/Blood_Spear/Model/Monster_Bow/Monster_Bow.fbx", PreTransformMatrix))))
+		return E_FAIL;
+
 	lstrcpy(m_szLoadingText, TEXT("쉐이더를 로딩중입니다."));
 	/* Prototype_Component_Shader_VtxNorTex */
 	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Shader_VtxNorTex"),

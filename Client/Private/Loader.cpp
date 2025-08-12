@@ -193,6 +193,54 @@ HRESULT CLoader::Loading_For_GamePlay_Level()
 		return E_FAIL;
 	}
 
+	// Spear 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::GAMEPLAY),
+		TEXT("Prototype_Component_Model_Spear"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::ANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/Spear.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] Spear 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
+	// Monster 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::GAMEPLAY),
+		TEXT("Prototype_Component_Model_Monster"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::ANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/Monster.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] Monster 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
+	// Monster_Spear 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::GAMEPLAY),
+		TEXT("Prototype_Component_Model_Monster_Spear"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/Monster_Spear.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] Monster_Spear 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
+	// Monster_Bow 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::GAMEPLAY),
+		TEXT("Prototype_Component_Model_Monster_Bow"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/Monster_Bow.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] Monster_Bow 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
 	lstrcpy(m_szLoadingText, TEXT("쉐이더를 로딩중입니다."));
 	/* Prototype_Component_Shader_VtxNorTex */
 	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Shader_VtxNorTex"),
