@@ -44,7 +44,7 @@ private:
 
     //bone
 public:
-    void GatherBones(const aiScene* scene, const aiNode* node, int parentIdx, std::vector<BoneInfoBin>& bones);
+    void GatherBones(const aiNode* node, int parentIdx);
 
 public:
     // MapTool ÇÔ¼ö
@@ -67,6 +67,11 @@ private:
     float m_TempRot[3] = { 0,0,0 };
     float m_TempPos[3] = { 0,0,0 };
 
+    //º»
+    std::vector<BoneInfoBin> m_Bones;
+
+    vector<_int>			m_BoneIndices;
+    vector<_float4x4>		m_OffsetMatrices;
     ID3D11RenderTargetView* m_pBackBufferRTV = nullptr;
     ID3D11DepthStencilView* m_pDepthStencilView = nullptr;
 

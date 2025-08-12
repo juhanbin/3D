@@ -375,25 +375,37 @@ HRESULT CModel::Ready_Meshes(ifstream& ifs, MODELTYPE eModelType)
     }
     else
     {
-        // 2. 메시 정보 구조체 배열 읽기
-        vector<MeshInfoBin> meshInfos(meshCount);
-        ifs.read((char*)meshInfos.data(), sizeof(MeshInfoBin) * meshCount);
-
-        // 3. 각 메시 생성
+        // ★ 애니메이션: 파일에 쓴 순서대로 "메시 단위"로 읽는다
         for (uint32_t i = 0; i < meshCount; ++i) {
+            MeshInfoBin info{};
+            ifs.read(reinterpret_cast<char*>(&info), sizeof(MeshInfoBin));
 
-            vector<VTXANIMMESH> verts(meshInfos[i].NumVertices);
-            ifs.read((char*)verts.data(), sizeof(VTXANIMMESH) * meshInfos[i].NumVertices);
+            // verts
+            vector<VTXANIMMESH> verts(info.NumVertices);
+            if (info.NumVertices)
+                ifs.read(reinterpret_cast<char*>(verts.data()), sizeof(VTXANIMMESH) * info.NumVertices);
 
-            vector<uint32_t> indices(meshInfos[i].NumIndices);
-            ifs.read((char*)indices.data(), sizeof(uint32_t) * meshInfos[i].NumIndices);
+            // indices
+            vector<uint32_t> indices(info.NumIndices);
+            if (info.NumIndices)
+                ifs.read(reinterpret_cast<char*>(indices.data()), sizeof(uint32_t) * info.NumIndices);
 
-            // 구조체와 데이터
-            CMesh* pMesh = CMesh::Create(m_pDevice, m_pContext, m_eModelType, meshInfos[i], verts, indices, m_Bones, XMLoadFloat4x4(&m_PreTransformMatrix));
+            // mesh bone slots
+            uint32_t boneSlotCount = 0;
+            ifs.read(reinterpret_cast<char*>(&boneSlotCount), sizeof(boneSlotCount));
 
+            vector<MeshBoneRaw> meshBones(boneSlotCount);
+            if (boneSlotCount)
+                ifs.read(reinterpret_cast<char*>(meshBones.data()), sizeof(MeshBoneRaw) * boneSlotCount);
+
+            // 생성
+            CMesh* pMesh = CMesh::Create(
+                m_pDevice, m_pContext, m_eModelType,
+                info, verts, indices, meshBones,
+                m_Bones, XMLoadFloat4x4(&m_PreTransformMatrix));
+            if (!pMesh) return E_FAIL;
             m_Meshes.push_back(pMesh);
         }
-
     }
     return S_OK;
 }
@@ -417,22 +429,13 @@ HRESULT CModel::Ready_Materials(const _char* pModelFilePath, const vector<Materi
 HRESULT CModel::Ready_Bones(const vector<BoneInfoBin>& binBones, _int iParentIndex)
 {
     m_Bones.clear();
-    m_Bones.reserve(binBones.size());
-
-    // 본들 모두 생성
     for (size_t i = 0; i < binBones.size(); ++i)
     {
-        //char buf[256];
-        //sprintf_s(buf, "[Bone] %zu: name='%s' parent=%d\n", i, binBones[i].name, binBones[i].parentIdx);
-        //OutputDebugStringA(buf);
-
-        // parentIdx는 BIN에 저장된 그대로
-        CBone* pBone = CBone::Create(binBones[i], binBones[i].parentIdx);
-        if (nullptr == pBone)
+        CBone* pBone = CBone::Create(binBones[i]);
+        if (!pBone)
             return E_FAIL;
         m_Bones.push_back(pBone);
     }
-
     return S_OK;
 }
 

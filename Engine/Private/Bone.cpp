@@ -20,16 +20,18 @@ HRESULT CBone::Initialize(const aiNode* pAINode, _int iParentBoneIndex)
 	return S_OK;
 }
 
-HRESULT CBone::Initialize(const BoneInfoBin& bin, _int iParentBoneIndex)
+HRESULT CBone::Initialize(const BoneInfoBin& binBone)
 {
-	strcpy_s(m_szName, bin.name);
-	// BIN에서 오프셋 행렬도 읽어야 한다!
-	memcpy(&m_OffsetMatrix, bin.offset, sizeof(_float4x4));
+	strcpy_s(m_szName, binBone.Name);
 
-	memcpy(&m_TransformationMatrix, bin.transform, sizeof(_float4x4));
-	XMStoreFloat4x4(&m_TransformationMatrix, XMMatrixTranspose(XMLoadFloat4x4(&m_TransformationMatrix)));
+	m_iParentBoneIndex = binBone.ParentIndex;
+
+	memcpy(&m_TransformationMatrix, binBone.Transform, sizeof(float) * 16);
+
+	XMStoreFloat4x4(&m_TransformationMatrix,
+		XMMatrixTranspose(XMLoadFloat4x4(&m_TransformationMatrix)));
+
 	XMStoreFloat4x4(&m_CombinedTransformationMatrix, XMMatrixIdentity());
-	m_iParentBoneIndex = bin.parentIdx; // BIN에 저장된 값을 그대로 사용
 
 	return S_OK;
 }
@@ -61,11 +63,11 @@ CBone* CBone::Create(const aiNode* pAINode, _int iParentBoneIndex)
 	return pInstance;
 }
 
-CBone* CBone::Create(const BoneInfoBin& bin, _int iParentBoneIndex)
+CBone* CBone::Create(const BoneInfoBin& bin)
 {
 	CBone* pInstance = new CBone();
 
-	if (FAILED(pInstance->Initialize(bin, iParentBoneIndex)))
+	if (FAILED(pInstance->Initialize(bin)))
 	{
 		MSG_BOX(TEXT("Failed to Created : CBone(bin)"));
 		Safe_Release(pInstance);

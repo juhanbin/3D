@@ -7,6 +7,7 @@
 #include <direct.h>
 #include "BinType.h"
 #include <vector>
+
 using namespace DirectX;
 using namespace Edit;
 
@@ -132,39 +133,26 @@ bool CMainApp::RayIntersectsAABB(const Ray& ray, const DirectX::BoundingBox& box
     return hit;
 }
 
-void CMainApp::GatherBones(const aiScene* scene, const aiNode* node, int parentIdx, std::vector<BoneInfoBin>& bones)
+void CMainApp::GatherBones(const aiNode* node, int parentIdx)
 {
-    BoneInfoBin bi{};
-    // 본 이름
-    strncpy(bi.name, node->mName.C_Str(), 63); bi.name[63] = 0;
-    // 부모 인덱스
-    bi.parentIdx = parentIdx;
-    // 바인드포즈(로컬 행렬)
-    memcpy(bi.transform, &node->mTransformation, sizeof(float) * 16);
+    BoneInfoBin bone;
+    memset(&bone, 0, sizeof(BoneInfoBin));
+    strncpy(bone.Name, node->mName.C_Str(), 63);
+    bone.ParentIndex = parentIdx;
 
-    // 오프셋 행렬(초기값 단위행렬)
-    for (int i = 0; i < 16; ++i)
-        bi.offset[i] = (i % 5 == 0) ? 1.f : 0.f;
+    const aiMatrix4x4& m = node->mTransformation;
+    float mat[16] = {
+        m.a1, m.a2, m.a3, m.a4,
+        m.b1, m.b2, m.b3, m.b4,
+        m.c1, m.c2, m.c3, m.c4,
+        m.d1, m.d2, m.d3, m.d4
+    };
+    memcpy(bone.Transform, mat, sizeof(float) * 16);
 
-    // mBones에서 이름 일치하면 오프셋 복사
-    for (unsigned m = 0; m < scene->mNumMeshes; ++m) {
-        aiMesh* mesh = scene->mMeshes[m];
-        for (unsigned b = 0; b < mesh->mNumBones; ++b) {
-            aiBone* bone = mesh->mBones[b];
-            if (strcmp(bone->mName.C_Str(), node->mName.C_Str()) == 0) {
-                memcpy(bi.offset, &bone->mOffsetMatrix, sizeof(float) * 16);
-                break; // 매칭되면 바로 종료
-            }
-        }
-    }
-
-    int thisIdx = static_cast<int>(bones.size());
-    bones.push_back(bi);
-
-    // 자식 노드 순회 (재귀)
-    for (unsigned i = 0; i < node->mNumChildren; ++i) {
-        GatherBones(scene, node->mChildren[i], thisIdx, bones);
-    }
+    m_Bones.push_back(bone);
+    int myIdx = (int)m_Bones.size() - 1;
+    for (unsigned int i = 0; i < node->mNumChildren; ++i)
+        GatherBones(node->mChildren[i], myIdx);
 }
 
 
@@ -381,130 +369,182 @@ void CMainApp::ExportModelToBin_Anim(const MapObject& obj, const char* binPath)
     }
 
     // 1. 본
-    std::vector<BoneInfoBin> bones;
-    GatherBones(scene, scene->mRootNode, -1, bones);
+    GatherBones(scene->mRootNode, -1);
 
-    uint32_t boneCount = static_cast<uint32_t>(bones.size());
-    fwrite(&boneCount, sizeof(uint32_t), 1, fp);
-    fwrite(bones.data(), sizeof(BoneInfoBin), boneCount, fp);
+    uint32_t boneCount = static_cast<uint32_t>(m_Bones.size());
+    fwrite(&boneCount, sizeof(uint32_t), 1, fp);                    //본 개수 저장
+    fwrite(m_Bones.data(), sizeof(BoneInfoBin), boneCount, fp);
 
     // 2. 메시
-    uint32_t numMeshes = scene->mNumMeshes;
+    const uint32_t numMeshes = scene->mNumMeshes;
     fwrite(&numMeshes, sizeof(uint32_t), 1, fp);
 
-    vector<MeshInfoBin> meshInfos(numMeshes);
-    vector<vector<VTXANIMMESH>> allVertices(numMeshes);
-    vector<vector<uint32_t>> allIndices(numMeshes);
+    auto FindGlobalBoneIndex = [&](const char* name)->int {
+        for (int gi = 0; gi < (int)m_Bones.size(); ++gi) {
+            if (std::strncmp(m_Bones[gi].Name, name, sizeof(m_Bones[gi].Name)) == 0)
+                return gi;
+        }
+        return -1;
+        };
 
-    for (uint32_t i = 0; i < numMeshes; ++i) {
+    for (uint32_t i = 0; i < numMeshes; ++i)
+    {
         aiMesh* mesh = scene->mMeshes[i];
-        MeshInfoBin& info = meshInfos[i];
-        memset(&info, 0, sizeof(MeshInfoBin));
-        strncpy(info.Name, mesh->mName.C_Str(), 63);
+
+        // 1) MeshInfoBin
+        MeshInfoBin info{};
+        std::memset(info.Name, 0, sizeof(info.Name));
+        std::strncpy(info.Name, mesh->mName.C_Str(), sizeof(info.Name) - 1);
         info.MaterialIndex = mesh->mMaterialIndex;
         info.NumVertices = mesh->mNumVertices;
         info.NumFaces = mesh->mNumFaces;
+        info.NumIndices = info.NumFaces * 3;
 
-        // 버텍스 데이터 저장
-        auto& vertices = allVertices[i];
-        vertices.resize(info.NumVertices);
+        // 2) 정점 배열 (기본 속성)
+        std::vector<VTXANIMMESH> verts(info.NumVertices);
+        const bool hasNormal = mesh->HasNormals();
+        const bool hasTB = mesh->HasTangentsAndBitangents();
+        const bool hasUV0 = (mesh->HasTextureCoords(0) && mesh->mNumUVComponents[0] >= 2);
 
-        for (uint32_t v = 0; v < info.NumVertices; ++v) {
-            VTXANIMMESH& vert = vertices[v];
-            vert.vPosition.x = mesh->mVertices[v].x;
-            vert.vPosition.y = mesh->mVertices[v].y;
-            vert.vPosition.z = mesh->mVertices[v].z;
+        for (uint32_t v = 0; v < info.NumVertices; ++v)
+        {
+            auto& out = verts[v];
 
-            // 노멀: 있으면 저장, 없으면 0
-            if (mesh->HasNormals()) {
-                vert.vNormal.x = mesh->mNormals[v].x;
-                vert.vNormal.y = mesh->mNormals[v].y;
-                vert.vNormal.z = mesh->mNormals[v].z;
+            // Position
+            out.vPosition = XMFLOAT3(mesh->mVertices[v].x, mesh->mVertices[v].y, mesh->mVertices[v].z);
+
+            // Normal
+            out.vNormal = hasNormal
+                ? XMFLOAT3(mesh->mNormals[v].x, mesh->mNormals[v].y, mesh->mNormals[v].z)
+                : XMFLOAT3(0, 0, 0);
+
+            // Tangent / Bitangent
+            if (hasTB) {
+                out.vTangent = XMFLOAT3(mesh->mTangents[v].x, mesh->mTangents[v].y, mesh->mTangents[v].z);
+                out.vBinormal = XMFLOAT3(mesh->mBitangents[v].x, mesh->mBitangents[v].y, mesh->mBitangents[v].z);
             }
             else {
-                vert.vNormal.x = vert.vNormal.y = vert.vNormal.z = 0.0f;
+                out.vTangent = XMFLOAT3(0, 0, 0);
+                out.vBinormal = XMFLOAT3(0, 0, 0);
             }
-            // 탄젠트/바이노멀: 있으면 저장, 없으면 0
-            if (mesh->HasTangentsAndBitangents()) {
-                vert.vTangent.x = mesh->mTangents[v].x;
-                vert.vTangent.y = mesh->mTangents[v].y;
-                vert.vTangent.z = mesh->mTangents[v].z;
 
-                vert.vBinormal.x = mesh->mBitangents[v].x;
-                vert.vBinormal.y = mesh->mBitangents[v].y;
-                vert.vBinormal.z = mesh->mBitangents[v].z;
-            }
-            else {
-                vert.vTangent.x = vert.vTangent.y = vert.vTangent.z = 0.0f;
-                vert.vBinormal.x = vert.vBinormal.y = vert.vBinormal.z = 0.0f;
-            }
-            // UV: 있으면 저장, 없으면 0
-            if (mesh->HasTextureCoords(0)) {
-                vert.vTexcoord.x = mesh->mTextureCoords[0][v].x;
-                vert.vTexcoord.y = mesh->mTextureCoords[0][v].y;
-            }
-            else {
-                vert.vTexcoord.x = vert.vTexcoord.y = 0.0f;
-            }
-            vert.vBlendIndex = XMUINT4(0, 0, 0, 0);
-            vert.vBlendWeight = XMFLOAT4(0, 0, 0, 0);
+            // UV (x,y만)
+            out.vTexcoord = hasUV0
+                ? XMFLOAT2(mesh->mTextureCoords[0][v].x, mesh->mTextureCoords[0][v].y)
+                : XMFLOAT2(0, 0);
+
+            // Blend 초기화
+            out.vBlendIndex = XMUINT4(0, 0, 0, 0);
+            out.vBlendWeight = XMFLOAT4(0, 0, 0, 0);
         }
 
-        // BlendIndex/BlendWeight 세팅 (본-버텍스 영향)
-        for (uint32_t b = 0; b < mesh->mNumBones; ++b) {
-            aiBone* bone = mesh->mBones[b];
+        // 3) 인덱스 배열 (삼각형 가정: aiProcess_Triangulate 사용 전제)
+        std::vector<uint32_t> indices(info.NumIndices);
+        {
+            uint32_t w = 0;
+            for (uint32_t f = 0; f < info.NumFaces; ++f) {
+                const aiFace& face = mesh->mFaces[f];
+                indices[w++] = face.mIndices[0];
+                indices[w++] = face.mIndices[1];
+                indices[w++] = face.mIndices[2];
+            }
+        }
 
-            // bone 이름을 전체 bone 배열 인덱스(boneIdx)로 변환
-            int boneIdx = -1;
-            for (uint32_t j = 0; j < bones.size(); ++j) {
-                if (strcmp(bones[j].name, bone->mName.C_Str()) == 0) {
-                    boneIdx = j;
-                    break;
+        // 4) 메시 본 슬롯(이름 + 오프셋 + 전역본인덱스) 및 정점 가중치 수집
+        std::vector<MeshBoneRaw> meshBones;
+        meshBones.reserve(mesh->mNumBones);
+
+        // 정점별 (전역본, 가중치) 임시 목록
+        std::vector<std::vector<std::pair<uint16_t, float>>> vw(info.NumVertices);
+
+        for (uint32_t b = 0; b < mesh->mNumBones; ++b)
+        {
+            aiBone* aiB = mesh->mBones[b];
+
+            MeshBoneRaw raw{};
+            std::memset(raw.Name, 0, sizeof(raw.Name));
+            std::strncpy(raw.Name, aiB->mName.C_Str(), sizeof(raw.Name) - 1);
+
+            // Offset(row-major) 그대로 저장 (BIN/엔진에서 Transpose 안 하는 규약)
+            const aiMatrix4x4& M = aiB->mOffsetMatrix;
+            const float mat[16] = {
+                M.a1, M.a2, M.a3, M.a4,
+                M.b1, M.b2, M.b3, M.b4,
+                M.c1, M.c2, M.c3, M.c4,
+                M.d1, M.d2, M.d3, M.d4
+            };
+            std::memcpy(raw.Offset, mat, sizeof(mat));
+
+            // 전역 본 인덱스 찾기
+            raw.GlobalIndex = FindGlobalBoneIndex(raw.Name); // 없으면 -1
+            meshBones.push_back(raw);
+
+            // 정점 가중치: 전역 본 인덱스로 수집
+            for (uint32_t w = 0; w < aiB->mNumWeights; ++w) {
+                const uint32_t vertIdx = aiB->mWeights[w].mVertexId;
+                const float    weight = aiB->mWeights[w].mWeight;
+
+                if (vertIdx < vw.size() && weight > 0.f) {
+                    vw[vertIdx].emplace_back(static_cast<uint16_t>(b), weight); // ★ 로컬 b 사용
                 }
             }
-            if (boneIdx == -1) continue; // 매칭 본이 없으면 패스
+        }
 
-            for (uint32_t w = 0; w < bone->mNumWeights; ++w) {
-                uint32_t vertIdx = bone->mWeights[w].mVertexId;
-                float weight = bone->mWeights[w].mWeight;
+        // 5) 각 정점: Top-4 선별 + 정규화(+ 내림차순 정렬)
+        for (uint32_t v = 0; v < info.NumVertices; ++v)
+        {
+            auto& list = vw[v];
+            if (list.empty()) continue;
 
-                VTXANIMMESH& vert = vertices[vertIdx];
-                float* pWeight = reinterpret_cast<float*>(&vert.vBlendWeight);
-                uint32_t* pIndex = reinterpret_cast<uint32_t*>(&vert.vBlendIndex);
-
-                for (int k = 0; k < 4; ++k) {
-                    if (pWeight[k] == 0.0f) {
-                        pIndex[k] = boneIdx;
-                        pWeight[k] = weight;
-                        break;
-                    }
+            // 같은 본 중복 들어온 경우 합치기(선택사항) ? 안전성↑
+            {
+                std::sort(list.begin(), list.end(),
+                    [](auto& L, auto& R) { return L.first < R.first; });
+                std::vector<std::pair<uint16_t, float>> merged;
+                merged.reserve(list.size());
+                for (auto& e : list) {
+                    if (!merged.empty() && merged.back().first == e.first)
+                        merged.back().second += e.second;
+                    else
+                        merged.push_back(e);
                 }
+                list.swap(merged);
             }
+
+            // 가중치 내림차순 정렬
+            std::sort(list.begin(), list.end(),
+                [](auto& L, auto& R) { return L.second > R.second; });
+
+            // Top-4
+            const size_t n = std::min<size_t>(4, list.size());
+
+            float sum = 0.f;
+            for (size_t k = 0; k < n; ++k) sum += list[k].second;
+            if (sum <= 0.f) continue;
+            const float inv = 1.f / sum;
+
+            // 정규화 후 기록(내림차순 유지)
+            auto& out = verts[v];
+            XMUINT4 bi = { 0,0,0,0 };
+            XMFLOAT4 bw = { 0,0,0,0 };
+            if (n > 0) { bi.x = list[0].first; bw.x = list[0].second * inv; }
+            if (n > 1) { bi.y = list[1].first; bw.y = list[1].second * inv; }
+            if (n > 2) { bi.z = list[2].first; bw.z = list[2].second * inv; }
+            if (n > 3) { bi.w = list[3].first; bw.w = list[3].second * inv; }
+            out.vBlendIndex = bi;
+            out.vBlendWeight = bw;
         }
 
-        // 인덱스 데이터 저장
-        auto& indices = allIndices[i];
-        indices.resize(info.NumFaces * 3);
-        uint32_t idx = 0;
-        for (uint32_t f = 0; f < mesh->mNumFaces; ++f) {
-            aiFace& face = mesh->mFaces[f];
-            indices[idx++] = face.mIndices[0];
-            indices[idx++] = face.mIndices[1];
-            indices[idx++] = face.mIndices[2];
-        }
+        // ===== 실제 파일 쓰기 =====
+        fwrite(&info, sizeof(MeshInfoBin), 1, fp);  // MeshInfo
+        if (info.NumVertices) fwrite(verts.data(), sizeof(VTXANIMMESH), info.NumVertices, fp);
+        if (info.NumIndices)  fwrite(indices.data(), sizeof(uint32_t), info.NumIndices, fp);
+
+        const uint32_t boneSlotCount = static_cast<uint32_t>(meshBones.size());
+        fwrite(&boneSlotCount, sizeof(uint32_t), 1, fp); // per-mesh bone count
+        if (boneSlotCount) fwrite(meshBones.data(), sizeof(MeshBoneRaw), boneSlotCount, fp);
     }
 
-    // 메시 정보 배열 저장
-    for (uint32_t i = 0; i < numMeshes; ++i)
-        fwrite(&meshInfos[i], sizeof(MeshInfoBin), 1, fp);
-
-    // 각 메시의 버텍스 배열 저장
-    for (uint32_t i = 0; i < numMeshes; ++i)
-        fwrite(allVertices[i].data(), sizeof(VTXANIMMESH), meshInfos[i].NumVertices, fp);
-
-    // 각 메시의 인덱스 배열 저장
-   // for (uint32_t i = 0; i < numMeshes; ++i)
-   //     fwrite(allIndices[i].data(), sizeof(uint32_t), meshInfos[i].NumIndices, fp);
 
     // 3. 머티리얼 정보 저장 
     uint32_t numMaterials = scene->mNumMaterials;

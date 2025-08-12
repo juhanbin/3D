@@ -12,6 +12,12 @@ struct MeshInfoBin {
     uint32_t NumFaces;          //폴리곤의 수
 };
 
+struct MeshBoneRaw {
+    char  Name[64];
+    float Offset[16];   // aiBone::mOffsetMatrix (row-major로 저장 규약 고정)
+    int   GlobalIndex;  // GatherBones()로 만든 m_Bones[]의 전역 인덱스. 없으면 -1
+};
+
 enum class TextureType : int { DIFFUSE, NORMAL };
 
 struct TextureSlotBin {
@@ -29,11 +35,11 @@ struct MaterialInfoBin {
     char normal[260];           //nomal맵 경로
 };
 
-struct BoneInfoBin {
-    char name[64];
-    int parentIdx;
-    float offset[16];
-    float transform[16];
+struct BoneInfoBin
+{
+    char   Name[64];        // 본의 이름 (문자열, 최대 63자 + '\0')
+    int    ParentIndex;     // 부모 본 인덱스 (-1이면 루트)
+    float Transform[16];   // 4x4 트랜스폼 행렬 (float[16], row-major 권장)
 };
 
 struct ChannelInfoBin {

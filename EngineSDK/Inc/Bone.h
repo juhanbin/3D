@@ -37,7 +37,7 @@ public:
 public:
 
 	HRESULT Initialize(const aiNode* pAINode, _int iParentBoneIndex);
-	HRESULT Initialize(const BoneInfoBin& bin, _int iParentBoneIndex);
+	HRESULT Initialize(const BoneInfoBin& binBone);
 	void Update_CombinedTransformationMatrix(const _float4x4& PreTransformMatrix, const vector<CBone*>& Bones);
 
 	_bool Compare_Name(const _char* pName) {
@@ -58,7 +58,7 @@ private:
 
 public:
 	static CBone* Create(const aiNode* pAINode, _int iParentBoneIndex);
-	static CBone* Create(const BoneInfoBin& bin, _int iParentBoneIndex); // BIN 버전
+	static CBone* Create(const BoneInfoBin& bin); // BIN 버전
 	CBone* Clone();
 	virtual void Free() override;
 };

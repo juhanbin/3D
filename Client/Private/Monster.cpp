@@ -63,7 +63,8 @@ HRESULT CMonster::Initialize(void* pArg)
 
     m_pModelCom->Set_Animation(0, true);
 
-    _float3 test = { 0.000000001f, 0.000000001f, 0.000000001f };
+    //_float3 test = { 0.000000001f, 0.000000001f, 0.000000001f };
+    _float3 test = { 1.f, 1.f, 1.f };
     m_pTransformCom->Scaling(test);
     return S_OK;
 }
@@ -98,17 +99,17 @@ HRESULT CMonster::Render()
 
     for (size_t i = 0; i < iNumMeshes; i++)
     {
-        if (FAILED(m_pModelCom->Bind_Materials_Bin(m_pShaderCom, "g_DiffuseTexture", i, aiTextureType_DIFFUSE, 0))) // 0: DIFFUSE
+        if (FAILED(m_pModelCom->Bind_Materials_Bin(m_pShaderCom, "g_DiffuseTexture", i, ENUM_CLASS(TextureType::DIFFUSE), 0))) // 0: DIFFUSE
         {
             OutputDebugStringA("dif머티리얼 바인딩 실패!\n");
             return E_FAIL;
         }
 
-        if (FAILED(m_pModelCom->Bind_Materials_Bin(m_pShaderCom, "g_NormalTexture", i, 1, 0))) // 1: NORMAL
-        {
-            OutputDebugStringA("n머티리얼 바인딩 실패!\n");
-            return E_FAIL;
-        }
+        //if (FAILED(m_pModelCom->Bind_Materials_Bin(m_pShaderCom, "g_NormalTexture", i, ENUM_CLASS(TextureType::NORMAL), 0))) // 1: NORMAL
+        //{
+        //    OutputDebugStringA("n머티리얼 바인딩 실패!\n");
+        //    return E_FAIL;
+        //}
 
         if (FAILED(m_pModelCom->Bind_BoneMatrices(m_pShaderCom, "g_BoneMatrices", i)))
             return E_FAIL;
@@ -122,7 +123,7 @@ HRESULT CMonster::Render()
 
 HRESULT CMonster::Ready_Components()
 {
-    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Shader_VtxAnimMesh_ani"),
+    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Shader_VtxAnimMesh"),
         TEXT("Com_Shader"), reinterpret_cast<CComponent**>(&m_pShaderCom), nullptr)))
         return E_FAIL;
 
