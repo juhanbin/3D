@@ -76,6 +76,10 @@ public:
 	_byte	KeyDown(_ubyte byKeyID);
 	_byte	KeyPressing(_ubyte byKeyID);
 	_byte	KeyUp(_ubyte byKeyID);
+
+	_byte	MouseDown(MOUSEKEYSTATE byKeyID);
+	_byte	MousePressing(MOUSEKEYSTATE byKeyID);
+	_byte	MouseUp(MOUSEKEYSTATE byKeyID);
 #pragma endregion
 
 #pragma region LIGHT_MANAGER

@@ -53,6 +53,11 @@ void Engine::CInput_Device::Update(void)
 
 	m_pKeyBoard->GetDeviceState(256, m_byKeyState);
 	m_pMouse->GetDeviceState(sizeof(m_tMouseState), &m_tMouseState);
+
+	m_byMouseBtn[(int)MOUSEKEYSTATE::LB] = (m_tMouseState.rgbButtons[0] & 0x80) ? 0x80 : 0;
+	m_byMouseBtn[(int)MOUSEKEYSTATE::RB] = (m_tMouseState.rgbButtons[1] & 0x80) ? 0x80 : 0;
+	m_byMouseBtn[(int)MOUSEKEYSTATE::WB] = (m_tMouseState.rgbButtons[2] & 0x80) ? 0x80 : 0;
+
 }
 
 CInput_Device* CInput_Device::Create(HINSTANCE hInstance, HWND hWnd)

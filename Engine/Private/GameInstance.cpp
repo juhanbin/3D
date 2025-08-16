@@ -295,6 +295,21 @@ _byte CGameInstance::KeyUp(_ubyte byKeyID)
 	return m_pInput_Device->KeyUp(byKeyID);
 }
 
+_byte CGameInstance::MouseDown(MOUSEKEYSTATE byKeyID)
+{
+	return m_pInput_Device->MouseDown(byKeyID);
+}
+
+_byte CGameInstance::MousePressing(MOUSEKEYSTATE byKeyID)
+{
+	return m_pInput_Device->MousePressing(byKeyID);
+}
+
+_byte CGameInstance::MouseUp(MOUSEKEYSTATE byKeyID)
+{
+	return m_pInput_Device->MouseUp(byKeyID);
+}
+
 const LIGHT_DESC* CGameInstance::Get_LightDesc(_uint iIndex) const
 {
 	return m_pLight_Manager->Get_LightDesc(iIndex);

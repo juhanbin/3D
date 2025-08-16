@@ -8,12 +8,13 @@
 #include "Terrain.h"
 #include "Monster.h"
 #include "MapObject.h"
-#include "Player.h"
 #include "Camera_Free.h"
 #include "Cursor.h"
 #include "Fade.h"
 #include "Client_Defines.h"
-//#include "Player.h"
+#include "Player.h"
+#include "Body_Player.h"
+#include "Weapon.h"
 //#include "Effect.h"
 //#include "Sky.h"
 
@@ -274,10 +275,23 @@ HRESULT CLoader::Loading_For_GamePlay_Level()
 		CCamera_Free::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
+
 	/* Prototype_GameObject_Player */
 	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Player"),
 		CPlayer::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
+
+	/* Prototype_GameObject_Body_Player */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Body_Player"),
+		CBody_Player::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	/* Prototype_GameObject_Weapon */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Weapon"),
+		CWeapon::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+
 
 	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_MapObject"),
 		CMapObject::Create(m_pDevice, m_pContext))))

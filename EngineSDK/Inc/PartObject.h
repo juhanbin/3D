@@ -14,7 +14,7 @@ public:
 protected:
 	CPartObject(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	CPartObject(const CPartObject& Prototype);
-	virtual ~CPartObject() = default; 
+	virtual ~CPartObject() = default;
 
 public:
 	virtual HRESULT Initialize_Prototype() override;
@@ -25,7 +25,7 @@ public:
 	virtual HRESULT Render() override;
 
 protected:
-	const _float4x4*			m_pParentMatrix = { nullptr };	
+	const _float4x4* m_pParentMatrix = { nullptr };
 	_float4x4					m_CombinedWorldMatrix = {};
 
 protected:

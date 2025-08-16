@@ -12,6 +12,13 @@ NS_BEGIN(Client)
 class CPlayer final : public CContainerObject
 {
 public:
+	struct HERO_DESC : public CGameObject::GAMEOBJECT_DESC
+	{
+		EObjectType type{ EObjectType::HERO };
+		_float3 vScale{ 1.f,1.f,1.f };
+		_float3 vRot{ 0.f,0.f,0.f };
+		_float3 vPos{ 0.f,0.f,0.f };
+	};
 	enum STATE { 
 		IDLE	= 0x00000001, 
 		RUN		= 0x00000002,
@@ -31,7 +38,11 @@ public:
 	virtual HRESULT Render();
 
 private:
+	EObjectType			m_eType = { EObjectType::HERO };
 	_uint				m_iState = { };
+
+	/*_bool				m_bAttack = {};
+	_bool				m_bMoving = {};*/
 
 private:
 	HRESULT Ready_Components();	

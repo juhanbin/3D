@@ -18,6 +18,7 @@ public:
 	typedef struct tagWeaponDesc : public CPartObject::PARTOBJECT_DESC
 	{
 		const _float4x4* pSocketMatrix = { nullptr };
+		const _float4x4* pSocketMatrix_Hand = { nullptr };
 		_uint* pState = { nullptr };
 	}WEAPON_DESC;
 private:
@@ -34,12 +35,14 @@ public:
 	virtual HRESULT Render();
 
 private:
-	CShader*				m_pShaderCom = { nullptr };	
-	CModel*					m_pModelCom = { nullptr };
+	CShader* m_pShaderCom = { nullptr };
+	CModel* m_pModelCom = { nullptr };
 
 private:
-	const _float4x4*		m_pSocketMatrix = { nullptr };
-	_uint*					m_pParentState = { nullptr };
+	const _float4x4* m_pSocketMatrix = { nullptr };
+	const _float4x4* m_pSocketMatrix_Hand = { nullptr };
+
+	_uint* m_pParentState = { nullptr };
 
 private:
 	HRESULT Ready_Components();

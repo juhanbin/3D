@@ -131,6 +131,7 @@ HRESULT CMonster::Ready_Components()
         TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom), nullptr)))
         return E_FAIL;
 
+
     OutputDebugStringA("CMonster: Ready_Components 정상 종료\n");
     return S_OK;
 }

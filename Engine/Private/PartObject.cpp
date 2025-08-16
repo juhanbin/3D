@@ -2,7 +2,7 @@
 #include "Transform.h"
 
 CPartObject::CPartObject(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
-	: CGameObject { pDevice, pContext }
+	: CGameObject{ pDevice, pContext }
 {
 }
 
@@ -35,7 +35,7 @@ void CPartObject::Priority_Update(_float fTimeDelta)
 
 void CPartObject::Update(_float fTimeDelta)
 {
-	
+
 }
 
 void CPartObject::Late_Update(_float fTimeDelta)
@@ -49,7 +49,7 @@ HRESULT CPartObject::Render()
 }
 
 
-void CPartObject::Update_CombinedMatrix(){
+void CPartObject::Update_CombinedMatrix() {
 
 	/* ctrl + shift + v */
 	XMStoreFloat4x4(&m_CombinedWorldMatrix, m_pTransformCom->Get_WorldMatrix() * XMLoadFloat4x4(m_pParentMatrix));

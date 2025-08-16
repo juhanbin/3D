@@ -58,13 +58,13 @@
     <Filter Include="02.GameObject\MapObject">
       <UniqueIdentifier>{1915e4b2-656e-42d7-b13c-c1c7048c68e9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="02.GameObject\Player">
+    <Filter Include="02.GameObject\Hero">
       <UniqueIdentifier>{571bb8cb-c742-44e2-bc16-b8ce8047221e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="02.GameObject\Player\Body">
+    <Filter Include="02.GameObject\Hero\Body">
       <UniqueIdentifier>{8f12d288-ca89-41c6-a501-e27de1669d81}</UniqueIdentifier>
     </Filter>
-    <Filter Include="02.GameObject\Player\Weapon">
+    <Filter Include="02.GameObject\Hero\Weapon">
       <UniqueIdentifier>{8e8bc606-4bed-4b5e-a357-793ff639a0b3}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -127,13 +127,13 @@
       <Filter>02.GameObject\MapObject</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Body_Player.h">
-      <Filter>02.GameObject\Player\Body</Filter>
+      <Filter>02.GameObject\Hero\Body</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Player.h">
-      <Filter>02.GameObject\Player</Filter>
+      <Filter>02.GameObject\Hero</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Weapon.h">
-      <Filter>02.GameObject\Player\Weapon</Filter>
+      <Filter>02.GameObject\Hero\Weapon</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -196,13 +196,13 @@
       <Filter>02.GameObject\MapObject</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Player.cpp">
-      <Filter>02.GameObject\Player</Filter>
+      <Filter>02.GameObject\Hero</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Weapon.cpp">
-      <Filter>02.GameObject\Player\Weapon</Filter>
+      <Filter>02.GameObject\Hero\Weapon</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Body_Player.cpp">
-      <Filter>02.GameObject\Player\Body</Filter>
+      <Filter>02.GameObject\Hero\Body</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

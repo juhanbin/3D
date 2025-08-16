@@ -7,7 +7,7 @@ NS_BEGIN(Engine)
 class ENGINE_DLL CContainerObject abstract : public CGameObject
 {
 protected:
-	CContainerObject(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
+	CContainerObject(ID3D11Device * pDevice, ID3D11DeviceContext * pContext);
 	CContainerObject(const CContainerObject& Prototype);
 	virtual ~CContainerObject() = default;
 

@@ -4,13 +4,13 @@
 #include "GameInstance.h"
 
 CContainerObject::CContainerObject(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
-    : CGameObject { pDevice, pContext }
+    : CGameObject{ pDevice, pContext }
 {
 
 }
 
 CContainerObject::CContainerObject(const CContainerObject& Prototype)
-    : CGameObject { Prototype }
+    : CGameObject{ Prototype }
 {
 
 }
@@ -60,9 +60,9 @@ HRESULT CContainerObject::Render()
 HRESULT CContainerObject::Add_PartObject(const _wstring& strPartObjectTag, _uint iPrototypeLevelIndex, const _wstring& strPrototypeTag, void* pArg)
 {
     if (nullptr != Find_PartObject(strPartObjectTag))
-        return E_FAIL;           
+        return E_FAIL;
 
-    CPartObject*        pPartObject = dynamic_cast<CPartObject*>(m_pGameInstance->Clone_Prototype(PROTOTYPE::GAMEOBJECT, iPrototypeLevelIndex, strPrototypeTag, pArg));
+    CPartObject* pPartObject = dynamic_cast<CPartObject*>(m_pGameInstance->Clone_Prototype(PROTOTYPE::GAMEOBJECT, iPrototypeLevelIndex, strPrototypeTag, pArg));
     if (nullptr == pPartObject)
         return E_FAIL;
 
@@ -77,7 +77,7 @@ CPartObject* CContainerObject::Find_PartObject(const _wstring& strPartObjectTag)
     if (iter == m_PartObjects.end())
         return nullptr;
 
-    return iter->second;    
+    return iter->second;
 }
 
 void CContainerObject::Free()

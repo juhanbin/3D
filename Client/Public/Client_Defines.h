@@ -16,6 +16,10 @@ namespace Client
 	{
 		MONSTER = 0,
 		ROCK_AA,
+		HERO,
+		SPEAR,
+		MONSTER_SPEAR,
+		MONSTER_BOW,
 		END
 	};
 

@@ -25,16 +25,6 @@ public:
 	// 현재 마우스의 특정 축 좌표를 반환
 	_long	Get_DIMouseMove(MOUSEMOVESTATE eMouseState)
 	{
-		/*	switch (eMouseState)
-			{
-			case X:
-				return m_tMouseState.lX;
-			case Y:
-				return m_tMouseState.lY;
-			case WHEEL:
-				return m_tMouseState.lZ;
-			}*/
-
 		return *((reinterpret_cast<_int*>(&m_tMouseState)) + static_cast<_uint>(eMouseState));
 	}
 
@@ -52,6 +42,19 @@ public:
 		return !(m_byKeyState[byKeyID] & 0x80) && (m_byPrevKeyState[byKeyID] & 0x80);
 	}
 
+	//마우스
+	bool MouseDown(MOUSEKEYSTATE btn) {
+		const _uint i = static_cast<_uint>(btn);
+		return (m_byMouseBtn[i] & 0x80) && !(m_byPrevMouseBtn[i] & 0x80);
+	}
+	bool MousePressing(MOUSEKEYSTATE btn) {
+		const _uint i = static_cast<_uint>(btn);
+		return (m_byMouseBtn[i] & 0x80);
+	}
+	bool MouseUp(MOUSEKEYSTATE btn) {
+		const _uint i = static_cast<_uint>(btn);
+		return !(m_byMouseBtn[i] & 0x80) && (m_byPrevMouseBtn[i] & 0x80);
+	}
 public:
 	HRESULT Initialize(HINSTANCE hInst, HWND hWnd);
 	void	Update(void);
@@ -65,10 +68,10 @@ private:
 	LPDIRECTINPUTDEVICE8	m_pJoystick = { nullptr };
 
 
-
-
-
 private:
+	_byte					m_byPrevMouseBtn[8] = {};
+	_byte					m_byMouseBtn[8] = {};
+
 private:
 	_byte					m_byPrevKeyState[256] = {};
 	_byte					m_byKeyState[256] = {};

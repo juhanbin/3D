@@ -3,6 +3,7 @@
 #include "GameInstance.h"
 #include "Camera_Free.h"
 #include "Monster.h"
+#include "Player.h"
 #include "MapObject.h"
 #include <fstream>
 
@@ -41,8 +42,8 @@ HRESULT CLevel_GamePlay::Initialize()
 
 	m_SceneObjects = LoadSceneObjects("../../Mapdata/scene.bin");
 
-	/*if (FAILED(Ready_Layer_Player(TEXT("Layer_Player"))))
-		return E_FAIL;*/
+	if (FAILED(Ready_Layer_Player(TEXT("Layer_Player"))))
+		return E_FAIL;
 
 	if (FAILED(Ready_Layer_Monster(TEXT("Layer_Monster"))))
 		return E_FAIL;
@@ -144,10 +145,24 @@ HRESULT CLevel_GamePlay::Ready_Layer_BackGround(const _wstring& strLayerTag)
 
 HRESULT CLevel_GamePlay::Ready_Layer_Player(const _wstring& strLayerTag)
 {
-	if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::GAMEPLAY), strLayerTag,
-		ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Player"))))
-		return E_FAIL;
+	for (auto& obj : m_SceneObjects)
+	{
+		if ((EObjectType)obj.type == EObjectType::HERO)
+		{
+			CPlayer::HERO_DESC desc{};
+			desc.type = static_cast<EObjectType>(obj.type);
+			desc.vScale = _float3(obj.size[0], obj.size[1], obj.size[2]);
+			desc.vRot = _float3(obj.rot[0], obj.rot[1], obj.rot[2]);
+			desc.vPos = _float3(obj.pos[0], obj.pos[1], obj.pos[2]);
 
+			if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(
+				ENUM_CLASS(LEVEL::GAMEPLAY), strLayerTag,
+				ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Player"), &desc)))
+			{
+				OutputDebugStringW(L"[SCENE] Player Add ½ÇÆÐ!\n");
+			}
+		}
+	}
 	return S_OK;
 }
 

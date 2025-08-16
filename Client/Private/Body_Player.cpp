@@ -36,7 +36,7 @@ HRESULT CBody_Player::Initialize(void* pArg)
     if (FAILED(Ready_Components()))
         return E_FAIL;
 
-    m_pModelCom->Set_Animation(3, true);    
+    m_pModelCom->Set_Animation(0, true);    
 
     return S_OK;
 }
@@ -50,14 +50,19 @@ void CBody_Player::Update(_float fTimeDelta)
 {
     if (*m_pParentState & CPlayer::RUN)
     {
-        m_pModelCom->Set_Animation(4, true);
+        m_pModelCom->Set_Animation(11, true);
     }
 
     if (*m_pParentState & CPlayer::IDLE)
     {
-        m_pModelCom->Set_Animation(3, true);
+        m_pModelCom->Set_Animation(10, true);
     }
    
+    if (*m_pParentState & CPlayer::ATTACK)
+    {
+        m_pModelCom->Set_Animation(1, true);
+    }
+
     if (true == m_pModelCom->Play_Animation(fTimeDelta))
         int a = 10;
 
@@ -76,14 +81,15 @@ HRESULT CBody_Player::Render()
     if (FAILED(Bind_ShaderResources()))
         return E_FAIL;
 
-
-
     _uint           iNumMeshes = m_pModelCom->Get_NumMeshes();
 
     for (size_t i = 0; i < iNumMeshes; i++)
     {
-        if (FAILED(m_pModelCom->Bind_Materials(m_pShaderCom, "g_DiffuseTexture", i, aiTextureType_DIFFUSE, 0)))
+        if (FAILED(m_pModelCom->Bind_Materials_Bin(m_pShaderCom, "g_DiffuseTexture", i, ENUM_CLASS(TextureType::DIFFUSE), 0))) // 0: DIFFUSE
+        {
+            OutputDebugStringA("Hero_body_머티리얼 바인딩 실패!\n");
             return E_FAIL;
+        }
         /*if (FAILED(m_pModelCom->Bind_Materials(m_pShaderCom, "g_NormalTexture", i, aiTextureType_DIFFUSE, 0)))
             return E_FAIL;        */
 
@@ -95,8 +101,6 @@ HRESULT CBody_Player::Render()
         m_pModelCom->Render(i);
     }
 
-    
-
     return S_OK;
 }
 
@@ -106,7 +110,7 @@ HRESULT CBody_Player::Ready_Components()
         TEXT("Com_Shader"), reinterpret_cast<CComponent**>(&m_pShaderCom), nullptr)))
         return E_FAIL;
 
-    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Model_Fiona"),
+    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Model_Hero"),
         TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom), nullptr)))
         return E_FAIL;    
 
@@ -161,7 +165,7 @@ CGameObject* CBody_Player::Clone(void* pArg)
 
     if (FAILED(pInstance->Initialize(pArg)))
     {
-        MSG_BOX(TEXT("Failed to Created : CBody_Player"));
+        MSG_BOX(TEXT("Failed to Clone : CBody_Player"));
         Safe_Release(pInstance);
     }
 

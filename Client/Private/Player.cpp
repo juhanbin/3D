@@ -30,6 +30,41 @@ HRESULT CPlayer::Initialize(void* pArg)
     if (FAILED(__super::Initialize(&Desc)))
         return E_FAIL;
 
+    if (pArg)
+    {
+        HERO_DESC* pDesc = static_cast<HERO_DESC*>(pArg);
+        m_eType = pDesc->type;
+        //크기
+        XMMATRIX matScale = XMMatrixScaling(pDesc->vScale.x, pDesc->vScale.y, pDesc->vScale.z);
+
+        //회전
+        XMMATRIX matRot = XMMatrixRotationRollPitchYaw(
+            XMConvertToRadians(pDesc->vRot.x),
+            XMConvertToRadians(pDesc->vRot.y),
+            XMConvertToRadians(pDesc->vRot.z));
+
+        //위치
+        XMMATRIX matTrans = XMMatrixTranslation(pDesc->vPos.x, pDesc->vPos.y, pDesc->vPos.z);
+
+        XMMATRIX matWorld = matScale * matRot * matTrans;
+
+        XMFLOAT4X4 matWorld4x4;
+        XMStoreFloat4x4(&matWorld4x4, matWorld);
+
+        m_pTransformCom->Set_State(Engine::STATE::RIGHT, XMLoadFloat4((XMFLOAT4*)&matWorld4x4.m[0]));
+        m_pTransformCom->Set_State(Engine::STATE::UP, XMLoadFloat4((XMFLOAT4*)&matWorld4x4.m[1]));
+        m_pTransformCom->Set_State(Engine::STATE::LOOK, XMLoadFloat4((XMFLOAT4*)&matWorld4x4.m[2]));
+        m_pTransformCom->Set_State(Engine::STATE::POSITION, XMLoadFloat4((XMFLOAT4*)&matWorld4x4.m[3]));
+
+        char szDbg[256];
+        sprintf_s(szDbg, sizeof(szDbg), "type=%d scale=(%.2f,%.2f,%.2f) rot=(%.2f,%.2f,%.2f) pos=(%.2f,%.2f,%.2f)\n",
+            (int)m_eType,
+            pDesc->vScale.x, pDesc->vScale.y, pDesc->vScale.z,
+            pDesc->vRot.x, pDesc->vRot.y, pDesc->vRot.z,
+            pDesc->vPos.x, pDesc->vPos.y, pDesc->vPos.z);
+        OutputDebugStringA(szDbg);
+    }
+
     if (FAILED(Ready_Components()))
         return E_FAIL;  
 
@@ -46,35 +81,19 @@ void CPlayer::Priority_Update(_float fTimeDelta)
 
 void CPlayer::Update(_float fTimeDelta)
 {   
-    if (GetKeyState(VK_DOWN) & 0x8000)
-    {
-        m_pTransformCom->Go_Backward(fTimeDelta);
-    }
-    if (GetKeyState(VK_LEFT) & 0x8000)
-    {
-        m_pTransformCom->Turn(XMVectorSet(0.f, 1.f, 0.f, 0.f), fTimeDelta * -1.f);
-    }
-    if (GetKeyState(VK_RIGHT) & 0x8000)
-    {
-        m_pTransformCom->Turn(XMVectorSet(0.f, 1.f, 0.f, 0.f), fTimeDelta * 1.f);
-    }
+    bool moving = false;
 
-    if (GetKeyState(VK_UP) & 0x8000)
-    {
-        m_pTransformCom->Go_Straight(fTimeDelta);
+    if (GetKeyState(VK_DOWN) & 0x8000) { m_pTransformCom->Go_Backward(fTimeDelta); moving = true; }
+    if (GetKeyState(VK_LEFT) & 0x8000)  m_pTransformCom->Turn(XMVectorSet(0, 1, 0, 0), -fTimeDelta);
+    if (GetKeyState(VK_RIGHT) & 0x8000) m_pTransformCom->Turn(XMVectorSet(0, 1, 0, 0), fTimeDelta);
+    if (GetKeyState(VK_UP) & 0x8000) { m_pTransformCom->Go_Straight(fTimeDelta); moving = true; }
 
-        if (m_iState & IDLE)
-            m_iState ^= IDLE;
+    const bool attack = m_pGameInstance->MousePressing(MOUSEKEYSTATE::RB);
 
-        m_iState |= RUN;
-    }
-    else
-    {
-        if (m_iState & RUN)
-            m_iState ^= RUN;
-
-        m_iState |= IDLE;
-    }
+    m_iState &= ~(IDLE | RUN | ATTACK);
+    if (attack)      m_iState |= ATTACK;
+    else if (moving) m_iState |= RUN;
+    else             m_iState |= IDLE;
 
     __super::Update(fTimeDelta);
 }
@@ -108,17 +127,18 @@ HRESULT CPlayer::Ready_PartObjects()
     if (FAILED(__super::Add_PartObject(TEXT("Part_Body"), ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Body_Player"), &BodyDesc)))
         return E_FAIL;
 
-    //CPartObject*      pBody = Find_PartObject(TEXT("Part_Body"));
-    //if (nullptr == pBody)
-    //    return E_FAIL;
-    //
-    //CWeapon::WEAPON_DESC                 WeaponDesc{};
-    //WeaponDesc.pState = &m_iState;
-    //WeaponDesc.pSocketMatrix = dynamic_cast<CBody_Player*>(pBody)->Get_BoneMatrix("SWORD");
-    //WeaponDesc.pParentMatrix = m_pTransformCom->Get_WorldMatrixPtr();
+    CPartObject*      pBody = Find_PartObject(TEXT("Part_Body"));
+    if (nullptr == pBody)
+        return E_FAIL;
+    
+    CWeapon::WEAPON_DESC                 WeaponDesc{};
+    WeaponDesc.pState = &m_iState;
+    WeaponDesc.pSocketMatrix = dynamic_cast<CBody_Player*>(pBody)->Get_BoneMatrix("jnt_weapon");
+    WeaponDesc.pSocketMatrix_Hand = dynamic_cast<CBody_Player*>(pBody)->Get_BoneMatrix("jnt_Spine_01_SKN");
+    WeaponDesc.pParentMatrix = m_pTransformCom->Get_WorldMatrixPtr();
 
-    /*if (FAILED(__super::Add_PartObject(TEXT("Part_Weapon"), ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Weapon"), &WeaponDesc)))
-        return E_FAIL;*/
+    if (FAILED(__super::Add_PartObject(TEXT("Part_Weapon"), ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Weapon"), &WeaponDesc)))
+        return E_FAIL;
 
     return S_OK;
 }
@@ -142,7 +162,7 @@ CGameObject* CPlayer::Clone(void* pArg)
 
     if (FAILED(pInstance->Initialize(pArg)))
     {
-        MSG_BOX(TEXT("Failed to Created : CPlayer"));
+        MSG_BOX(TEXT("Failed to Clone : CPlayer"));
         Safe_Release(pInstance);
     }
 

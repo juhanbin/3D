@@ -67,7 +67,7 @@ HRESULT CMapObject::Initialize(void* pArg)
     }
     if ((m_eType == EObjectType::HERO))
     {
-        m_pModelCom->Set_Animation(0, true);
+        m_pModelCom->Set_Animation(3, true);
     }
     if ((m_eType == EObjectType::SPEAR))
     {
