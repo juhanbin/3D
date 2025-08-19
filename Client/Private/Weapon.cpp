@@ -24,6 +24,8 @@ HRESULT CWeapon::Initialize(void* pArg)
     m_pParentState = pDesc->pState;
     m_pSocketMatrix = pDesc->pSocketMatrix;
     m_pSocketMatrix_Hand = pDesc->pSocketMatrix_Hand;
+    m_pMoving = pDesc->pMoving;
+    m_pAttack = pDesc->pAttack;
 
     if (FAILED(__super::Initialize(pArg)))
         return E_FAIL;
@@ -32,9 +34,9 @@ HRESULT CWeapon::Initialize(void* pArg)
         return E_FAIL;
 
     //m_pTransformCom->Scaling(_float3(0.1f, 0.1f, 0.1f));
-    m_pTransformCom->Rotation(XMVectorSet(1.f, 0.f, 0.f, 0.f), XMConvertToRadians(90.0f));
+    
     //m_pTransformCom->Set_State(STATE::POSITION, XMVectorSet(0.f, 0.f, 0.f, 1.f));
-
+    m_pTransformCom->Set_State(STATE::POSITION, XMVectorSet(0.f, -1.f, 0.2f, 1.f));
     m_pModelCom->Set_Animation(2, true);
 
     return S_OK;
@@ -47,27 +49,44 @@ void CWeapon::Priority_Update(_float fTimeDelta)
 
 void CWeapon::Update(_float fTimeDelta)
 {
-    _matrix     BoneMatrix = {};
-    if (*m_pParentState & CPlayer::IDLE)
-    {
-        /*_matrix     */BoneMatrix = XMLoadFloat4x4(m_pSocketMatrix_Hand);
-    }
-    else
-    {
-        /*_matrix     */BoneMatrix = XMLoadFloat4x4(m_pSocketMatrix);
-    }
-    
-    for (size_t i = 0; i < 3; i++)
-        BoneMatrix.r[i] = XMVector3Normalize(BoneMatrix.r[i]);
+    const bool aiming =
+        (*m_pAttack == ATTACK::ENTER || *m_pAttack == ATTACK::IDLE ||
+            *m_pAttack == ATTACK::FRONT || *m_pAttack == ATTACK::BACK ||
+            *m_pAttack == ATTACK::LEFT || *m_pAttack == ATTACK::RIGHT ||
+            *m_pAttack == ATTACK::GROUND);
 
+    // 1) 상태 전환 시에만 각도 '절대' 세팅 (누적 회전 금지)
+    if (aiming != m_lastAiming) {
+        if (aiming)
+        {
+            m_pTransformCom->Rotation(m_eulerAim.x, m_eulerAim.y, m_eulerAim.z);
+            m_pTransformCom->Set_State(STATE::POSITION, XMVectorSet(0.f, 0.3f, -0.5f, 1.f));
+        }
+        else
+        {
+            m_pTransformCom->Rotation(m_eulerEquip.x, m_eulerEquip.y, m_eulerEquip.z);
+            m_pTransformCom->Set_State(STATE::POSITION, XMVectorSet(0.f, -1.f, 0.2f, 1.f));
+        }
+        m_lastAiming = aiming;
+    }
 
-    XMStoreFloat4x4(&m_CombinedWorldMatrix,
-        m_pTransformCom->Get_WorldMatrix() *
-        BoneMatrix *
-        XMLoadFloat4x4(m_pParentMatrix));
+    // 2) 소켓 선택
+    _matrix BoneMatrix = aiming ? XMLoadFloat4x4(m_pSocketMatrix_Hand)
+        : XMLoadFloat4x4(m_pSocketMatrix);
+
+    // 3) 결합
+    for (int i = 0; i < 3; ++i) BoneMatrix.r[i] = XMVector3Normalize(BoneMatrix.r[i]);
+
+    XMStoreFloat4x4(
+        &m_CombinedWorldMatrix,
+        m_pTransformCom->Get_WorldMatrix() *  // 무기 로컬(오프셋/회전)
+        BoneMatrix *                           // 소켓
+        XMLoadFloat4x4(m_pParentMatrix)        // 부모 월드
+    );
 
     m_pModelCom->Play_Animation(fTimeDelta);
 }
+
 
 void CWeapon::Late_Update(_float fTimeDelta)
 {
@@ -77,6 +96,9 @@ void CWeapon::Late_Update(_float fTimeDelta)
 
 HRESULT CWeapon::Render()
 {
+    if (*m_pAttack == ATTACK::THROW)
+        return S_OK;
+
     if (FAILED(Bind_ShaderResources()))
         return E_FAIL;
 

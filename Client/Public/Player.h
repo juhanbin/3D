@@ -21,8 +21,9 @@ public:
 	};
 	enum STATE { 
 		IDLE	= 0x00000001, 
-		RUN		= 0x00000002,
-		ATTACK	= 0x00000004,
+		JOG		= 0x00000002,
+		RUN		= 0x00000004,
+		DASH	= 0x00000008,
 	};
 private:
 	CPlayer(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
@@ -40,9 +41,16 @@ public:
 private:
 	EObjectType			m_eType = { EObjectType::HERO };
 	_uint				m_iState = { };
+	MOVING				m_eMoving = MOVING::IDLE;
+	_bool				m_bFinishAnim = { true };
+	_bool				m_bDashQueued = { false };
 
-	/*_bool				m_bAttack = {};
-	_bool				m_bMoving = {};*/
+	ATTACK				m_eAttack = ATTACK::NONE;
+
+	_bool				m_bshiftPressed = false;
+	_float				m_fshiftHeldSec = 0.f;
+	const float			RUN_HOLD_THRESHOLD = 0.20f;
+
 
 private:
 	HRESULT Ready_Components();	

@@ -12,6 +12,9 @@ namespace Client
 	enum class LEVEL { STATIC, LOADING, LOGO, GAMEPLAY, END };
 	enum  class FILETYPE { FBX, BIN };
 
+	enum class MOVING {IDLE,JOG,RUN,DASH/*,AIM_ENTER,AIM_IDLE,AIM_THROW,AIM_FRONT, AIM_BACK,AIM_RIGHT,AIM_LEFT,AIM_GROUND*/};
+	enum class ATTACK { NONE ,ENTER, IDLE, THROW, FRONT, BACK, RIGHT, LEFT, GROUND };
+
 	enum class EObjectType : int
 	{
 		MONSTER = 0,

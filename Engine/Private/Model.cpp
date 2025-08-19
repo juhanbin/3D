@@ -196,11 +196,6 @@ _bool CModel::Play_Animation(_float fTimeDelta)
 {
     m_isFinished = false;
 
-    //OutputDebugStringA("m_Animations.size()=");
-    //char buf[64];
-    //sprintf_s(buf, "%d, m_iCurrentAnimIndex=%d\n", (int)m_Animations.size(), (int)m_iCurrentAnimIndex);
-    //OutputDebugStringA(buf);
-
     if (m_iCurrentAnimIndex < 0 || m_iCurrentAnimIndex >= m_Animations.size()) {
         OutputDebugStringA("애니메이션 인덱스 오류! (out of range)\n");
         return false;
@@ -263,13 +258,20 @@ HRESULT CModel::Render(_uint iMeshIndex)
     return S_OK;
 }
 
-void CModel::Set_Animation(_uint iIndex, _bool isLoop)
+void CModel::Set_Animation(_uint iIndex, _bool isLoop, bool forceRestart)
 {
-    if (iIndex >= m_iNumAnimations)
-        return;
+    if (iIndex >= m_iNumAnimations) return;
 
-    m_isLoop = isLoop;
+    const bool changing = (iIndex != m_iCurrentAnimIndex) || forceRestart;
+
     m_iCurrentAnimIndex = iIndex;
+    m_isLoop = isLoop;
+
+    if (changing) {
+        m_isFinished = false;
+        if (m_iCurrentAnimIndex >= 0 && m_iCurrentAnimIndex < (int)m_Animations.size())
+            m_Animations[m_iCurrentAnimIndex]->ResetTimeToZero();  // ★ 여기서 0프레임으로 리셋
+    }
 }
 
 HRESULT CModel::Ready_Meshes()

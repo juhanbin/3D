@@ -39,7 +39,7 @@ void CCamera_Free::Priority_Update(_float fTimeDelta)
         OutputDebugStringA("Space PRESSING...\n");
     }
 
-    if (m_pGameInstance->Get_DIKeyState(DIK_W) & 0x80)
+    /*if (m_pGameInstance->Get_DIKeyState(DIK_W) & 0x80)
     {
         m_pTransformCom->Go_Straight(fTimeDelta);
     }
@@ -54,7 +54,7 @@ void CCamera_Free::Priority_Update(_float fTimeDelta)
     if (m_pGameInstance->Get_DIKeyState(DIK_D) & 0x80)
     {
         m_pTransformCom->Go_Right(fTimeDelta);
-    }
+    }*/
 
     _int    iMouseMove = {};
 

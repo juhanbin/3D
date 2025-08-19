@@ -50,13 +50,17 @@ HRESULT Engine::CInput_Device::Initialize(HINSTANCE hInst, HWND hWnd)
 void Engine::CInput_Device::Update(void)
 {
 	memcpy(m_byPrevKeyState, m_byKeyState, sizeof(m_byKeyState));
+	memcpy(m_byPrevMouseBtn, m_byMouseBtn, sizeof(m_byMouseBtn));
 
-	m_pKeyBoard->GetDeviceState(256, m_byKeyState);
-	m_pMouse->GetDeviceState(sizeof(m_tMouseState), &m_tMouseState);
+	HRESULT hr = m_pKeyBoard->GetDeviceState(256, m_byKeyState);
+	if (FAILED(hr)) { m_pKeyBoard->Acquire(); m_pKeyBoard->GetDeviceState(256, m_byKeyState); }
 
-	m_byMouseBtn[(int)MOUSEKEYSTATE::LB] = (m_tMouseState.rgbButtons[0] & 0x80) ? 0x80 : 0;
-	m_byMouseBtn[(int)MOUSEKEYSTATE::RB] = (m_tMouseState.rgbButtons[1] & 0x80) ? 0x80 : 0;
-	m_byMouseBtn[(int)MOUSEKEYSTATE::WB] = (m_tMouseState.rgbButtons[2] & 0x80) ? 0x80 : 0;
+	hr = m_pMouse->GetDeviceState(sizeof(m_tMouseState), &m_tMouseState);
+	if (FAILED(hr)) { m_pMouse->Acquire(); m_pMouse->GetDeviceState(sizeof(m_tMouseState), &m_tMouseState); }
+
+	m_byMouseBtn[0] = (m_tMouseState.rgbButtons[0] & 0x80) ? 0x80 : 0x00; // LB
+	m_byMouseBtn[1] = (m_tMouseState.rgbButtons[1] & 0x80) ? 0x80 : 0x00; // RB
+	m_byMouseBtn[2] = (m_tMouseState.rgbButtons[2] & 0x80) ? 0x80 : 0x00; // MB
 
 }
 

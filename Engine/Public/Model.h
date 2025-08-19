@@ -25,7 +25,7 @@ public:
 	virtual HRESULT Render(_uint iMeshIndex);
 
 public:
-	void Set_Animation(_uint iIndex, _bool isLoop = false);
+	void Set_Animation(_uint iIndex, _bool isLoop = false, bool forceRestart = false);
 
 public:
 	HRESULT Bind_Materials(class CShader* pShader, const _char* pConstantName, _uint iMeshIndex, aiTextureType eTextureType, _uint iIndex);

@@ -20,6 +20,8 @@ public:
 		const _float4x4* pSocketMatrix = { nullptr };
 		const _float4x4* pSocketMatrix_Hand = { nullptr };
 		_uint* pState = { nullptr };
+		MOVING* pMoving = { nullptr };
+		ATTACK* pAttack = { nullptr };
 	}WEAPON_DESC;
 private:
 	CWeapon(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
@@ -43,6 +45,13 @@ private:
 	const _float4x4* m_pSocketMatrix_Hand = { nullptr };
 
 	_uint* m_pParentState = { nullptr };
+	MOVING* m_pMoving = { nullptr };
+	ATTACK* m_pAttack = { nullptr };
+
+private:
+	bool      m_lastAiming = false; // 직전 프레임 조준 여부
+	XMFLOAT3  m_eulerEquip = { XMConvertToRadians(0.f),  XMConvertToRadians(0.f),  XMConvertToRadians(0.f) }; // 허리 장착 각
+	XMFLOAT3  m_eulerAim = { XMConvertToRadians(120.f), XMConvertToRadians(0.f),   XMConvertToRadians(0.f) }; // 조준 각(튜닝)
 
 private:
 	HRESULT Ready_Components();

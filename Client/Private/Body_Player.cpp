@@ -29,6 +29,8 @@ HRESULT CBody_Player::Initialize(void* pArg)
 {
     BODY_DESC* pDesc = static_cast<BODY_DESC*>(pArg);
     m_pParentState = pDesc->pState;
+    m_pMoving = pDesc->pMoving;
+    m_pAttack = pDesc->pAttack;
 
     if (FAILED(__super::Initialize(pArg)))
         return E_FAIL;
@@ -36,7 +38,8 @@ HRESULT CBody_Player::Initialize(void* pArg)
     if (FAILED(Ready_Components()))
         return E_FAIL;
 
-    m_pModelCom->Set_Animation(0, true);    
+    //m_pModelCom->Set_Animation(0, true);    
+    m_iCurAnim = -1;
 
     return S_OK;
 }
@@ -48,27 +51,87 @@ void CBody_Player::Priority_Update(_float fTimeDelta)
 
 void CBody_Player::Update(_float fTimeDelta)
 {
-    if (*m_pParentState & CPlayer::RUN)
-    {
-        m_pModelCom->Set_Animation(11, true);
+    // --- 어떤 애니를 재생할지 결정 ---
+    int   nextAnim = -1;
+    bool  nextLoop = true;
+    bool  forceStart = false;
+
+    // 1) 대쉬(최우선, one-shot)
+    if (*m_pMoving == MOVING::DASH) {
+        if (!m_bDashPlaying) {            // 처음 진입 시 강제 리스타트
+            forceStart = true;
+            m_bDashPlaying = true;
+        }
+        nextAnim = 2;   // ANIM_HERO_dash_foward
+        nextLoop = false;
+    }
+    else {
+        m_bDashPlaying = false;
+
+        if (m_pAttack && *m_pAttack == ATTACK::GROUND) {
+            if (!m_bGroundPlaying) { forceStart = true; m_bGroundPlaying = true; }
+            nextAnim = 7;                // ANIM_HERO_hit_ground_with_spear
+            nextLoop = false;            // one-shot
+        }
+
+        // 2) 공격 레이어(조준/투척/스트레이프)
+        if (m_pAttack && *m_pAttack != ATTACK::NONE) {
+            switch (*m_pAttack) {
+            case ATTACK::ENTER:     nextAnim = 0;  nextLoop = false; forceStart = true; break; // one-shot
+            case ATTACK::IDLE:      nextAnim = 1;  nextLoop = true;  break;                    // loop
+            case ATTACK::FRONT:     nextAnim = 17; nextLoop = true;  break;                    // loop
+            case ATTACK::BACK:      nextAnim = 16; nextLoop = true;  break;                    // loop
+            case ATTACK::LEFT:      nextAnim = 18; nextLoop = true;  break;                    // loop
+            case ATTACK::RIGHT:     nextAnim = 19; nextLoop = true;  break;                    // loop
+            case ATTACK::THROW:     nextAnim = 20; nextLoop = false; forceStart = true; break; // one-shot
+            default: break;
+            }
+        }
+
+        // 3) 공격 없음 → 로코모션
+        if (nextAnim < 0) {
+            switch (*m_pMoving) {
+            case MOVING::RUN:  nextAnim = 15; nextLoop = true; break;
+            case MOVING::JOG:  nextAnim = 11; nextLoop = true; break;
+            default:           nextAnim = 10; nextLoop = true; break; // IDLE
+            }
+        }
     }
 
-    if (*m_pParentState & CPlayer::IDLE)
-    {
-        m_pModelCom->Set_Animation(10, true);
-    }
-   
-    if (*m_pParentState & CPlayer::ATTACK)
-    {
-        m_pModelCom->Set_Animation(1, true);
+    // --- 실제 적용 & 재생 ---
+
+    bool finished = {};
+    SetClipOnce(nextAnim, nextLoop, forceStart);
+    if(*m_pAttack == ATTACK::THROW)
+        finished = m_pModelCom->Play_Animation(fTimeDelta * 2);
+    else
+    finished = m_pModelCom->Play_Animation(fTimeDelta);
+
+    // --- 원샷 종료 후 상태 정리 ---
+    // 대쉬 끝
+    if (m_bDashPlaying && finished && m_iCurAnim == 2) {
+        m_bDashPlaying = false;
+        *m_pMoving = MOVING::IDLE;
     }
 
-    if (true == m_pModelCom->Play_Animation(fTimeDelta))
-        int a = 10;
+    // 조준 진입(AIM_ENTER) 끝 → 조준 유지(IDLE)로
+    if (m_pAttack && *m_pAttack == ATTACK::ENTER && finished && m_iCurAnim == 0) {
+        *m_pAttack = ATTACK::IDLE;
+    }
 
-    
+    // 투척(THROW) 끝 → 공격 상태 해제
+    if (m_pAttack && *m_pAttack == ATTACK::THROW && finished && m_iCurAnim == 20) {
+        *m_pAttack = ATTACK::NONE;
+    }
+    if (m_bGroundPlaying && finished && m_iCurAnim == 7) {
+        m_bGroundPlaying = false;
+        if (m_pAttack) *m_pAttack = ATTACK::NONE;
+    }
+
     Update_CombinedMatrix();
 }
+
+
 
 void CBody_Player::Late_Update(_float fTimeDelta)
 {
@@ -102,6 +165,14 @@ HRESULT CBody_Player::Render()
     }
 
     return S_OK;
+}
+
+void CBody_Player::SetClipOnce(int animIndex, bool loop, bool forceRestart)
+{
+    if (m_iCurAnim != animIndex) {
+        m_pModelCom->Set_Animation(animIndex, loop, forceRestart);
+        m_iCurAnim = animIndex;
+    }
 }
 
 HRESULT CBody_Player::Ready_Components()

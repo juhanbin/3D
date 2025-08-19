@@ -17,7 +17,11 @@ public:
 	HRESULT Initialize(const aiAnimation* pAIAnimation, const vector<class CBone*>& Bones);
 	HRESULT Initialize(ifstream& ifs, const AnimInfoBin& animBin, const std::vector<CBone*>& Bones);
 	void Update_TransformationMatrices(const vector<class CBone*>& Bones, _bool isLoop, _bool* pFinished, _float fTimeDelta);
-
+	void ResetTimeToZero()
+	{
+		m_fCurrentTrackPosition = 0.f;
+		std::fill(m_CurrentKeyFrameIndices.begin(), m_CurrentKeyFrameIndices.end(), 0u);
+	}
 private:
 
 	/* 애니메이션의 전체 재생 길이 */

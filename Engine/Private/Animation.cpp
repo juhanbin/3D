@@ -52,10 +52,6 @@ HRESULT CAnimation::Initialize(std::ifstream& ifs, const AnimInfoBin& animBin, c
     m_iNumChannels = animBin.channelCount;
     m_CurrentKeyFrameIndices.resize(m_iNumChannels);
 
-   char buf[256];
-    /*sprintf_s(buf, "  [CAnimation::Initialize] 이름='%s', 채널수=%d, duration=%.2f\n", animBin.name, animBin.channelCount, animBin.duration);
-    OutputDebugStringA(buf);*/
-
    for (size_t i = 0; i < m_iNumChannels; ++i)
    {
        // 1. 채널정보 한개씩 읽기
@@ -65,10 +61,6 @@ HRESULT CAnimation::Initialize(std::ifstream& ifs, const AnimInfoBin& animBin, c
            OutputDebugStringA("채널 정보 읽기 실패!\n");
            return E_FAIL;
        }
-
-      //sprintf_s(buf, "    [Anim->Channel] [%zu] boneName='%s' keyCount=%u\n", i, channelBin.boneName, channelBin.keyframeCount);
-      //OutputDebugStringA(buf);
-
        // 2. 키프레임들 바로 읽기
        uint32_t keyCount = channelBin.keyframeCount;
        std::vector<KEYFRAME> keyframes(keyCount);
@@ -76,27 +68,17 @@ HRESULT CAnimation::Initialize(std::ifstream& ifs, const AnimInfoBin& animBin, c
            ifs.read(reinterpret_cast<char*>(keyframes.data()), sizeof(KEYFRAME) * keyCount);
 
        if (channelBin.keyframeCount > 0) {
-          // sprintf_s(buf, "      첫 keyframe pos=(%.2f,%.2f,%.2f) time=%.2f\n",
-          //     keyframes[0].vTranslation.x, keyframes[0].vTranslation.y, keyframes[0].vTranslation.z, keyframes[0].fTrackPosition);
-          // OutputDebugStringA(buf);
-
            if (!ifs) {
-               /* sprintf_s(buf, "키프레임 읽기 실패! (i=%zu, keyCount=%u)\n", i, keyCount);
-                OutputDebugStringA(buf);*/
                return E_FAIL;
            }
 
            // 3. 채널 생성
            CChannel* pChannel = CChannel::Create(channelBin, keyframes, Bones);
            if (nullptr == pChannel) {
-               /* sprintf_s(buf, "  [Anim->Channel] Channel 생성 실패! (i=%zu, boneName=%s, keyframeCount=%u)\n", i, channelBin.boneName, channelBin.keyframeCount);
-                OutputDebugStringA(buf);*/
                return E_FAIL;
            }
            m_Channels.push_back(pChannel);
 
-           /*sprintf_s(buf, "    [Anim->Channel] 채널[%zu] bone='%s' keyCount=%u\n", i, channelBin.boneName, keyCount);
-           OutputDebugStringA(buf);*/
        }
        
    }
