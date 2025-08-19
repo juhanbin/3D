@@ -101,7 +101,7 @@ void CBody_Player::Update(_float fTimeDelta)
     // --- 실제 적용 & 재생 ---
 
     bool finished = {};
-    SetClipOnce(nextAnim, nextLoop, forceStart);
+    SetClipOnce(nextAnim, nextLoop,0.25f, forceStart);
     if(*m_pAttack == ATTACK::THROW)
         finished = m_pModelCom->Play_Animation(fTimeDelta * 2);
     else
@@ -167,10 +167,10 @@ HRESULT CBody_Player::Render()
     return S_OK;
 }
 
-void CBody_Player::SetClipOnce(int animIndex, bool loop, bool forceRestart)
+void CBody_Player::SetClipOnce(int animIndex, bool loop, _float Dur, bool forceRestart)
 {
     if (m_iCurAnim != animIndex) {
-        m_pModelCom->Set_Animation(animIndex, loop, forceRestart);
+        m_pModelCom->Set_Animation(animIndex, loop, Dur, forceRestart);
         m_iCurAnim = animIndex;
     }
 }

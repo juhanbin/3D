@@ -6,8 +6,10 @@
 
 NS_BEGIN(Engine)
 
+
 class CChannel final : public CBase
 {
+	
 private:
 	CChannel();
 	virtual ~CChannel() = default;
@@ -16,6 +18,11 @@ public:
 	HRESULT Initialize(const aiNodeAnim* pAIChannel, const vector<class CBone*>& Bones);
 	HRESULT Initialize(const ChannelInfoBin& channelBin, const std::vector<KEYFRAME>& keyframes, const std::vector<CBone*>& Bones);
 	void Update_TransformationMatrix(const vector<class CBone*>& Bones, _float fCurrentTrackPosition, _uint* pCurrentKeyFrameIndex);
+
+public:
+	_uint Get_BoneIndex() const { return m_iBoneIndex; }
+	void  SampleTRS(_float fCurrentTrackPosition, _uint& ioKeyIndex, TRS& out) const;
+
 private:
 	_char							m_szName[MAX_PATH] = { };
 

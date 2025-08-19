@@ -25,7 +25,7 @@ public:
 	virtual HRESULT Render(_uint iMeshIndex);
 
 public:
-	void Set_Animation(_uint iIndex, _bool isLoop = false, bool forceRestart = false);
+	void Set_Animation(_uint iIndex, _bool isLoop = false, float blendDuration = 0.f, bool forceRestart = false);
 
 public:
 	HRESULT Bind_Materials(class CShader* pShader, const _char* pConstantName, _uint iMeshIndex, aiTextureType eTextureType, _uint iIndex);
@@ -55,12 +55,22 @@ private:
 	vector<class CBone*>			m_Bones;
 
 private:
-	_uint							m_iCurrentAnimIndex = { 0 };
+	_int							m_iCurrentAnimIndex = { -1 };
 	_uint							m_iNumAnimations = { 0 };
 	vector<class CAnimation*>		m_Animations;
 	_bool							m_isLoop = {};
 	_bool							m_isFinished = {};
 
+
+public:
+	_int   m_iNextAnimIndex = -1;
+	_bool  m_inTransition = false;
+	_float m_blendDur = 0.f;
+	_float m_blendAcc = 0.f;
+
+	// 포즈 버퍼
+	std::vector<TRS>     m_poseCur, m_poseNext;
+	std::vector<uint8_t> m_hasCur, m_hasNext;
 private:
 	HRESULT Ready_Meshes();
 	HRESULT Ready_Materials(const _char* pModelFilePath);

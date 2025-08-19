@@ -38,7 +38,7 @@ public:
 	virtual HRESULT Render();
 
 public:
-	void SetClipOnce(int animIndex, bool loop, bool forceRestart = false);
+	void SetClipOnce(int animIndex, bool loop,_float Dur, bool forceRestart = false);
 
 private:
 	CShader* m_pShaderCom = { nullptr };

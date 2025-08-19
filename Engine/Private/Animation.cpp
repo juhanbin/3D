@@ -112,6 +112,50 @@ void CAnimation::Update_TransformationMatrices(const vector<class CBone*>& Bones
     }
 }
 
+void CAnimation::Advance_Time(_bool isLoop, _bool* pFinished, _float fTimeDelta)
+{
+    _float tps = Get_TicksPerSec();
+    m_fCurrentTrackPosition += tps * fTimeDelta;
+
+    if (m_fCurrentTrackPosition >= m_fDuration)
+    {
+        if (!isLoop)
+        {
+            if (pFinished) *pFinished = true;
+            m_fCurrentTrackPosition = m_fDuration;
+            return;
+        }
+        m_fCurrentTrackPosition = 0.f;
+    }
+}
+
+void CAnimation::EvaluatePose(const std::vector<class CBone*>& Bones,
+    std::vector<TRS>& outPose,
+    std::vector<uint8_t>& outHas)
+{
+    if (outPose.size() < Bones.size())
+        outPose.resize(Bones.size());
+    if (outHas.size() < Bones.size())
+        outHas.assign(Bones.size(), 0);
+    else
+        std::fill(outHas.begin(), outHas.end(), 0);
+
+    if (m_CurrentKeyFrameIndices.size() < m_iNumChannels)
+        m_CurrentKeyFrameIndices.assign(m_iNumChannels, 0);
+
+    for (_uint i = 0; i < m_iNumChannels; ++i)
+    {
+        TRS trs{};
+        m_Channels[i]->SampleTRS(m_fCurrentTrackPosition, m_CurrentKeyFrameIndices[i], trs);
+        const _uint boneIdx = m_Channels[i]->Get_BoneIndex();
+        if (boneIdx < outPose.size())
+        {
+            outPose[boneIdx] = trs;
+            outHas[boneIdx] = 1;
+        }
+    }
+}
+
 CAnimation* CAnimation::Create(const aiAnimation* pAIAnimation, const vector<class CBone*>& Bones)
 {
     CAnimation* pInstance = new CAnimation();

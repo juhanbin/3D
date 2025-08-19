@@ -14,6 +14,12 @@ namespace Engine
 	enum class MOUSEMOVESTATE { X, Y, WHEEL, END };
 
 	enum class FILETYPE {FBX,BIN};
+
+	struct TRS {
+		DirectX::XMFLOAT3 vScale{ 1.f, 1.f, 1.f };
+		DirectX::XMFLOAT4 vRotation{ 0.f, 0.f, 0.f, 1.f }; // quaternion (w=1)
+		DirectX::XMFLOAT3 vTranslation{ 0.f, 0.f, 0.f };
+	};
 }
 
 #endif // Engine_Enum_h__

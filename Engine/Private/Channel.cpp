@@ -129,6 +129,45 @@ void CChannel::Update_TransformationMatrix(const vector<class CBone*>& Bones, _f
     Bones[m_iBoneIndex]->Set_TransformationMatrix(TransformationMatrix);
 }
 
+void CChannel::SampleTRS(_float fCurrentTrackPosition, _uint& ioKeyIndex, TRS& out) const
+{
+    if (fCurrentTrackPosition == 0.f) ioKeyIndex = 0;
+
+    const KEYFRAME& last = m_KeyFrames.back();
+    if (fCurrentTrackPosition >= last.fTrackPosition)
+    {
+        out.vScale = last.vScale;
+        out.vRotation = last.vRotation;
+        out.vTranslation = last.vTranslation;
+        return;
+    }
+
+    while (fCurrentTrackPosition >= m_KeyFrames[ioKeyIndex + 1].fTrackPosition)
+        ++ioKeyIndex;
+
+    const KEYFRAME& k0 = m_KeyFrames[ioKeyIndex];
+    const KEYFRAME& k1 = m_KeyFrames[ioKeyIndex + 1];
+    const _float a = (fCurrentTrackPosition - k0.fTrackPosition)
+        / (k1.fTrackPosition - k0.fTrackPosition);
+
+    // scale
+    _vector s0 = XMLoadFloat3(&k0.vScale);
+    _vector s1 = XMLoadFloat3(&k1.vScale);
+    XMStoreFloat3(&out.vScale, XMVectorLerp(s0, s1, a));
+
+    // rotation (quat)
+    _vector q0 = XMLoadFloat4(&k0.vRotation);
+    _vector q1 = XMLoadFloat4(&k1.vRotation);
+    // (선택) 최단호 회전 보장: if (XMVectorGetX(XMVector4Dot(q0, q1)) < 0) q1 = XMVectorNegate(q1);
+    XMStoreFloat4(&out.vRotation, XMQuaternionSlerp(q0, q1, a));
+
+    // translation
+    _vector p0 = XMLoadFloat3(&k0.vTranslation);
+    _vector p1 = XMLoadFloat3(&k1.vTranslation);
+    XMStoreFloat3(&out.vTranslation, XMVectorLerp(p0, p1, a));
+}
+
+
 CChannel* CChannel::Create(const aiNodeAnim* pAIChannel, const vector<class CBone*>& Bones)
 {
     CChannel* pInstance = new CChannel();
