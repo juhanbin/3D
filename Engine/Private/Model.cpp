@@ -209,9 +209,7 @@ _bool CModel::Play_Animation(_float fTimeDelta)
     }
     else
     {
-        // 전이(크로스페이드) 경로
         if (m_iNextAnimIndex < 0 || m_iNextAnimIndex >= (int)m_Animations.size()) {
-            // 비상: 전이 플래그는 켜졌는데 대상 인덱스가 잘못됨 → 그냥 단일로 처리
             m_inTransition = false;
             m_Animations[m_iCurrentAnimIndex]->Update_TransformationMatrices(
                 m_Bones, m_isLoop, &m_isFinished, fTimeDelta);
@@ -220,25 +218,20 @@ _bool CModel::Play_Animation(_float fTimeDelta)
             Engine::CAnimation* cur = m_Animations[m_iCurrentAnimIndex];
             Engine::CAnimation* next = m_Animations[m_iNextAnimIndex];
 
-            // 1) 시간 진행
             cur->Advance_Time(m_isLoop, &m_isFinished, fTimeDelta);
-            next->Advance_Time(true, nullptr, fTimeDelta); // 필요하면 next 루프 정책 변경
+            next->Advance_Time(true, nullptr, fTimeDelta);
 
-            // 2) 포즈 샘플
             cur->EvaluatePose(m_Bones, m_poseCur, m_hasCur);
             next->EvaluatePose(m_Bones, m_poseNext, m_hasNext);
 
-            // 3) 블렌드 가중치
             m_blendAcc += fTimeDelta;
             float a = m_blendDur > 0.f ? std::min(1.f, m_blendAcc / m_blendDur) : 1.f;
-            // 더 부드럽게: a = a*a*(3.f - 2.f*a); // smoothstep
 
             const _vector origin = XMVectorSet(0.f, 0.f, 0.f, 1.f);
 
-            // 4) 본별 TRS 블렌드 → 로컬행렬 적용
             for (size_t i = 0; i < m_Bones.size(); ++i)
             {
-                if (!m_hasCur[i] && !m_hasNext[i]) continue; // 두쪽 다 채널 없음 → 건드리지 않음
+                if (!m_hasCur[i] && !m_hasNext[i]) continue;
 
                 const TRS& A = m_hasCur[i] ? m_poseCur[i] : m_poseNext[i];
                 const TRS& B = m_hasNext[i] ? m_poseNext[i] : m_poseCur[i];
@@ -259,7 +252,6 @@ _bool CModel::Play_Animation(_float fTimeDelta)
                 m_Bones[i]->Set_TransformationMatrix(M);
             }
 
-            // 5) 전이 종료 처리
             if (m_blendAcc >= m_blendDur) {
                 m_iCurrentAnimIndex = m_iNextAnimIndex;
                 m_iNextAnimIndex = -1;

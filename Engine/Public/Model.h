@@ -71,6 +71,7 @@ public:
 	// 포즈 버퍼
 	std::vector<TRS>     m_poseCur, m_poseNext;
 	std::vector<uint8_t> m_hasCur, m_hasNext;
+
 private:
 	HRESULT Ready_Meshes();
 	HRESULT Ready_Materials(const _char* pModelFilePath);

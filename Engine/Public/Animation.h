@@ -26,9 +26,7 @@ public:
 
 public:
 	void  Advance_Time(_bool isLoop, _bool* pFinished, _float fTimeDelta);
-	void  EvaluatePose(const std::vector<class CBone*>& Bones,
-		std::vector<TRS>& outPose,
-		std::vector<uint8_t>& outHas);
+	void  EvaluatePose(const std::vector<class CBone*>& Bones, vector<TRS>& outPose, vector<uint8_t>& outHas);
 	_float Get_TicksPerSec() const { return (m_fTickPerSecond > 0.f) ? m_fTickPerSecond : 30.f; }
 
 
