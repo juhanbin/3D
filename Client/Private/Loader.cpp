@@ -6,7 +6,7 @@
 #include "Logo_Logo.h"
 #include "Logo_StartButton.h"
 #include "Terrain.h"
-#include "Monster.h"
+#include "Monster_Skeleton.h"
 #include "MapObject.h"
 #include "Camera_Free.h"
 #include "Cursor.h"
@@ -158,18 +158,6 @@ HRESULT CLoader::Loading_For_GamePlay_Level()
 	_matrix		PreTransformMatrix = XMMatrixIdentity();
 
 
-	/*PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
-	if (FAILED(m_pGameInstance->Add_Prototype(
-		ENUM_CLASS(LEVEL::GAMEPLAY),
-		TEXT("Prototype_Component_Model_Hero"),
-		CModel::Create(m_pDevice, m_pContext, MODELTYPE::ANIM, Engine::FILETYPE::FBX,
-			"../Bin/Resources/Blood_Spear/Model/Hero/Hero.fbx", PreTransformMatrix))))
-	{
-		OutputDebugStringA("[LOADER] Hero 모델 프로토타입 등록 실패!\n");
-		return E_FAIL;
-	}*/
-
-
 	// Hero 프로토타입 등록
    	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
 	if (FAILED(m_pGameInstance->Add_Prototype(
@@ -193,7 +181,17 @@ HRESULT CLoader::Loading_For_GamePlay_Level()
 		OutputDebugStringA("[LOADER] Rock_AA 모델 프로토타입 등록 실패!\n");
 		return E_FAIL;
 	}
-
+	// Bridge 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::GAMEPLAY),
+		TEXT("Prototype_Component_Model_Bridge"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/Bridge.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] Bridge 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
 	// Spear 프로토타입 등록
 	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
 	if (FAILED(m_pGameInstance->Add_Prototype(
@@ -210,7 +208,7 @@ HRESULT CLoader::Loading_For_GamePlay_Level()
 	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
 	if (FAILED(m_pGameInstance->Add_Prototype(
 		ENUM_CLASS(LEVEL::GAMEPLAY),
-		TEXT("Prototype_Component_Model_Monster"),
+		TEXT("Prototype_Component_Model_Monster_Skeleton"),
 		CModel::Create(m_pDevice, m_pContext, MODELTYPE::ANIM, Engine::FILETYPE::BIN,
 			"../../Mapdata/Monster.bin", PreTransformMatrix))))
 	{
@@ -241,6 +239,14 @@ HRESULT CLoader::Loading_For_GamePlay_Level()
 		OutputDebugStringA("[LOADER] Monster_Bow 모델 프로토타입 등록 실패!\n");
 		return E_FAIL;
 	}
+
+	
+
+	lstrcpy(m_szLoadingText, TEXT("네비게이션을 로딩중입니다."));
+	/* Prototype_Component_Navigation */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Navigation"),
+		CNavigation::Create(m_pDevice, m_pContext, TEXT("../Bin/DataFiles/Navigation.dat")))))
+		return E_FAIL;
 
 	lstrcpy(m_szLoadingText, TEXT("쉐이더를 로딩중입니다."));
 	/* Prototype_Component_Shader_VtxNorTex */
@@ -297,8 +303,8 @@ HRESULT CLoader::Loading_For_GamePlay_Level()
 		CMapObject::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
-	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Monster"),
-		CMonster::Create(m_pDevice, m_pContext))))
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Monster_Skeleton"),
+		CMonster_Skeleton::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
 	lstrcpy(m_szLoadingText, TEXT("로딩이 완료되었습니다."));

@@ -26,6 +26,7 @@ private:
 	ID3D11DeviceContext*	m_pContext = { nullptr };
 
 private:
+	HRESULT Ready_Gara();
 	HRESULT Ready_Prototype_ForStatic();
 	HRESULT Start_Level(LEVEL eStartLevelID);
 

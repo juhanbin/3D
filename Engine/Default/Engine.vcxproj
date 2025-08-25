@@ -147,6 +147,7 @@
     <ClCompile Include="..\Private\Base.cpp" />
     <ClCompile Include="..\Private\Bone.cpp" />
     <ClCompile Include="..\private\Camera.cpp" />
+    <ClCompile Include="..\Private\Cell.cpp" />
     <ClCompile Include="..\Private\Channel.cpp" />
     <ClCompile Include="..\Private\Component.cpp" />
     <ClCompile Include="..\Private\ContainerObject.cpp" />
@@ -163,8 +164,10 @@
     <ClCompile Include="..\Private\Mesh.cpp" />
     <ClCompile Include="..\Private\MeshMaterial.cpp" />
     <ClCompile Include="..\private\Model.cpp" />
+    <ClCompile Include="..\Private\Navigation.cpp" />
     <ClCompile Include="..\Private\Object_Manager.cpp" />
     <ClCompile Include="..\Private\PartObject.cpp" />
+    <ClCompile Include="..\Private\Picking.cpp" />
     <ClCompile Include="..\private\PipeLine.cpp" />
     <ClCompile Include="..\Private\Prototype_Manager.cpp" />
     <ClCompile Include="..\Private\Renderer.cpp" />
@@ -175,6 +178,7 @@
     <ClCompile Include="..\private\Transform.cpp" />
     <ClCompile Include="..\private\UIObject.cpp" />
     <ClCompile Include="..\private\VIBuffer.cpp" />
+    <ClCompile Include="..\Private\VIBuffer_Cell.cpp" />
     <ClCompile Include="..\private\VIBuffer_Rect.cpp" />
     <ClCompile Include="..\Private\VIBuffer_Terrain.cpp" />
   </ItemGroup>
@@ -184,6 +188,7 @@
     <ClInclude Include="..\Public\BinType.h" />
     <ClInclude Include="..\Public\Bone.h" />
     <ClInclude Include="..\public\Camera.h" />
+    <ClInclude Include="..\Public\Cell.h" />
     <ClInclude Include="..\Public\Channel.h" />
     <ClInclude Include="..\Public\Component.h" />
     <ClInclude Include="..\Public\ContainerObject.h" />
@@ -206,8 +211,10 @@
     <ClInclude Include="..\Public\Mesh.h" />
     <ClInclude Include="..\Public\MeshMaterial.h" />
     <ClInclude Include="..\public\Model.h" />
+    <ClInclude Include="..\Public\Navigation.h" />
     <ClInclude Include="..\Public\Object_Manager.h" />
     <ClInclude Include="..\Public\PartObject.h" />
+    <ClInclude Include="..\Public\Picking.h" />
     <ClInclude Include="..\public\PipeLine.h" />
     <ClInclude Include="..\Public\Prototype_Manager.h" />
     <ClInclude Include="..\Public\Renderer.h" />
@@ -218,6 +225,7 @@
     <ClInclude Include="..\public\Transform.h" />
     <ClInclude Include="..\public\UIObject.h" />
     <ClInclude Include="..\public\VIBuffer.h" />
+    <ClInclude Include="..\Public\VIBuffer_Cell.h" />
     <ClInclude Include="..\public\VIBuffer_Rect.h" />
     <ClInclude Include="..\Public\VIBuffer_Terrain.h" />
   </ItemGroup>

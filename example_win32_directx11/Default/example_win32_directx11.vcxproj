@@ -160,6 +160,8 @@
     <ClCompile Include="..\Private\Loader.cpp" />
     <ClCompile Include="..\Private\MainApp.cpp" />
     <ClCompile Include="..\Private\MapObject.cpp" />
+    <ClCompile Include="..\Private\Navigation_Manager.cpp" />
+    <ClCompile Include="..\Private\PickingMgr.cpp" />
     <ClCompile Include="Edit_Utils.cpp" />
     <ClCompile Include="imgui.cpp" />
     <ClCompile Include="imgui_demo.cpp" />
@@ -178,6 +180,8 @@
     <ClInclude Include="..\Public\Loader.h" />
     <ClInclude Include="..\Public\MainApp.h" />
     <ClInclude Include="..\Public\MapObject.h" />
+    <ClInclude Include="..\Public\Navigation_Manager.h" />
+    <ClInclude Include="..\Public\PickingMgr.h" />
     <ClInclude Include="imgui.h" />
     <ClInclude Include="imgui_impl_win32.h" />
   </ItemGroup>

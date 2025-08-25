@@ -25,6 +25,9 @@ HRESULT CMainApp::Initialize()
 	if (FAILED(m_pGameInstance->Initialize_Engine(EngineDesc, &m_pDevice, &m_pContext)))
 		return E_FAIL;
 
+	if (FAILED(Ready_Gara()))
+		return E_FAIL;
+
 	if (FAILED(Ready_Prototype_ForStatic()))
 		return E_FAIL;
 
@@ -52,6 +55,39 @@ HRESULT CMainApp::Render()
 	return S_OK;
 }
 
+
+HRESULT CMainApp::Ready_Gara()
+{
+	_ulong		dwByte = {};
+	HANDLE		hFile = CreateFile(TEXT("../Bin/DataFiles/Navigation.dat"), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
+
+	_float3		vPoints[3];
+
+	vPoints[0] = _float3(0.f, 0.f, 10.f);
+	vPoints[1] = _float3(10.f, 0.f, 0.f);
+	vPoints[2] = _float3(0.f, 3.f, 0.f);
+	WriteFile(hFile, vPoints, sizeof(_float3) * 3, &dwByte, 0);
+
+	vPoints[0] = _float3(0.f, 0.f, 10.f);
+	vPoints[1] = _float3(10.f, 0.f, 10.f);
+	vPoints[2] = _float3(10.f, 0.f, 0.f);
+	WriteFile(hFile, vPoints, sizeof(_float3) * 3, &dwByte, 0);
+
+	vPoints[0] = _float3(0.f, 0.f, 20.f);
+	vPoints[1] = _float3(10.f, 0.f, 10.f);
+	vPoints[2] = _float3(0.f, 0.f, 10.f);
+	WriteFile(hFile, vPoints, sizeof(_float3) * 3, &dwByte, 0);
+
+	vPoints[0] = _float3(10.f, 0.f, 10.f);
+	vPoints[1] = _float3(20.f, 0.f, 0.f);
+	vPoints[2] = _float3(10.f, 0.f, 0.f);
+	WriteFile(hFile, vPoints, sizeof(_float3) * 3, &dwByte, 0);
+
+	CloseHandle(hFile);
+
+
+	return S_OK;
+}
 
 HRESULT CMainApp::Ready_Prototype_ForStatic()
 {

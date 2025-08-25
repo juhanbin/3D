@@ -4,6 +4,7 @@
 #include "VIBuffer_Terrain.h"
 #include "VIBuffer_Rect.h"
 //#include "VIBuffer_Cube.h"
+#include "Navigation.h"
 #include "Transform.h"
 #include "Texture.h"
 #include "Shader.h"

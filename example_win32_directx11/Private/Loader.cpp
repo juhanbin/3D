@@ -100,6 +100,12 @@ HRESULT CLoader::Loading_For_Edit()
 		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::FBX, "../Bin/Resources/Blood_Spear/Model/Rock/Rock_AA.fbx", PreTransformMatrix))))
 		return E_FAIL;
 
+	/* Prototype_Component_Model_Bridge */
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Model_Bridge"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::FBX, "../Bin/Resources/Blood_Spear/Model/Bridge/Bridge.fbx", PreTransformMatrix))))
+		return E_FAIL;
+
 	/* Prototype_Component_Model_Hero */
 	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
 	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Model_Hero"),
@@ -128,6 +134,12 @@ HRESULT CLoader::Loading_For_Edit()
 	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
 	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Model_Monster_Bow"),
 		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::FBX, "../Bin/Resources/Blood_Spear/Model/Monster_Bow/Monster_Bow.fbx", PreTransformMatrix))))
+		return E_FAIL;
+
+	/* Prototype_Component_Model_Monster_Bow */
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Model_Cave"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::FBX, "../Bin/Resources/Blood_Spear/Model/cave/cave.fbx", PreTransformMatrix))))
 		return E_FAIL;
 
 	lstrcpy(m_szLoadingText, TEXT("쉐이더를 로딩중입니다."));

@@ -46,9 +46,6 @@
     <Filter Include="02.GameObject\Logo_StartButton">
       <UniqueIdentifier>{f1ef3a0c-5ab2-4e45-98f8-0a7e230885c2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="02.GameObject\Monster">
-      <UniqueIdentifier>{15960447-9085-446d-8005-6a1bc452b515}</UniqueIdentifier>
-    </Filter>
     <Filter Include="02.GameObject\Cursor">
       <UniqueIdentifier>{bd74026c-ad54-4174-879a-a080e6fc43c6}</UniqueIdentifier>
     </Filter>
@@ -66,6 +63,15 @@
     </Filter>
     <Filter Include="02.GameObject\Hero\Weapon">
       <UniqueIdentifier>{8e8bc606-4bed-4b5e-a357-793ff639a0b3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObject\Monster_Skeleton">
+      <UniqueIdentifier>{15960447-9085-446d-8005-6a1bc452b515}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObject\Monster_Skeleton\Body">
+      <UniqueIdentifier>{e8c7c259-6f8e-4cdb-9a21-a332647c28e6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObject\Monster_Skeleton\Weapon">
+      <UniqueIdentifier>{52019da4-bcc1-4305-9e17-6fcf2b0dad10}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -120,9 +126,6 @@
     <ClInclude Include="..\Public\Fade.h">
       <Filter>02.GameObject\Fade</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\Monster.h">
-      <Filter>02.GameObject\Monster</Filter>
-    </ClInclude>
     <ClInclude Include="..\Public\MapObject.h">
       <Filter>02.GameObject\MapObject</Filter>
     </ClInclude>
@@ -134,6 +137,15 @@
     </ClInclude>
     <ClInclude Include="..\Public\Weapon.h">
       <Filter>02.GameObject\Hero\Weapon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Monster_Skeleton.h">
+      <Filter>02.GameObject\Monster_Skeleton</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Body_Monster_Skeleton.h">
+      <Filter>02.GameObject\Monster_Skeleton\Body</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Weapon_Monster_Skeleton.h">
+      <Filter>02.GameObject\Monster_Skeleton\Weapon</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -189,9 +201,6 @@
     <ClCompile Include="..\Private\Fade.cpp">
       <Filter>02.GameObject\Fade</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\Monster.cpp">
-      <Filter>02.GameObject\Monster</Filter>
-    </ClCompile>
     <ClCompile Include="..\Private\MapObject.cpp">
       <Filter>02.GameObject\MapObject</Filter>
     </ClCompile>
@@ -203,6 +212,15 @@
     </ClCompile>
     <ClCompile Include="..\Private\Body_Player.cpp">
       <Filter>02.GameObject\Hero\Body</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Monster_Skeleton.cpp">
+      <Filter>02.GameObject\Monster_Skeleton</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Body_Monster_Skeleton.cpp">
+      <Filter>02.GameObject\Monster_Skeleton\Body</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Weapon_Monster_Skeleton.cpp">
+      <Filter>02.GameObject\Monster_Skeleton\Weapon</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

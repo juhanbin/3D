@@ -49,6 +49,12 @@
     <ClCompile Include="Edit_Utils.cpp">
       <Filter>99.Defines</Filter>
     </ClCompile>
+    <ClCompile Include="..\Private\Navigation_Manager.cpp">
+      <Filter>91. Navigation_Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\PickingMgr.cpp">
+      <Filter>90. PickingMgr</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="imgui_impl_win32.h">
@@ -77,6 +83,12 @@
     </ClInclude>
     <ClInclude Include="..\Public\MapObject.h">
       <Filter>GameObject\MapObject</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Navigation_Manager.h">
+      <Filter>91. Navigation_Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\PickingMgr.h">
+      <Filter>90. PickingMgr</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -112,6 +124,12 @@
     </Filter>
     <Filter Include="GameObject\MapObject">
       <UniqueIdentifier>{5797cf56-2178-4186-b370-bd7fb5831ea7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="90. PickingMgr">
+      <UniqueIdentifier>{a8c7d77e-c612-4872-9fe9-d2183b843ea1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="91. Navigation_Manager">
+      <UniqueIdentifier>{8172415f-72f6-441c-a08e-403ee7a6819e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

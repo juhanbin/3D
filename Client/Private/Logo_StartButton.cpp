@@ -40,7 +40,7 @@ void CLogo_StartButton::Priority_Update(_float fTimeDelta)
 
 void CLogo_StartButton::Update(_float fTimeDelta)
 {
-    POINT pt{ 0, 0 };
+    tagPOINT pt{ 0, 0 };
     GetCursorPos(&pt);
     ScreenToClient(g_hWnd, &pt);
 

@@ -1,30 +1,30 @@
-#include "Monster.h"
+#include "Monster_Skeleton.h"
 #include "GameInstance.h"
 
-CMonster::CMonster(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
+CMonster_Skeleton::CMonster_Skeleton(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
     :CGameObject{ pDevice,pContext }
 {
 }
 
-CMonster::CMonster(const CMonster& Prototype)
+CMonster_Skeleton::CMonster_Skeleton(const CMonster_Skeleton& Prototype)
     :CGameObject{ Prototype }
     , m_eType(Prototype.m_eType)
 {
 }
 
-HRESULT CMonster::Initialize_Prototype()
+HRESULT CMonster_Skeleton::Initialize_Prototype()
 {
     return S_OK;
 }
 
-HRESULT CMonster::Initialize(void* pArg)
+HRESULT CMonster_Skeleton::Initialize(void* pArg)
 {
     if (FAILED(__super::Initialize(pArg)))
         return E_FAIL;
 
     if (pArg)
     {
-        MONSTER_DESC* pDesc = static_cast<MONSTER_DESC*>(pArg);
+        Monster_Skeleton_DESC* pDesc = static_cast<Monster_Skeleton_DESC*>(pArg);
         m_eType = pDesc->type;
         //Å©±â
         XMMATRIX matScale = XMMatrixScaling(pDesc->vScale.x, pDesc->vScale.y, pDesc->vScale.z);
@@ -69,22 +69,22 @@ HRESULT CMonster::Initialize(void* pArg)
     return S_OK;
 }
 
-void CMonster::Priority_Update(_float fTimeDelta)
+void CMonster_Skeleton::Priority_Update(_float fTimeDelta)
 {
 }
 
-void CMonster::Update(_float fTimeDelta)
+void CMonster_Skeleton::Update(_float fTimeDelta)
 {
     m_pModelCom->Play_Animation(fTimeDelta);
 }
 
-void CMonster::Late_Update(_float fTimeDelta)
+void CMonster_Skeleton::Late_Update(_float fTimeDelta)
 {
     if (FAILED(m_pGameInstance->Add_RenderGroup(RENDERGROUP::NONBLEND, this)))
         return;
 }
 
-HRESULT CMonster::Render()
+HRESULT CMonster_Skeleton::Render()
 {
     if (FAILED(Bind_ShaderResources()))
         return E_FAIL;
@@ -121,13 +121,13 @@ HRESULT CMonster::Render()
     return S_OK;
 }
 
-HRESULT CMonster::Ready_Components()
+HRESULT CMonster_Skeleton::Ready_Components()
 {
     if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Shader_VtxAnimMesh"),
         TEXT("Com_Shader"), reinterpret_cast<CComponent**>(&m_pShaderCom), nullptr)))
         return E_FAIL;
 
-    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Model_Monster"),
+    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Model_Monster_Skeleton"),
         TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom), nullptr)))
         return E_FAIL;
 
@@ -136,7 +136,7 @@ HRESULT CMonster::Ready_Components()
     return S_OK;
 }
 
-HRESULT CMonster::Bind_ShaderResources()
+HRESULT CMonster_Skeleton::Bind_ShaderResources()
 {
     if (FAILED(m_pTransformCom->Bind_Shader_Resource(m_pShaderCom, "g_WorldMatrix")))
         return E_FAIL;
@@ -165,33 +165,33 @@ HRESULT CMonster::Bind_ShaderResources()
     return S_OK;
 }
 
-CMonster* CMonster::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
+CMonster_Skeleton* CMonster_Skeleton::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 {
-    CMonster* pInstance = new CMonster(pDevice, pContext);
+    CMonster_Skeleton* pInstance = new CMonster_Skeleton(pDevice, pContext);
 
     if (FAILED(pInstance->Initialize_Prototype()))
     {
-        MSG_BOX(TEXT("Failed to Created : CMonster"));
+        MSG_BOX(TEXT("Failed to Created : CMonster_Skeleton"));
         Safe_Release(pInstance);
     }
 
     return pInstance;
 }
 
-CGameObject* CMonster::Clone(void* pArg)
+CGameObject* CMonster_Skeleton::Clone(void* pArg)
 {
-    CMonster* pInstance = new CMonster(*this);
+    CMonster_Skeleton* pInstance = new CMonster_Skeleton(*this);
 
     if (FAILED(pInstance->Initialize(pArg)))
     {
-        MSG_BOX(TEXT("Failed to Created : CMonster"));
+        MSG_BOX(TEXT("Failed to Created : CMonster_Skeleton"));
         Safe_Release(pInstance);
     }
 
     return pInstance;
 }
 
-void CMonster::Free()
+void CMonster_Skeleton::Free()
 {
     __super::Free();
 

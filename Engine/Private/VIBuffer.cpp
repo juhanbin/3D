@@ -52,33 +52,6 @@ HRESULT CVIBuffer::Bind_Resources()
 	m_pContext->IASetVertexBuffers(0, m_iNumVertexBuffers, pVertexBuffers, iVertexStrides, iOffsets);
 	m_pContext->IASetIndexBuffer(m_pIB, m_eIndexFormat, 0);
 	m_pContext->IASetPrimitiveTopology(m_ePrimitiveType);
-
-	/* 장치에게 내 정점이 어떻게 생겼다? (FVF) : 폐기 */
-	/* 내가 그리기위해 이용하려하는 쉐이더와 정점이 서로 호환이 되는지에 대한 검사과정을 수행해야한다. */
-
-	//D3D11_INPUT_ELEMENT_DESC		Elements[] = {
-	//	{}, 
-	//	{}, 
-	//	{}, 
-	//};
-
-
-	//m_pDevice->CreateInputLayout(Elements, 3, );
-	//m_pContext->IASetInputLayout();
-
-	//struct tagVertexPositionTexcoord
-	//{
-	//	XMFLOAT3		vPosition;
-	//	XMFLOAT3		vNormal;
-	//	XMFLOAT2		vTexcoord;
-	//};
-
-	//struct VS_IN
-	//{
-	//	float3		vPosition : POSITION;
-	//	float2		vTexcoord : TEXCOORD0;
-	//};
-
 	return S_OK;
 }
 

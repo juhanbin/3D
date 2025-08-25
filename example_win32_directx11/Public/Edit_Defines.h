@@ -38,6 +38,8 @@ enum class EObjectType : int
     SPEAR,
     MONSTER_SPEAR,
     MONSTER_BOW,
+    BRIDGE,
+    CAVE,
     END
 };
 
@@ -66,6 +68,8 @@ inline const char* ToObjectTypeString(EObjectType type)
     case EObjectType::SPEAR:            return "Spear";
     case EObjectType::MONSTER_SPEAR:    return "Monster_Spear";
     case EObjectType::MONSTER_BOW:      return "Monster_Bow";
+    case EObjectType::BRIDGE:           return "Bridge";
+    case EObjectType::CAVE:           return "Cave";
     default:                            return "Unknown";
     }
 }

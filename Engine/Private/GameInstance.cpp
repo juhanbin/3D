@@ -10,7 +10,7 @@
 #include "PipeLine.h"
 #include "Light_Manager.h"
 #include "EventBus.h"
-//#include "Picking.h"
+#include "Picking.h"
 
 IMPLEMENT_SINGLETON(CGameInstance)
 
@@ -31,9 +31,11 @@ HRESULT CGameInstance::Initialize_Engine(const ENGINE_DESC& EngineDesc, ID3D11De
 	if (nullptr == m_pInput_Device)
 		return E_FAIL;
 
-	//m_pPicking = CPicking::Create(*ppOut, EngineDesc.hWnd);
-	//if (nullptr == m_pPicking)
-	//	return E_FAIL;
+	m_pPicking = CPicking::GetInstance();
+	Safe_AddRef(m_pPicking);
+	if (FAILED(m_pPicking->Initialize(EngineDesc.hWnd, EngineDesc.iWinSizeX, EngineDesc.iWinSizeY,
+		*ppDevice, *ppContext)))
+		return E_FAIL;
 
 
 	m_pLevel_Manager = CLevel_Manager::Create();
@@ -78,8 +80,10 @@ void CGameInstance::Update_Engine(_float fTimeDelta)
 	/* 내 게임내에서 반복적인 갱신이 필요한 객체들이 있다라면 갱신을 여기에서 모아서 수행하낟. */
 	m_pObject_Manager->Priority_Update(fTimeDelta);
 
-	/*m_pPicking->Update();*/
+	
 	m_pPipeLine->Update();
+
+	m_pPicking->Tick();
 
 	m_pObject_Manager->Update(fTimeDelta);
 	m_pObject_Manager->Late_Update(fTimeDelta);
@@ -141,6 +145,9 @@ _float CGameInstance::Rand(_float fMin, _float fMax)
 {
 	return fMin + Rand_Normal() * (fMax - fMin);
 }
+
+const _float3& CGameInstance::Get_RayPos() const { return m_pPicking->Get_RayPosW(); } 
+const _float3& CGameInstance::Get_RayDir() const { return m_pPicking->Get_RayDirW(); }
 
 #pragma endregion
 
@@ -358,7 +365,7 @@ void CGameInstance::Release_Engine()
 {
 	Release();
 
-	//Safe_Release(m_pPicking);
+	Safe_Release(m_pPicking);
 	Safe_Release(m_pLight_Manager);
 	Safe_Release(m_pPipeLine);
 	Safe_Release(m_pEventBus);

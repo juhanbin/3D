@@ -152,6 +152,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\public\BackGround.h" />
+    <ClInclude Include="..\Public\Body_Monster_Skeleton.h" />
     <ClInclude Include="..\Public\Body_Player.h" />
     <ClInclude Include="..\Public\Camera_Free.h" />
     <ClInclude Include="..\Public\Client_Defines.h" />
@@ -165,10 +166,11 @@
     <ClInclude Include="..\Public\Logo_StartButton.h" />
     <ClInclude Include="..\Public\MainApp.h" />
     <ClInclude Include="..\Public\MapObject.h" />
-    <ClInclude Include="..\Public\Monster.h" />
+    <ClInclude Include="..\Public\Monster_Skeleton.h" />
     <ClInclude Include="..\Public\Player.h" />
     <ClInclude Include="..\Public\Terrain.h" />
     <ClInclude Include="..\Public\Weapon.h" />
+    <ClInclude Include="..\Public\Weapon_Monster_Skeleton.h" />
     <ClInclude Include="Client.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Resource.h" />
@@ -176,6 +178,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\private\BackGround.cpp" />
+    <ClCompile Include="..\Private\Body_Monster_Skeleton.cpp" />
     <ClCompile Include="..\Private\Body_Player.cpp" />
     <ClCompile Include="..\Private\Camera_Free.cpp" />
     <ClCompile Include="..\Private\Cursor.cpp" />
@@ -188,10 +191,11 @@
     <ClCompile Include="..\Private\Logo_StartButton.cpp" />
     <ClCompile Include="..\Private\MainApp.cpp" />
     <ClCompile Include="..\Private\MapObject.cpp" />
-    <ClCompile Include="..\Private\Monster.cpp" />
+    <ClCompile Include="..\Private\Monster_Skeleton.cpp" />
     <ClCompile Include="..\Private\Player.cpp" />
     <ClCompile Include="..\Private\Terrain.cpp" />
     <ClCompile Include="..\Private\Weapon.cpp" />
+    <ClCompile Include="..\Private\Weapon_Monster_Skeleton.cpp" />
     <ClCompile Include="Client.cpp" />
   </ItemGroup>
   <ItemGroup>

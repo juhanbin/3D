@@ -4,7 +4,7 @@
 #include "ContainerObject.h"
 
 NS_BEGIN(Engine)
-
+class CNavigation;
 NS_END
 
 NS_BEGIN(Client)
@@ -51,7 +51,7 @@ private:
 	_float				m_fshiftHeldSec = 0.f;
 	const float			RUN_HOLD_THRESHOLD = 0.20f;
 
-
+	CNavigation* m_pNavigationCom = { nullptr };
 private:
 	HRESULT Ready_Components();	
 	HRESULT Ready_PartObjects();

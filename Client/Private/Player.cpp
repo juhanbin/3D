@@ -197,7 +197,7 @@ void CPlayer::Update(_float fTimeDelta)
         if (d) m_pTransformCom->Go_Right(fTimeDelta * mul);
     }
     else {
-        if (w) m_pTransformCom->Go_Straight(fTimeDelta * mul);
+        if (w) m_pTransformCom->Go_Straight(fTimeDelta * mul, m_pNavigationCom);
         else if (s) m_pTransformCom->Go_Backward(fTimeDelta * mul);
         else if (a)
         {
@@ -218,20 +218,31 @@ void CPlayer::Update(_float fTimeDelta)
 
 void CPlayer::Late_Update(_float fTimeDelta)
 {
-    
+    m_pTransformCom->Set_State(Engine::STATE::POSITION,
+        m_pNavigationCom->Compute_OnCell(m_pTransformCom->Get_State(Engine::STATE::POSITION)));
+    if (FAILED(m_pGameInstance->Add_RenderGroup(RENDERGROUP::NONBLEND, this)))
+        return;
 
     __super::Late_Update(fTimeDelta);
 }
 
 HRESULT CPlayer::Render()
 {
+#ifdef _DEBUG
+    m_pNavigationCom->Render();
 
+#endif
     return S_OK;
 }
 
 HRESULT CPlayer::Ready_Components()
 {
- 
+    CNavigation::NAVIGATION_DESC        NaviDesc{};
+    NaviDesc.iCurrentCellIndex = 0;
+
+    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Navigation"),
+        TEXT("Com_Navigation"), reinterpret_cast<CComponent**>(&m_pNavigationCom), &NaviDesc)))
+        return E_FAIL;
 
     return S_OK;
 }
@@ -295,5 +306,5 @@ void CPlayer::Free()
 {
     __super::Free();
 
-
+    Safe_Release(m_pNavigationCom);
 }

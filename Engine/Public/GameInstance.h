@@ -26,6 +26,8 @@ public:
 	_float Rand(_float fMin, _float fMax);
 
 #pragma endregion
+	const _float3& Get_RayPos() const;
+	const _float3& Get_RayDir() const;
 
 #pragma region LEVEL_MANAGER
 public:

@@ -1,6 +1,6 @@
 #pragma once
 #include "Client_Defines.h"
-#include "GameObject.h"
+#include "ContainerObject.h"
 
 NS_BEGIN(Engine)
 class CShader;
@@ -9,10 +9,10 @@ NS_END
 
 
 NS_BEGIN(Client)
-class CMonster final :public CGameObject
+class CMonster_Skeleton final :public CContainerObject
 {
 public:
-	struct MONSTER_DESC : public CGameObject::GAMEOBJECT_DESC
+	struct Monster_Skeleton_DESC : public CGameObject::GAMEOBJECT_DESC
 	{
 		EObjectType type{ EObjectType::MONSTER };
 		_float3 vScale{ 1.f,1.f,1.f };
@@ -21,9 +21,9 @@ public:
 	};
 
 private:
-	CMonster(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
-	CMonster(const CMonster& Prototype);
-	virtual ~CMonster() = default;
+	CMonster_Skeleton(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
+	CMonster_Skeleton(const CMonster_Skeleton& Prototype);
+	virtual ~CMonster_Skeleton() = default;
 
 public:
 	virtual HRESULT Initialize_Prototype();
@@ -36,13 +36,25 @@ public:
 private:
 	CShader* m_pShaderCom = { nullptr };
 	CModel* m_pModelCom = { nullptr };
+
+private:
 	EObjectType m_eType = { EObjectType::MONSTER };
+	_uint				m_iState = { };
+	MOVING				m_eMoving = MOVING::IDLE;
+	_bool				m_bFinishAnim = { true };
+	_bool				m_bDashQueued = { false };
+
+	ATTACK				m_eAttack = ATTACK::NONE;
+
+	_bool				m_bshiftPressed = false;
+	_float				m_fshiftHeldSec = 0.f;
+	const float			RUN_HOLD_THRESHOLD = 0.20f;
 private:
 	HRESULT Ready_Components();
 	HRESULT Bind_ShaderResources();
 
 public:
-	static CMonster* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
+	static CMonster_Skeleton* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	virtual CGameObject* Clone(void* pArg) override;
 	virtual void Free() override;
 };

@@ -15,11 +15,6 @@ NS_BEGIN(Engine)
 class CGameInstance;
 NS_END
 
-struct Ray {
-    DirectX::XMFLOAT3 origin;
-    DirectX::XMFLOAT3 dir;
-};
-
 NS_BEGIN(Edit)
 
 class CMainApp final : public CBase
@@ -30,7 +25,7 @@ private:
 
 public:
     HRESULT Initialize();
-    void Update(_float fTimeDelta);
+    void    Update(_float fTimeDelta);
     HRESULT Render();
 
 private:
@@ -42,12 +37,10 @@ private:
     HRESULT Ready_Prototype_ForStatic();
     HRESULT Start_Level(LEVEL eStartLevelID);
 
-    //bone
-public:
+public: // bones (원본 유지)
     void GatherBones(const aiNode* node, int parentIdx);
 
-public:
-    // MapTool 함수
+public: // MapTool
     void Render_ImGuiPanel();
     void SaveScene(const char* filename);
     bool LoadScene(const char* filename);
@@ -56,28 +49,49 @@ public:
     void PushUndo();
     void RefreshScene();
 
-    Ray CreatePickingRay(int mx, int my, int w, int h, const DirectX::XMMATRIX& view, const DirectX::XMMATRIX& proj);
-    bool RayIntersectsAABB(const Ray& ray, const DirectX::BoundingBox& box, float* outDist = nullptr);
+private: // Picking helpers (에디터용 임시 오브젝트 OBB)
+    DirectX::XMMATRIX MakeWorld(const MapObject& o) const;
+
+    bool RaycastObject_AABB(const DirectX::XMVECTOR& rayPosW,
+        const DirectX::XMVECTOR& rayDirW,
+        const MapObject& o,
+        float& outWorldDist,
+        DirectX::XMFLOAT3& outHitW) const;
+
+    bool RaycastObject_OBB(DirectX::FXMVECTOR rayPosW, DirectX::FXMVECTOR rayDirW,
+        const MapObject& o, float& outWorldDist, DirectX::XMFLOAT3& outHitW) const;
+
+    bool RaycastGround(const DirectX::XMVECTOR& rayPosW,
+        const DirectX::XMVECTOR& rayDirW,
+        DirectX::XMFLOAT3& outHitW) const;
+
+    bool PickPoint_OBB(DirectX::XMFLOAT3& outHitW, int& outObjIdx);
 
 private:
-    std::vector<MapObject> m_Objects;
-    std::vector<std::vector<MapObject>> m_UndoStack;
-    int m_Selected = -1;
+    std::vector<MapObject>               m_Objects;
+    std::vector<std::vector<MapObject>>  m_UndoStack;
+    int   m_Selected = -1;
     float m_TempSize[3] = { 1,1,1 };
     float m_TempRot[3] = { 0,0,0 };
     float m_TempPos[3] = { 0,0,0 };
 
-    //본
+    // bones
     std::vector<BoneInfoBin> m_Bones;
 
-    vector<_int>			m_BoneIndices;
-    vector<_float4x4>		m_OffsetMatrices;
+    vector<_int>       m_BoneIndices;
+    vector<_float4x4>  m_OffsetMatrices;
     ID3D11RenderTargetView* m_pBackBufferRTV = nullptr;
     ID3D11DepthStencilView* m_pDepthStencilView = nullptr;
 
-    const aiScene* m_pAIScene = { nullptr };
-    Assimp::Importer m_Importer = {};
+    const aiScene* m_pAIScene = nullptr;
+    Assimp::Importer        m_Importer{};
     std::vector<ID3D11ShaderResourceView*> m_SRVs[AI_TEXTURE_TYPE_MAX];
+
+    // Picking debug
+    bool     m_PickDebugEnabled = true;
+    bool     m_LastPickValid = false;
+    _float3  m_LastPickPos{ 0,0,0 };
+    int      m_LastPickObj = -1;
 
 public:
     static CMainApp* Create();

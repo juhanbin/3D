@@ -20,6 +20,7 @@ CModel::CModel(const CModel& Prototype)
     , m_iNumMaterials{ Prototype.m_iNumMaterials }
     , m_Materials{ Prototype.m_Materials }
     , m_iNumAnimations{ Prototype.m_iNumAnimations }
+    , m_bFromBin{ Prototype.m_bFromBin } // ★ 복사
 {
     for (auto& pPrototypeAnimation : Prototype.m_Animations)
         m_Animations.push_back(pPrototypeAnimation->Clone());
@@ -36,10 +37,8 @@ CModel::CModel(const CModel& Prototype)
 
 _float4x4* CModel::Get_BoneMatrix(const _char* pBoneName)
 {
-    auto    iter = find_if(m_Bones.begin(), m_Bones.end(), [&](CBone* pBone) {
-        if (true == pBone->Compare_Name(pBoneName))
-            return true;
-        return false;
+    auto iter = find_if(m_Bones.begin(), m_Bones.end(), [&](CBone* pBone) {
+        return pBone->Compare_Name(pBoneName);
         });
 
     if (iter == m_Bones.end())
@@ -52,45 +51,29 @@ HRESULT CModel::Initialize_Prototype(MODELTYPE eModelType, FILETYPE eFileType, c
 {
     m_eModelType = eModelType;
     XMStoreFloat4x4(&m_PreTransformMatrix, PreTransformMatrix);
+    m_bFromBin = (eFileType == FILETYPE::BIN); // ★ 세팅
 
-
-    if (eFileType == FILETYPE::BIN) // Bin파일일때
+    if (eFileType == FILETYPE::BIN)
     {
         if (eModelType == MODELTYPE::NONANIM)
         {
             ifstream ifs(pModelFilePath, std::ios::binary);
-            if (!ifs) {
-                OutputDebugStringA("[BIN] 파일 열기 실패!\n");
-                return E_FAIL;
-            }
+            if (!ifs) { OutputDebugStringA("[BIN] 파일 열기 실패!\n"); return E_FAIL; }
 
-            // --- 1. 메시 정보/버텍스/인덱스 로드 ---
-            if (FAILED(Ready_Meshes(ifs, eModelType))) {
-                OutputDebugStringA("[BIN] Ready_Meshes 실패 (NONANIM)\n");
-                return E_FAIL;
-            }
+            if (FAILED(Ready_Meshes(ifs, eModelType))) { OutputDebugStringA("[BIN] Ready_Meshes 실패 (NONANIM)\n"); return E_FAIL; }
 
-            // --- 2. 머티리얼 정보 로드 ---
             uint32_t materialCount = 0;
             ifs.read((char*)&materialCount, sizeof(materialCount));
             vector<MaterialInfoBin2> binMaterials(materialCount);
             ifs.read((char*)binMaterials.data(), sizeof(MaterialInfoBin2) * materialCount);
 
-            if (FAILED(Ready_Materials(pModelFilePath, binMaterials))) {
-                OutputDebugStringA("[BIN] Ready_Materials 실패 (NONANIM)\n");
-                return E_FAIL;
-            }
+            if (FAILED(Ready_Materials(pModelFilePath, binMaterials))) { OutputDebugStringA("[BIN] Ready_Materials 실패 (NONANIM)\n"); return E_FAIL; }
         }
-
         else
         {
             ifstream ifs(pModelFilePath, std::ios::binary);
-            if (!ifs) {
-                OutputDebugStringA("[BIN] 파일 열기 실패!\n");
-                return E_FAIL;
-            }
+            if (!ifs) { OutputDebugStringA("[BIN] 파일 열기 실패!\n"); return E_FAIL; }
 
-            // 1. Bone 정보 읽기
             uint32_t boneCount = 0;
             ifs.read((char*)&boneCount, sizeof(boneCount));
             vector<BoneInfoBin> binBones(boneCount);
@@ -99,96 +82,62 @@ HRESULT CModel::Initialize_Prototype(MODELTYPE eModelType, FILETYPE eFileType, c
             if (FAILED(Ready_Bones(binBones, -1)))
                 return E_FAIL;
 
-            // 2. Mesh 정보 읽기
-            if (FAILED(Ready_Meshes(ifs, eModelType))) // 파일 스트림 넘김
+            if (FAILED(Ready_Meshes(ifs, eModelType)))
                 return E_FAIL;
 
-            // 3. Material 정보 읽기
             uint32_t materialCount = 0;
             ifs.read((char*)&materialCount, sizeof(materialCount));
             vector<MaterialInfoBin2> binMaterials(materialCount);
             ifs.read((char*)binMaterials.data(), sizeof(MaterialInfoBin2) * materialCount);
 
-            // AnimInfoBin ChannelInfoBin  tagKeyFrame 
             if (FAILED(Ready_Materials(pModelFilePath, binMaterials))) {
-                OutputDebugStringA("[BIN] Ready_Materials 실패 (NONANIM)\n");
+                OutputDebugStringA("[BIN] Ready_Materials 실패 (ANIM)\n");
                 return E_FAIL;
             }
 
-            //4. Animation 정보 읽기
             if (FAILED(Ready_Animations(ifs)))
                 return E_FAIL;
         }
     }
-
-    else // fbx파일일때
+    else // FBX
     {
-        _uint           iFlag = { aiProcess_ConvertToLeftHanded | aiProcessPreset_TargetRealtime_Fast };
-
+        _uint iFlag = { aiProcess_ConvertToLeftHanded | aiProcessPreset_TargetRealtime_Fast };
         if (MODELTYPE::NONANIM == m_eModelType)
             iFlag |= aiProcess_PreTransformVertices;
 
         m_pAIScene = m_Importer.ReadFile(pModelFilePath, iFlag);
-        if (nullptr == m_pAIScene)
-            return E_FAIL;
+        if (nullptr == m_pAIScene) return E_FAIL;
 
-        if (FAILED(Ready_Bones(m_pAIScene->mRootNode, -1)))
-            return E_FAIL;
-
-        if (FAILED(Ready_Meshes()))
-            return E_FAIL;
-
-        //XMMatrixRotationQuaternion();
-        //XMMatrixRotationRollPitchYaw();
-
-        if (FAILED(Ready_Materials(pModelFilePath)))
-            return E_FAIL;
-
-        if (FAILED(Ready_Animations()))
-            return E_FAIL;
+        if (FAILED(Ready_Bones(m_pAIScene->mRootNode, -1))) return E_FAIL;
+        if (FAILED(Ready_Meshes())) return E_FAIL;
+        if (FAILED(Ready_Materials(pModelFilePath))) return E_FAIL;
+        if (FAILED(Ready_Animations())) return E_FAIL;
     }
 
-
     return S_OK;
 }
 
-HRESULT CModel::Initialize(void* pArg)
-{
-    return S_OK;
-}
+HRESULT CModel::Initialize(void* pArg) { return S_OK; }
 
 HRESULT CModel::Bind_Materials(class CShader* pShader, const _char* pConstantName, _uint iMeshIndex, aiTextureType eTextureType, _uint iIndex)
 {
-    if (iMeshIndex >= m_iNumMeshes)
-        return E_FAIL;
-
-    _uint       iMaterialIndex = m_Meshes[iMeshIndex]->Get_MaterialIndex();
-
-    if (m_iNumMaterials <= iMaterialIndex)
-        return E_FAIL;
-
+    if (iMeshIndex >= m_iNumMeshes) return E_FAIL;
+    _uint iMaterialIndex = m_Meshes[iMeshIndex]->Get_MaterialIndex();
+    if (m_iNumMaterials <= iMaterialIndex) return E_FAIL;
     return m_Materials[iMaterialIndex]->Bind_Resources(pShader, pConstantName, eTextureType, iIndex);
 }
 
 HRESULT CModel::Bind_Materials_Bin(CShader* pShader, const _char* pConstantName, _uint iMeshIndex, int texType, _uint iIndex)
 {
-    if (iMeshIndex >= m_iNumMeshes)
-        return E_FAIL;
-
+    if (iMeshIndex >= m_iNumMeshes) return E_FAIL;
     _uint iMaterialIndex = m_Meshes[iMeshIndex]->Get_MaterialIndex();
-
-    if (m_iNumMaterials <= iMaterialIndex)
-        return E_FAIL;
-
+    if (m_iNumMaterials <= iMaterialIndex) return E_FAIL;
     return m_Materials[iMaterialIndex]->Bind_Resources_Bin(pShader, pConstantName, texType, iIndex);
 }
 
 HRESULT CModel::Bind_BoneMatrices(CShader* pShader, const _char* pConstantName, _uint iMeshIndex)
 {
-
-    if (iMeshIndex >= m_iNumMeshes)
-        return E_FAIL;
-
+    if (iMeshIndex >= m_iNumMeshes) return E_FAIL;
     return m_Meshes[iMeshIndex]->Bind_BoneMatrices(pShader, pConstantName, m_Bones);
 }
 
@@ -203,7 +152,6 @@ _bool CModel::Play_Animation(_float fTimeDelta)
 
     if (!m_inTransition)
     {
-        // 기존 단일 애니 경로
         m_Animations[m_iCurrentAnimIndex]->Update_TransformationMatrices(
             m_Bones, m_isLoop, &m_isFinished, fTimeDelta);
     }
@@ -260,25 +208,29 @@ _bool CModel::Play_Animation(_float fTimeDelta)
         }
     }
 
-    // 최종 Combined 갱신
     for (auto& pBone : m_Bones)
         pBone->Update_CombinedTransformationMatrix(m_PreTransformMatrix, m_Bones);
 
     return m_isFinished;
 }
 
-
+// ★ FBX일 때만 실제 버텍스 기반 바운딩박스 계산
 void CModel::ComputeBoundingBox(DirectX::BoundingBox& outBox) const
 {
     using namespace DirectX;
 
+    if (m_bFromBin) {
+        // BIN 로드 모델은 바운딩박스 "없어도 됨" 규칙: 0 extents 박스 반환
+        outBox = BoundingBox(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0));
+        return;
+    }
+
     bool first = true;
     XMFLOAT3 vMin{}, vMax{};
-    // 모든 메시 순회 (m_Meshes 컨테이너 등)
-    for (const auto& mesh : m_Meshes)  // m_Meshes는 메시 리스트(vector 등)
+
+    for (const auto& mesh : m_Meshes)
     {
         const auto& positions = mesh->GetPositions();
-        // 메시의 버텍스 배열 순회 (여기선 float3 포맷 가정)
         for (const auto& v : positions)
         {
             if (first) {
@@ -286,16 +238,18 @@ void CModel::ComputeBoundingBox(DirectX::BoundingBox& outBox) const
                 first = false;
             }
             else {
-                vMin.x = min(vMin.x, v.x);
-                vMin.y = min(vMin.y, v.y);
-                vMin.z = min(vMin.z, v.z);
-                vMax.x = max(vMax.x, v.x);
-                vMax.y = max(vMax.y, v.y);
-                vMax.z = max(vMax.z, v.z);
+                vMin.x = min(vMin.x, v.x); vMin.y = min(vMin.y, v.y); vMin.z = min(vMin.z, v.z);
+                vMax.x = max(vMax.x, v.x); vMax.y = max(vMax.y, v.y); vMax.z = max(vMax.z, v.z);
             }
         }
     }
-    // min/max에서 박스 생성
+
+    if (first) {
+        // 포지션이 하나도 없을 경우(이례적) 0 extents
+        outBox = BoundingBox(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0));
+        return;
+    }
+
     XMFLOAT3 center = { (vMin.x + vMax.x) * 0.5f, (vMin.y + vMax.y) * 0.5f, (vMin.z + vMax.z) * 0.5f };
     XMFLOAT3 extents = { (vMax.x - vMin.x) * 0.5f, (vMax.y - vMin.y) * 0.5f, (vMax.z - vMin.z) * 0.5f };
     outBox = BoundingBox(center, extents);
@@ -305,10 +259,8 @@ HRESULT CModel::Render(_uint iMeshIndex)
 {
     if (FAILED(m_Meshes[iMeshIndex]->Bind_Resources()))
         return E_FAIL;
-
     if (FAILED(m_Meshes[iMeshIndex]->Render()))
         return E_FAIL;
-
     return S_OK;
 }
 
@@ -324,7 +276,6 @@ void CModel::Set_Animation(_uint iIndex, _bool isLoop, float blendDuration, bool
 
     if (m_iCurrentAnimIndex < 0 || blendDuration <= 0.f)
     {
-        // 즉시 전환 (기존과 동일)
         m_iCurrentAnimIndex = (_int)iIndex;
         if (forceRestart) m_Animations[m_iCurrentAnimIndex]->ResetTimeToZero();
         m_inTransition = false;
@@ -332,16 +283,13 @@ void CModel::Set_Animation(_uint iIndex, _bool isLoop, float blendDuration, bool
         return;
     }
 
-    // 크로스페이드 시작
     m_iNextAnimIndex = (_int)iIndex;
     m_blendDur = max(0.0001f, blendDuration);
     m_blendAcc = 0.f;
     m_inTransition = true;
 
-    if (forceRestart)
-        m_Animations[m_iNextAnimIndex]->ResetTimeToZero(); // 다음 애니만 0에서 시작
+    if (forceRestart) m_Animations[m_iNextAnimIndex]->ResetTimeToZero();
 }
-
 
 HRESULT CModel::Ready_Meshes()
 {
@@ -350,12 +298,9 @@ HRESULT CModel::Ready_Meshes()
     for (size_t i = 0; i < m_iNumMeshes; i++)
     {
         CMesh* pMesh = CMesh::Create(m_pDevice, m_pContext, m_eModelType, m_pAIScene->mMeshes[i], m_Bones, XMLoadFloat4x4(&m_PreTransformMatrix));
-        if (nullptr == pMesh)
-            return E_FAIL;
-
+        if (nullptr == pMesh) return E_FAIL;
         m_Meshes.push_back(pMesh);
     }
-
     return S_OK;
 }
 
@@ -365,103 +310,87 @@ HRESULT CModel::Ready_Materials(const _char* pModelFilePath)
 
     for (size_t i = 0; i < m_iNumMaterials; i++)
     {
-
         CMeshMaterial* pMeshMaterial = CMeshMaterial::Create(m_pDevice, m_pContext, pModelFilePath, m_pAIScene->mMaterials[i]);
-        if (nullptr == pMeshMaterial)
-            return E_FAIL;
-
+        if (nullptr == pMeshMaterial) return E_FAIL;
         m_Materials.push_back(pMeshMaterial);
     }
-
-
     return S_OK;
 }
 
 HRESULT CModel::Ready_Bones(const aiNode* pAINode, _int iParentIndex)
 {
     CBone* pBone = CBone::Create(pAINode, iParentIndex);
-    if (nullptr == pBone)
-        return E_FAIL;
+    if (nullptr == pBone) return E_FAIL;
 
     m_Bones.push_back(pBone);
-
-    _int   iIndex = m_Bones.size() - 1;
+    _int iIndex = (int)m_Bones.size() - 1;
 
     for (size_t i = 0; i < pAINode->mNumChildren; i++)
-    {
         Ready_Bones(pAINode->mChildren[i], iIndex);
-    }
 
     return S_OK;
 }
 
 HRESULT CModel::Ready_Animations()
 {
-    /* 시간에 따라 내 뼈들이 어떻게 움직여야하는가? 에 대한 정보가 필요하다.  */
-    /* 대기동작을 위해서는 뼈들이 어떤 시간대에 어떤 상태를 취하는가? */
-    /* 공격동작을 위해서는 뼈들이 어떤 시간대에 어떤 상태를 취하는가? */
     m_iNumAnimations = m_pAIScene->mNumAnimations;
-
     for (size_t i = 0; i < m_iNumAnimations; i++)
     {
-        CAnimation* pAnimation = CAnimation::Create(m_pAIScene->mAnimations[i], m_Bones);   
-
-        if (nullptr == pAnimation)
-            return E_FAIL;
-
+        CAnimation* pAnimation = CAnimation::Create(m_pAIScene->mAnimations[i], m_Bones);
+        if (nullptr == pAnimation) return E_FAIL;
         m_Animations.push_back(pAnimation);
     }
-
     return S_OK;
 }
 
 HRESULT CModel::Ready_Meshes(ifstream& ifs, MODELTYPE eModelType)
 {
-    // 1. 메시 개수 읽기
-    uint32_t meshCount;
+    uint32_t meshCount = 0;
     ifs.read((char*)&meshCount, sizeof(meshCount));
-
     m_iNumMeshes = meshCount;
 
     if (eModelType == MODELTYPE::NONANIM)
     {
-        // 2. 메시 정보 구조체 배열 읽기
-        vector<MeshInfoBin> meshInfos(meshCount);
-        ifs.read((char*)meshInfos.data(), sizeof(MeshInfoBin) * m_iNumMeshes);
+        std::vector<MeshInfoBin> infos(meshCount);
+        ifs.read((char*)infos.data(), sizeof(MeshInfoBin) * meshCount);
 
-        // 3. 각 메시 생성
-        for (uint32_t i = 0; i < m_iNumMeshes; ++i) {
+        std::vector<std::vector<VTXMESH>> allVerts(meshCount);
+        for (uint32_t i = 0; i < meshCount; ++i) {
+            allVerts[i].resize(infos[i].NumVertices);
+            if (infos[i].NumVertices)
+                ifs.read((char*)allVerts[i].data(), sizeof(VTXMESH) * infos[i].NumVertices);
+        }
 
-            vector<VTXMESH> verts(meshInfos[i].NumVertices);
-            ifs.read((char*)verts.data(), sizeof(VTXMESH) * meshInfos[i].NumVertices);
+        std::vector<std::vector<uint32_t>> allIdx(meshCount);
+        for (uint32_t i = 0; i < meshCount; ++i) {
+            allIdx[i].resize(infos[i].NumIndices);
+            if (infos[i].NumIndices)
+                ifs.read((char*)allIdx[i].data(), sizeof(uint32_t) * infos[i].NumIndices);
+        }
 
-            vector<uint32_t> indices(meshInfos[i].NumIndices);
-            ifs.read((char*)indices.data(), sizeof(uint32_t) * meshInfos[i].NumIndices);
-
-            // **구조체와 데이터 한 번에 넘기기**
-            CMesh* pMesh = CMesh::Create(m_pDevice, m_pContext, m_eModelType, meshInfos[i], verts, indices, m_Bones, XMLoadFloat4x4(&m_PreTransformMatrix));
+        for (uint32_t i = 0; i < meshCount; ++i) {
+            CMesh* pMesh = CMesh::Create(
+                m_pDevice, m_pContext, m_eModelType,
+                infos[i], allVerts[i], allIdx[i],
+                m_Bones, XMLoadFloat4x4(&m_PreTransformMatrix));
+            if (!pMesh) return E_FAIL;
             m_Meshes.push_back(pMesh);
         }
-    
     }
     else
     {
-        // ★ 애니메이션: 파일에 쓴 순서대로 "메시 단위"로 읽는다
         for (uint32_t i = 0; i < meshCount; ++i) {
             MeshInfoBin info{};
             ifs.read(reinterpret_cast<char*>(&info), sizeof(MeshInfoBin));
 
-            // verts
             vector<VTXANIMMESH> verts(info.NumVertices);
             if (info.NumVertices)
                 ifs.read(reinterpret_cast<char*>(verts.data()), sizeof(VTXANIMMESH) * info.NumVertices);
 
-            // indices
             vector<uint32_t> indices(info.NumIndices);
             if (info.NumIndices)
                 ifs.read(reinterpret_cast<char*>(indices.data()), sizeof(uint32_t) * info.NumIndices);
 
-            // mesh bone slots
             uint32_t boneSlotCount = 0;
             ifs.read(reinterpret_cast<char*>(&boneSlotCount), sizeof(boneSlotCount));
 
@@ -469,7 +398,6 @@ HRESULT CModel::Ready_Meshes(ifstream& ifs, MODELTYPE eModelType)
             if (boneSlotCount)
                 ifs.read(reinterpret_cast<char*>(meshBones.data()), sizeof(MeshBoneRaw) * boneSlotCount);
 
-            // 생성
             CMesh* pMesh = CMesh::Create(
                 m_pDevice, m_pContext, m_eModelType,
                 info, verts, indices, meshBones,
@@ -489,13 +417,11 @@ HRESULT CModel::Ready_Materials(const _char* pModelFilePath, const vector<Materi
     for (size_t i = 0; i < m_iNumMaterials; ++i)
     {
         CMeshMaterial* pMeshMaterial = CMeshMaterial::Create(m_pDevice, m_pContext, pModelFilePath, binMaterials[i]);
-        if (!pMeshMaterial)
-            return E_FAIL;
+        if (!pMeshMaterial) return E_FAIL;
         m_Materials.push_back(pMeshMaterial);
     }
     return S_OK;
 }
-
 
 HRESULT CModel::Ready_Bones(const vector<BoneInfoBin>& binBones, _int iParentIndex)
 {
@@ -503,8 +429,7 @@ HRESULT CModel::Ready_Bones(const vector<BoneInfoBin>& binBones, _int iParentInd
     for (size_t i = 0; i < binBones.size(); ++i)
     {
         CBone* pBone = CBone::Create(binBones[i]);
-        if (!pBone)
-            return E_FAIL;
+        if (!pBone) return E_FAIL;
         m_Bones.push_back(pBone);
     }
     return S_OK;
@@ -512,39 +437,21 @@ HRESULT CModel::Ready_Bones(const vector<BoneInfoBin>& binBones, _int iParentInd
 
 HRESULT CModel::Ready_Animations(std::ifstream& ifs)
 {
-    // 1. 애니메이션 개수 읽기
     uint32_t numAnims = 0;
     ifs.read((char*)&numAnims, sizeof(numAnims));
     m_iNumAnimations = numAnims;
 
-    /*char buf[256];
-    sprintf_s(buf, "[BIN 로드] 애니메이션 개수 = %d\n", numAnims);
-    OutputDebugStringA(buf);*/
-    
-    // 2. 애니메이션 루프
     for (size_t i = 0; i < m_iNumAnimations; i++)
     {
-        // AnimInfoBin 읽기
         AnimInfoBin animBin = {};
         ifs.read((char*)&animBin, sizeof(AnimInfoBin));
 
-        //char buf[256];
-        //sprintf_s(buf, "  [CModel] 애니[%zu] 이름='%s', 채널수=%d, 지속시간=%.2f\n", i, animBin.name, animBin.channelCount, animBin.duration);
-        //OutputDebugStringA(buf);
-
-        // Animation 생성
-        CAnimation* pAnimation = CAnimation::Create(ifs,animBin, m_Bones);
-
-        if (nullptr == pAnimation)
-            return E_FAIL;
-
+        CAnimation* pAnimation = CAnimation::Create(ifs, animBin, m_Bones);
+        if (nullptr == pAnimation) return E_FAIL;
         m_Animations.push_back(pAnimation);
     }
     return S_OK;
 }
-
-
-
 
 CModel* CModel::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, MODELTYPE eModelType, FILETYPE eFileType, const _char* pModelFilePath, _fmatrix PreTransformMatrix)
 {
@@ -555,7 +462,6 @@ CModel* CModel::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, MOD
         MSG_BOX(TEXT("Failed to Created : CModel"));
         Safe_Release(pInstance);
     }
-
     return pInstance;
 }
 
@@ -568,7 +474,6 @@ CComponent* CModel::Clone(void* pArg)
         MSG_BOX(TEXT("Failed to Created : CModel"));
         Safe_Release(pInstance);
     }
-
     return pInstance;
 }
 
@@ -576,29 +481,17 @@ void CModel::Free()
 {
     __super::Free();
 
-    for (auto& pAnimation : m_Animations)
-        Safe_Release(pAnimation);
-
+    for (auto& pAnimation : m_Animations) Safe_Release(pAnimation);
     m_Animations.clear();
 
-    for (auto& pBone : m_Bones)
-        Safe_Release(pBone);
-
+    for (auto& pBone : m_Bones) Safe_Release(pBone);
     m_Bones.clear();
 
-    for (auto& pMesh : m_Meshes)
-        Safe_Release(pMesh);
-
+    for (auto& pMesh : m_Meshes) Safe_Release(pMesh);
     m_Meshes.clear();
 
-    for (auto& pMaterial : m_Materials)
-        Safe_Release(pMaterial);
-
+    for (auto& pMaterial : m_Materials) Safe_Release(pMaterial);
     m_Materials.clear();
 
-
     m_Importer.FreeScene();
-
-
-
 }

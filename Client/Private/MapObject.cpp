@@ -120,6 +120,9 @@ HRESULT CMapObject::Ready_Components()
         modelProto = TEXT("Prototype_Component_Model_Rock_AA");
         break;
 
+    case EObjectType::BRIDGE:
+        modelProto = TEXT("Prototype_Component_Model_Bridge");
+        break;
     default:
         OutputDebugStringA("Unknown EObjectType in Ready_Components!\n");
         return E_FAIL;

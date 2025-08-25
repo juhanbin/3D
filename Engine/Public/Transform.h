@@ -1,7 +1,9 @@
 #pragma once
-
+#include "Transform.h"
+#include "Shader.h"
 #include "Component.h"
 
+#include "Navigation.h"
 NS_BEGIN(Engine)
 
 class ENGINE_DLL CTransform final : public CComponent
@@ -56,6 +58,7 @@ public:
 	void Scale(_float3 vScale);
 	void Scaling(_float3 vScale);
 	void Go_Straight(_float fTimeDelta);
+	void Go_Straight(_float fTimeDelta, CNavigation* pNavigation);
 	void Go_Left(_float fTimeDelta);
 	void Go_Right(_float fTimeDelta);
 	void Go_Backward(_float fTimeDelta);

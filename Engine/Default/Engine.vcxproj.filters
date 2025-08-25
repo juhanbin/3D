@@ -115,6 +115,18 @@
     <Filter Include="01.Utility\02.GameObject\ContainerObject\PartObject">
       <UniqueIdentifier>{fe59b9d5-7552-49c1-af3b-4a48d3229fe6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01.Utility\03.Component\Navigation">
+      <UniqueIdentifier>{15a44386-12fb-41db-93fd-e344f7c721d5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Utility\03.Component\Navigation\Cell">
+      <UniqueIdentifier>{988c318d-a110-41ba-a187-ae182c8b9bc8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Utility\03.Component\VIBuffer\Cell">
+      <UniqueIdentifier>{2f44a707-cb54-4d42-9b60-a1215fc46b0a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Utility\91. Picking">
+      <UniqueIdentifier>{160e84d7-0597-4f4f-b8f8-113d879e98a2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Private\Timer.cpp">
@@ -218,6 +230,18 @@
     </ClCompile>
     <ClCompile Include="..\Private\PartObject.cpp">
       <Filter>01.Utility\02.GameObject\ContainerObject\PartObject</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Navigation.cpp">
+      <Filter>01.Utility\03.Component\Navigation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Cell.cpp">
+      <Filter>01.Utility\03.Component\Navigation\Cell</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\VIBuffer_Cell.cpp">
+      <Filter>01.Utility\03.Component\VIBuffer\Cell</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Picking.cpp">
+      <Filter>01.Utility\91. Picking</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -343,6 +367,18 @@
     </ClInclude>
     <ClInclude Include="..\Public\PartObject.h">
       <Filter>01.Utility\02.GameObject\ContainerObject\PartObject</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Navigation.h">
+      <Filter>01.Utility\03.Component\Navigation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Cell.h">
+      <Filter>01.Utility\03.Component\Navigation\Cell</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\VIBuffer_Cell.h">
+      <Filter>01.Utility\03.Component\VIBuffer\Cell</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Picking.h">
+      <Filter>01.Utility\91. Picking</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

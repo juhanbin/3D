@@ -2,7 +2,7 @@
 
 #include "GameInstance.h"
 #include "Camera_Free.h"
-#include "Monster.h"
+#include "Monster_Skeleton.h"
 #include "Player.h"
 #include "MapObject.h"
 #include <fstream>
@@ -172,7 +172,7 @@ HRESULT CLevel_GamePlay::Ready_Layer_Monster(const _wstring& strLayerTag)
 	{
 		if ((EObjectType)obj.type == EObjectType::MONSTER)
 		{
-			CMonster::MONSTER_DESC desc{};
+			CMonster_Skeleton::Monster_Skeleton_DESC desc{};
 			desc.type = static_cast<EObjectType>(obj.type);
 			desc.vScale = _float3(obj.size[0], obj.size[1], obj.size[2]);
 			desc.vRot = _float3(obj.rot[0], obj.rot[1], obj.rot[2]);
@@ -180,7 +180,7 @@ HRESULT CLevel_GamePlay::Ready_Layer_Monster(const _wstring& strLayerTag)
 
 			if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(
 				ENUM_CLASS(LEVEL::GAMEPLAY), strLayerTag,
-				ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Monster"), &desc)))
+				ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Monster_Skeleton"), &desc)))
 			{
 				OutputDebugStringW(L"[SCENE] Monster Add 실패!\n");
 			}
@@ -194,6 +194,21 @@ HRESULT CLevel_GamePlay::Ready_Layer_MapObjects(const _wstring& strLayerTag)
 	for (auto& obj : m_SceneObjects)
 	{
 		if ((EObjectType)obj.type == EObjectType::ROCK_AA)
+		{
+			CMapObject::MAPOBJECT_DESC desc{};
+			desc.type = static_cast<EObjectType>(obj.type);
+			desc.vScale = _float3(obj.size[0], obj.size[1], obj.size[2]);
+			desc.vRot = _float3(obj.rot[0], obj.rot[1], obj.rot[2]);
+			desc.vPos = _float3(obj.pos[0], obj.pos[1], obj.pos[2]);
+
+			if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(
+				ENUM_CLASS(LEVEL::GAMEPLAY), strLayerTag,
+				ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_MapObject"), &desc)))
+			{
+				OutputDebugStringW(L"[SCENE] MapObject Add 실패!\n");
+			}
+		}
+		if ((EObjectType)obj.type == EObjectType::BRIDGE)
 		{
 			CMapObject::MAPOBJECT_DESC desc{};
 			desc.type = static_cast<EObjectType>(obj.type);
