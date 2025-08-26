@@ -15,6 +15,7 @@
 #include "Player.h"
 #include "Body_Player.h"
 #include "Weapon.h"
+#include "Navi_Bridge.h"
 //#include "Effect.h"
 //#include "Sky.h"
 
@@ -159,7 +160,7 @@ HRESULT CLoader::Loading_For_GamePlay_Level()
 
 
 	// Hero 프로토타입 등록
-   	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
 	if (FAILED(m_pGameInstance->Add_Prototype(
 		ENUM_CLASS(LEVEL::GAMEPLAY),
 		TEXT("Prototype_Component_Model_Hero"),
@@ -243,9 +244,14 @@ HRESULT CLoader::Loading_For_GamePlay_Level()
 	
 
 	lstrcpy(m_szLoadingText, TEXT("네비게이션을 로딩중입니다."));
+	///* Prototype_Component_Navigation */
+	//if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Navigation"),
+	//	CNavigation::Create(m_pDevice, m_pContext, TEXT("../Bin/DataFiles/Navigation.dat")))))
+	//	return E_FAIL;
+
 	/* Prototype_Component_Navigation */
 	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Navigation"),
-		CNavigation::Create(m_pDevice, m_pContext, TEXT("../Bin/DataFiles/Navigation.dat")))))
+		CNavigation::Create(m_pDevice, m_pContext, TEXT("../../Mapdata/navmesh.nav")))))
 		return E_FAIL;
 
 	lstrcpy(m_szLoadingText, TEXT("쉐이더를 로딩중입니다."));
@@ -276,6 +282,10 @@ HRESULT CLoader::Loading_For_GamePlay_Level()
 		CTerrain::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Bridge"),
+		CNavi_Bridge::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
 	/* Prototype_GameObject_Camera_Free */
 	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Camera_Free"),
 		CCamera_Free::Create(m_pDevice, m_pContext))))
@@ -303,9 +313,9 @@ HRESULT CLoader::Loading_For_GamePlay_Level()
 		CMapObject::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
-	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Monster_Skeleton"),
+	/*if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Monster_Skeleton"),
 		CMonster_Skeleton::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
+		return E_FAIL;*/
 
 	lstrcpy(m_szLoadingText, TEXT("로딩이 완료되었습니다."));
 

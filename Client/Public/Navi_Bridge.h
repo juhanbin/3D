@@ -4,19 +4,17 @@
 #include "GameObject.h"
 
 NS_BEGIN(Engine)
-class CShader;
-class CTexture;
-class CVIBuffer_Terrain;
+
 NS_END
 
 NS_BEGIN(Client)
 
-class CTerrain final : public CGameObject
+class CNavi_Bridge final : public CGameObject
 {
 private:
-	CTerrain(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
-	CTerrain(const CTerrain& Prototype);
-	virtual ~CTerrain() = default;
+	CNavi_Bridge(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
+	CNavi_Bridge(const CNavi_Bridge& Prototype);
+	virtual ~CNavi_Bridge() = default;
 
 public:
 	virtual HRESULT Initialize_Prototype();
@@ -27,16 +25,14 @@ public:
 	virtual HRESULT Render();
 
 private:
-	CShader* m_pShaderCom = { nullptr };
-	CTexture* m_pTextureCom = { nullptr };
-	CVIBuffer_Terrain* m_pVIBufferCom = { nullptr };
+	CNavigation* m_pNavigationCom = { nullptr };
 
 private:
 	HRESULT Ready_Components();
 	HRESULT Bind_ShaderResources();
 
 public:
-	static CTerrain* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
+	static CNavi_Bridge* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	virtual CGameObject* Clone(void* pArg) override;
 	virtual void Free() override;
 };

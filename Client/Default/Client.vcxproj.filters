@@ -73,6 +73,9 @@
     <Filter Include="02.GameObject\Monster_Skeleton\Weapon">
       <UniqueIdentifier>{52019da4-bcc1-4305-9e17-6fcf2b0dad10}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02.GameObject\Navi">
+      <UniqueIdentifier>{5d634320-9e3b-4c36-8a89-c0f3d3f0451a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h">
@@ -146,6 +149,9 @@
     </ClInclude>
     <ClInclude Include="..\Public\Weapon_Monster_Skeleton.h">
       <Filter>02.GameObject\Monster_Skeleton\Weapon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Navi_Bridge.h">
+      <Filter>02.GameObject\Navi</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -221,6 +227,9 @@
     </ClCompile>
     <ClCompile Include="..\Private\Weapon_Monster_Skeleton.cpp">
       <Filter>02.GameObject\Monster_Skeleton\Weapon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Navi_Bridge.cpp">
+      <Filter>02.GameObject\Navi</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

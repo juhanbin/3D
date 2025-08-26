@@ -139,6 +139,33 @@ private:
     // FBX 캐시(키: fbxPath + pre-transform)
     std::unordered_map<std::string, ModelCache> m_ModelCache;
 
+    // ======== Navigation Editing ========
+public:
+    struct NavCell { _float3 A, B, C; };
+
+private:
+    bool  m_NavEditMode = false; // 네비 편집 모드
+    bool  m_NavSnapToGrid = true;  // 그리드 스냅
+    float m_NavGridSize = 0.01f; // 1cm
+    float m_NavSnapEps = 0.002f;// 재사용 epsilon
+    bool  m_NavForceCW_XZ = true;  // XZ 기준 시계방향 강제
+    float m_NavJoinRadius = 0.5f; // 50cm: 기존 정점 자동 부착 반경
+
+    std::vector<_float3> m_NavVerts;          // 전역 정점 풀(좌표 동일성 보장)
+    std::vector<NavCell> m_NavCells;          // 완성된 셀
+    std::vector<_float3> m_NavWorking;        // 0~3개 작업점
+
+    // Nav 편집 유틸
+    bool    Nav_TryPickPoint(const DirectX::XMVECTOR& ro, const DirectX::XMVECTOR& rd, _float3& out);
+    _float3 Nav_SnapAndRegister(const _float3& p);
+    void    Nav_EnsureCCW_Up(_float3& A, _float3& B, _float3& C);
+    void    Nav_CommitIfTri();
+    bool    Nav_Save(const char* path);
+    bool    Nav_Load(const char* path);
+    void    Nav_ClearAll();
+    void    Nav_UndoCell();
+    void    Nav_RenderOverlay();
+
 public:
     static CMainApp* Create();
     virtual void Free() override;

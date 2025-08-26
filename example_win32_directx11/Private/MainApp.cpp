@@ -11,6 +11,7 @@
 #include <cfloat>
 #include <cstdio>
 #include <algorithm>
+#include <cmath>            // roundf
 #include <windows.h> // OutputDebugStringA
 
 using namespace DirectX;
@@ -593,6 +594,41 @@ void CMainApp::Render_ImGuiPanel()
     }
     ImGui::End();
 
+    // ===== Navigation 편집 패널 =====
+    ImGui::Begin("Navigation");
+    ImGui::Checkbox("Edit Nav Cells", &m_NavEditMode);
+    ImGui::SameLine(); ImGui::Checkbox("Snap Grid", &m_NavSnapToGrid);
+    ImGui::SameLine(); ImGui::SetNextItemWidth(80);
+    ImGui::InputFloat("Grid(m)", &m_NavGridSize, 0.01f, 0.1f, "%.3f");
+
+    ImGui::Checkbox("Force CW (XZ)", &m_NavForceCW_XZ);
+    ImGui::SameLine(); ImGui::SetNextItemWidth(120);
+    ImGui::DragFloat("Join Radius", &m_NavJoinRadius, 0.005f, 0.0f, 0.5f, "%.3f m");
+    ImGui::SetItemTooltip("이 거리 이내의 기존 정점에 자동 부착됩니다.");
+
+    if (m_NavEditMode) {
+        ImGui::Separator();
+        ImGui::Text("Working picks: %d / 3", (int)m_NavWorking.size());
+        if (ImGui::Button("Commit (if 3)")) { Nav_CommitIfTri(); }
+        ImGui::SameLine(); if (ImGui::Button("Undo Cell")) { Nav_UndoCell(); }
+        ImGui::SameLine(); if (ImGui::Button("Clear All")) { Nav_ClearAll(); }
+        if (ImGui::Button("Save .nav")) { Nav_Save("../../Mapdata/navmesh.nav"); }
+        ImGui::SameLine(); if (ImGui::Button("Load .nav")) { Nav_Load("../../Mapdata/navmesh.nav"); }
+
+        // 네비 편집용 클릭(메시 표면 피킹)
+        if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::GetIO().WantCaptureMouse) {
+            _float4x4 V = *m_pGameInstance->Get_Transform_Float4x4(D3DTS::VIEW);
+            _float4x4 P = *m_pGameInstance->Get_Transform_Float4x4(D3DTS::PROJ);
+            XMVECTOR ro, rd; MakeRayFromMouse(ro, rd, V, P);
+            _float3 hit{};
+            if (Nav_TryPickPoint(ro, rd, hit)) {
+                m_NavWorking.push_back(hit);
+                if (m_NavWorking.size() == 3) Nav_CommitIfTri();
+            }
+        }
+    }
+    ImGui::End();
+
     // ===== 2D 디버그 오버레이 =====
     auto WorldToScreen = [this](const DirectX::XMFLOAT3& wpos, ImVec2& out)->bool {
         using namespace DirectX;
@@ -646,6 +682,9 @@ void CMainApp::Render_ImGuiPanel()
             dl->AddLine(a, b, IM_COL32(200, 200, 255, 255), 2.0f);
         }
     }
+
+    // 네비 오버레이(완성 셀/작업점)
+    Nav_RenderOverlay();
 }
 
 /* ----------------------------------------------------------- */
@@ -707,6 +746,193 @@ void CMainApp::Free()
     ImGui_ImplDX11_Shutdown(); ImGui_ImplWin32_Shutdown(); ImGui::DestroyContext();
     Safe_Release(m_pDevice); Safe_Release(m_pContext);
     m_pGameInstance->Release_Engine(); Safe_Release(m_pGameInstance);
+}
+
+/* ======================= Navigation 편집 구현 ======================= */
+
+// 보조 유틸(그리드 양자화)
+static inline _float3 Quantize(const _float3& p, float grid) {
+    _float3 q;
+    q.x = std::roundf(p.x / grid) * grid;
+    q.y = std::roundf(p.y / grid) * grid;
+    q.z = std::roundf(p.z / grid) * grid;
+    return q;
+}
+
+// 반경 내 가장 가까운 기존 정점 찾기
+static inline const _float3* FindNearestNavVertex(const std::vector<_float3>& verts,
+    const _float3& p, float radius)
+{
+    const _float3* nearest = nullptr;
+    float best2 = radius * radius;
+    for (const auto& v : verts) {
+        float dx = v.x - p.x, dy = v.y - p.y, dz = v.z - p.z;
+        float d2 = dx * dx + dy * dy + dz * dz;
+        if (d2 <= best2) { best2 = d2; nearest = &v; }
+    }
+    return nearest;
+}
+
+// XZ 평면 CCW(+)/CW(-) 판정
+static inline float SignedAreaXZ(const _float3& A, const _float3& B, const _float3& C)
+{
+    float x1 = B.x - A.x, z1 = B.z - A.z;
+    float x2 = C.x - A.x, z2 = C.z - A.z;
+    return x1 * z2 - z1 * x2; // +: CCW, -: CW
+}
+
+_bool CMainApp::Nav_TryPickPoint(const XMVECTOR& ro, const XMVECTOR& rd, _float3& out)
+{
+    XMFLOAT3 hit, nrm; int idx;
+    if (PickSurface_Mesh(ro, rd, hit, nrm, idx)) { out = hit; return true; }
+    return false;
+}
+
+_float3 CMainApp::Nav_SnapAndRegister(const _float3& pIn)
+{
+    _float3 p = pIn;
+
+    // (a) 기존 정점에 "부착"
+    if (const _float3* nv = FindNearestNavVertex(m_NavVerts, p, m_NavJoinRadius)) {
+        return *nv; // 비트 동일 값 재사용
+    }
+
+    // (b) 그리드 스냅(선택)
+    _float3 key = m_NavSnapToGrid ? Quantize(p, m_NavGridSize) : p;
+
+    // (c) epsilon 재사용
+    for (const auto& v : m_NavVerts) {
+        if (fabsf(v.x - key.x) <= m_NavSnapEps &&
+            fabsf(v.y - key.y) <= m_NavSnapEps &&
+            fabsf(v.z - key.z) <= m_NavSnapEps)
+        {
+            return v;
+        }
+    }
+
+    m_NavVerts.push_back(key);
+    return key;
+}
+
+void CMainApp::Nav_EnsureCCW_Up(_float3& A, _float3& B, _float3& C)
+{
+    // 1) 경사면에서도 법선이 +Y로 향하도록
+    XMVECTOR a = XMLoadFloat3(&A), b = XMLoadFloat3(&B), c = XMLoadFloat3(&C);
+    float ny = XMVectorGetY(XMVector3Cross(b - a, c - a));
+    if (ny < 0.f) std::swap(B, C);
+
+    // 2) XZ 기준 시계방향 강제 옵션
+    if (m_NavForceCW_XZ) {
+        float area = SignedAreaXZ(A, B, C); // +: CCW, -: CW
+        if (area > 0.f) std::swap(B, C);  // CCW면 뒤집어서 CW로
+    }
+}
+
+void CMainApp::Nav_CommitIfTri()
+{
+    if (m_NavWorking.size() < 3) return;
+
+    _float3 A = Nav_SnapAndRegister(m_NavWorking[0]);
+    _float3 B = Nav_SnapAndRegister(m_NavWorking[1]);
+    _float3 C = Nav_SnapAndRegister(m_NavWorking[2]);
+
+    // 퇴화 방지
+    float area2 = XMVectorGetX(XMVector3LengthSq(
+        XMVector3Cross(XMLoadFloat3(&B) - XMLoadFloat3(&A),
+            XMLoadFloat3(&C) - XMLoadFloat3(&A))));
+    if (area2 < 1e-10f) {
+        OutputDebugStringA("[NavMesh] Degenerate triangle ignored.\n");
+        m_NavWorking.clear();
+        return;
+    }
+
+    Nav_EnsureCCW_Up(A, B, C);
+    m_NavCells.push_back({ A,B,C });
+    m_NavWorking.clear();
+    OutputDebugStringA("[NavMesh] Cell committed.\n");
+}
+
+bool CMainApp::Nav_Save(const char* path)
+{
+    std::ofstream ofs(path, std::ios::binary);
+    if (!ofs) return false;
+    for (const auto& c : m_NavCells) {
+        ofs.write(reinterpret_cast<const char*>(&c.A), sizeof(_float3));
+        ofs.write(reinterpret_cast<const char*>(&c.B), sizeof(_float3));
+        ofs.write(reinterpret_cast<const char*>(&c.C), sizeof(_float3));
+    }
+    return true;
+}
+
+bool CMainApp::Nav_Load(const char* path)
+{
+    std::ifstream ifs(path, std::ios::binary);
+    if (!ifs) return false;
+
+    m_NavCells.clear();
+    m_NavVerts.clear();
+    m_NavWorking.clear();
+
+    while (true) {
+        NavCell c{};
+        ifs.read(reinterpret_cast<char*>(&c.A), sizeof(_float3)); if (!ifs) break;
+        ifs.read(reinterpret_cast<char*>(&c.B), sizeof(_float3)); if (!ifs) break;
+        ifs.read(reinterpret_cast<char*>(&c.C), sizeof(_float3)); if (!ifs) break;
+
+        c.A = Nav_SnapAndRegister(c.A);
+        c.B = Nav_SnapAndRegister(c.B);
+        c.C = Nav_SnapAndRegister(c.C);
+        Nav_EnsureCCW_Up(c.A, c.B, c.C);
+        m_NavCells.push_back(c);
+    }
+    return true;
+}
+
+void CMainApp::Nav_ClearAll()
+{
+    m_NavCells.clear();
+    m_NavVerts.clear();
+    m_NavWorking.clear();
+}
+
+void CMainApp::Nav_UndoCell()
+{
+    if (!m_NavCells.empty()) m_NavCells.pop_back();
+}
+
+void CMainApp::Nav_RenderOverlay()
+{
+    auto WorldToScreen = [this](const DirectX::XMFLOAT3& wpos, ImVec2& out)->bool {
+        using namespace DirectX;
+        _float4x4 V = *m_pGameInstance->Get_Transform_Float4x4(D3DTS::VIEW);
+        _float4x4 P = *m_pGameInstance->Get_Transform_Float4x4(D3DTS::PROJ);
+        XMMATRIX VP = XMLoadFloat4x4(&V) * XMLoadFloat4x4(&P);
+
+        XMVECTOR p = XMVector3TransformCoord(XMLoadFloat3(&wpos), VP); // NDC
+        float x = XMVectorGetX(p), y = XMVectorGetY(p), z = XMVectorGetZ(p);
+        if (z < 0.f || z > 1.f) return false;
+        float sx = (x * 0.5f + 0.5f) * (float)g_iWinSizeX;
+        float sy = (-y * 0.5f + 0.5f) * (float)g_iWinSizeY;
+        out = ImVec2(sx, sy);
+        return true;
+        };
+
+    ImDrawList* dl = ImGui::GetForegroundDrawList();
+
+    // 완성된 셀
+    for (const auto& c : m_NavCells) {
+        ImVec2 a, b, d;
+        if (WorldToScreen(c.A, a) && WorldToScreen(c.B, b) && WorldToScreen(c.C, d)) {
+            dl->AddTriangle(a, b, d, IM_COL32(0, 255, 0, 200), 2.0f);
+            dl->AddTriangleFilled(a, b, d, IM_COL32(0, 255, 0, 40));
+        }
+    }
+
+    // 작업 점
+    for (const auto& p : m_NavWorking) {
+        ImVec2 s; if (WorldToScreen(p, s))
+            dl->AddCircleFilled(s, 5.f, IM_COL32(255, 128, 0, 255), 16);
+    }
 }
 
 NS_END
