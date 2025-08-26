@@ -59,6 +59,7 @@ public:
 	void Scaling(_float3 vScale);
 	void Go_Straight(_float fTimeDelta);
 	void Go_Straight(_float fTimeDelta, CNavigation* pNavigation);
+	void Go_Straight(_float fTimeDelta, _float speedMul, CNavigation* pNavigation);
 	void Go_Left(_float fTimeDelta);
 	void Go_Right(_float fTimeDelta);
 	void Go_Backward(_float fTimeDelta);

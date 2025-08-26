@@ -12,7 +12,9 @@
 #include <cstdio>
 #include <algorithm>
 #include <cmath>            // roundf
-#include <windows.h> // OutputDebugStringA
+#include <windows.h>        // OutputDebugStringA
+#include <cstring>          // strncpy, memcpy, memset
+#include <string>
 
 using namespace DirectX;
 using namespace Edit;
@@ -462,6 +464,419 @@ void CMainApp::MakeRayFromMouse(XMVECTOR& ro, XMVECTOR& rd,
 }
 
 /* ----------------------------------------------------------- */
+/*                       BIN Export (복구 + 통합)              */
+/* ----------------------------------------------------------- */
+
+void CMainApp::ExportModelToBin_Anim(const MapObject& obj, const char* binPath)
+{
+    Assimp::Importer importer;
+    const aiScene* scene = importer.ReadFile(
+        obj.fbxPath,
+        aiProcess_ConvertToLeftHanded |
+        aiProcessPreset_TargetRealtime_Fast
+    );
+    if (!scene) {
+        printf("FBX 로드 실패: %s\n", importer.GetErrorString());
+        return;
+    }
+
+    FILE* fp = fopen(binPath, "wb");
+    if (!fp) {
+        printf("BIN 파일 열기 실패: %s\n", binPath);
+        return;
+    }
+
+    // 1) 본(스켈레톤) 저장
+    m_Bones.clear();
+    GatherBones(scene->mRootNode, -1);
+
+    uint32_t boneCount = static_cast<uint32_t>(m_Bones.size());
+    fwrite(&boneCount, sizeof(uint32_t), 1, fp);
+    if (boneCount) fwrite(m_Bones.data(), sizeof(BoneInfoBin), boneCount, fp);
+
+    // 2) 메시 저장
+    const uint32_t numMeshes = scene->mNumMeshes;
+    fwrite(&numMeshes, sizeof(uint32_t), 1, fp);
+
+    auto FindGlobalBoneIndex = [&](const char* name)->int {
+        for (int gi = 0; gi < (int)m_Bones.size(); ++gi) {
+            if (std::strncmp(m_Bones[gi].Name, name, sizeof(m_Bones[gi].Name)) == 0)
+                return gi;
+        }
+        return -1;
+        };
+
+    for (uint32_t i = 0; i < numMeshes; ++i)
+    {
+        aiMesh* mesh = scene->mMeshes[i];
+
+        // MeshInfo
+        MeshInfoBin info{};
+        std::memset(info.Name, 0, sizeof(info.Name));
+        std::strncpy(info.Name, mesh->mName.C_Str(), sizeof(info.Name) - 1);
+        info.MaterialIndex = mesh->mMaterialIndex;
+        info.NumVertices = mesh->mNumVertices;
+        info.NumFaces = mesh->mNumFaces;
+        info.NumIndices = info.NumFaces * 3;
+
+        // 정점 배열
+        std::vector<VTXANIMMESH> verts(info.NumVertices);
+        const bool hasNormal = mesh->HasNormals();
+        const bool hasTB = mesh->HasTangentsAndBitangents();
+        const bool hasUV0 = (mesh->HasTextureCoords(0) && mesh->mNumUVComponents[0] >= 2);
+
+        for (uint32_t v = 0; v < info.NumVertices; ++v)
+        {
+            auto& out = verts[v];
+
+            out.vPosition = XMFLOAT3(mesh->mVertices[v].x, mesh->mVertices[v].y, mesh->mVertices[v].z);
+
+            out.vNormal = hasNormal
+                ? XMFLOAT3(mesh->mNormals[v].x, mesh->mNormals[v].y, mesh->mNormals[v].z)
+                : XMFLOAT3(0, 0, 0);
+
+            if (hasTB) {
+                out.vTangent = XMFLOAT3(mesh->mTangents[v].x, mesh->mTangents[v].y, mesh->mTangents[v].z);
+                out.vBinormal = XMFLOAT3(mesh->mBitangents[v].x, mesh->mBitangents[v].y, mesh->mBitangents[v].z);
+            }
+            else {
+                out.vTangent = XMFLOAT3(0, 0, 0);
+                out.vBinormal = XMFLOAT3(0, 0, 0);
+            }
+
+            out.vTexcoord = hasUV0
+                ? XMFLOAT2(mesh->mTextureCoords[0][v].x, mesh->mTextureCoords[0][v].y)
+                : XMFLOAT2(0, 0);
+
+            out.vBlendIndex = XMUINT4(0, 0, 0, 0);
+            out.vBlendWeight = XMFLOAT4(0, 0, 0, 0);
+        }
+
+        // 인덱스 배열
+        std::vector<uint32_t> indices(info.NumIndices);
+        {
+            uint32_t w = 0;
+            for (uint32_t f = 0; f < info.NumFaces; ++f) {
+                const aiFace& face = mesh->mFaces[f];
+                indices[w++] = face.mIndices[0];
+                indices[w++] = face.mIndices[1];
+                indices[w++] = face.mIndices[2];
+            }
+        }
+
+        // per-mesh bone 슬롯 및 정점 가중치
+        std::vector<MeshBoneRaw> meshBones;
+        meshBones.reserve(mesh->mNumBones);
+
+        // 정점별 (본,가중치) 임시 리스트
+        std::vector<std::vector<std::pair<uint16_t, float>>> vw(info.NumVertices);
+
+        for (uint32_t b = 0; b < mesh->mNumBones; ++b)
+        {
+            aiBone* aiB = mesh->mBones[b];
+
+            MeshBoneRaw raw{};
+            std::memset(raw.Name, 0, sizeof(raw.Name));
+            std::strncpy(raw.Name, aiB->mName.C_Str(), sizeof(raw.Name) - 1);
+
+            const aiMatrix4x4& M = aiB->mOffsetMatrix;
+            const float mat[16] = {
+                M.a1, M.a2, M.a3, M.a4,
+                M.b1, M.b2, M.b3, M.b4,
+                M.c1, M.c2, M.c3, M.c4,
+                M.d1, M.d2, M.d3, M.d4
+            };
+            std::memcpy(raw.Offset, mat, sizeof(mat));
+
+            raw.GlobalIndex = FindGlobalBoneIndex(raw.Name); // 없으면 -1
+            meshBones.push_back(raw);
+
+            for (uint32_t w = 0; w < aiB->mNumWeights; ++w) {
+                const uint32_t vertIdx = aiB->mWeights[w].mVertexId;
+                const float    weight = aiB->mWeights[w].mWeight;
+                if (vertIdx < vw.size() && weight > 0.f)
+                    vw[vertIdx].emplace_back(static_cast<uint16_t>(b), weight);
+            }
+        }
+
+        // 정점별 Top-4 가중치
+        for (uint32_t v = 0; v < info.NumVertices; ++v)
+        {
+            auto& list = vw[v];
+            if (list.empty()) continue;
+
+            // 같은 본 합치기(선택)
+            {
+                std::sort(list.begin(), list.end(),
+                    [](auto& L, auto& R) { return L.first < R.first; });
+                std::vector<std::pair<uint16_t, float>> merged;
+                for (auto& e : list) {
+                    if (!merged.empty() && merged.back().first == e.first)
+                        merged.back().second += e.second;
+                    else
+                        merged.push_back(e);
+                }
+                list.swap(merged);
+            }
+
+            // 가중치 내림차순
+            std::sort(list.begin(), list.end(),
+                [](auto& L, auto& R) { return L.second > R.second; });
+
+            const size_t n = std::min<size_t>(4, list.size());
+            float sum = 0.f;
+            for (size_t k = 0; k < n; ++k) sum += list[k].second;
+            if (sum <= 0.f) continue;
+
+            const float inv = 1.f / sum;
+            auto& out = verts[v];
+            XMUINT4  bi = { 0,0,0,0 };
+            XMFLOAT4 bw = { 0,0,0,0 };
+            if (n > 0) { bi.x = list[0].first; bw.x = list[0].second * inv; }
+            if (n > 1) { bi.y = list[1].first; bw.y = list[1].second * inv; }
+            if (n > 2) { bi.z = list[2].first; bw.z = list[2].second * inv; }
+            if (n > 3) { bi.w = list[3].first; bw.w = list[3].second * inv; }
+            out.vBlendIndex = bi;
+            out.vBlendWeight = bw;
+        }
+
+        // 파일 쓰기
+        fwrite(&info, sizeof(MeshInfoBin), 1, fp);
+        if (info.NumVertices) fwrite(verts.data(), sizeof(VTXANIMMESH), info.NumVertices, fp);
+        if (info.NumIndices)  fwrite(indices.data(), sizeof(uint32_t), info.NumIndices, fp);
+
+        const uint32_t boneSlotCount = static_cast<uint32_t>(meshBones.size());
+        fwrite(&boneSlotCount, sizeof(uint32_t), 1, fp);
+        if (boneSlotCount) fwrite(meshBones.data(), sizeof(MeshBoneRaw), boneSlotCount, fp);
+    }
+
+    // 3) 머티리얼
+    uint32_t numMaterials = scene->mNumMaterials;
+    fwrite(&numMaterials, sizeof(uint32_t), 1, fp);
+
+    std::vector<MaterialInfoBin2> matInfos(numMaterials);
+    for (uint32_t i = 0; i < numMaterials; ++i) {
+        aiMaterial* material = scene->mMaterials[i];
+        MaterialInfoBin2& matInfo = matInfos[i];
+        std::memset(&matInfo, 0, sizeof(MaterialInfoBin2));
+        matInfo.numTextures = 0;
+
+        aiString path;
+        if (material->GetTexture(aiTextureType_DIFFUSE, 0, &path) == AI_SUCCESS) {
+            matInfo.textures[matInfo.numTextures].type = (int)TextureType::DIFFUSE;
+            std::strncpy(matInfo.textures[matInfo.numTextures].path, path.C_Str(), 259);
+            matInfo.textures[matInfo.numTextures].path[259] = 0;
+            matInfo.numTextures++;
+        }
+        if (material->GetTexture(aiTextureType_NORMALS, 0, &path) == AI_SUCCESS) {
+            matInfo.textures[matInfo.numTextures].type = (int)TextureType::NORMAL;
+            std::strncpy(matInfo.textures[matInfo.numTextures].path, path.C_Str(), 259);
+            matInfo.textures[matInfo.numTextures].path[259] = 0;
+            matInfo.numTextures++;
+        }
+    }
+    if (numMaterials) fwrite(matInfos.data(), sizeof(MaterialInfoBin2), numMaterials, fp);
+
+    // 4) 애니메이션
+    uint32_t animCount = scene->mNumAnimations;
+    fwrite(&animCount, sizeof(animCount), 1, fp);
+
+    for (uint32_t a = 0; a < animCount; ++a) {
+        aiAnimation* anim = scene->mAnimations[a];
+
+        AnimInfoBin ainfo{};
+        std::strncpy(ainfo.name, anim->mName.C_Str(), 63);
+        ainfo.name[63] = 0;
+        ainfo.duration = (float)anim->mDuration;
+        ainfo.ticksPerSecond = (float)anim->mTicksPerSecond;
+        ainfo.channelCount = anim->mNumChannels;
+        fwrite(&ainfo, sizeof(AnimInfoBin), 1, fp);
+
+        for (uint32_t c = 0; c < anim->mNumChannels; ++c) {
+            aiNodeAnim* chan = anim->mChannels[c];
+
+            ChannelInfoBin cinfo{};
+            std::strncpy(cinfo.boneName, chan->mNodeName.C_Str(), 63);
+            cinfo.boneName[63] = 0;
+
+            uint32_t nScale = chan->mNumScalingKeys;
+            uint32_t nRot = chan->mNumRotationKeys;
+            uint32_t nPos = chan->mNumPositionKeys;
+
+            // 최대 키 수를 채널의 keyframeCount로 기록
+            uint32_t max12 = (nScale > nRot) ? nScale : nRot;
+            cinfo.keyframeCount = (max12 > nPos) ? max12 : nPos;
+
+            fwrite(&cinfo, sizeof(ChannelInfoBin), 1, fp);
+
+            KEYFRAME kf{};
+            for (uint32_t k = 0; k < cinfo.keyframeCount; ++k) {
+                if (k < nScale) {
+                    kf.vScale.x = (float)chan->mScalingKeys[k].mValue.x;
+                    kf.vScale.y = (float)chan->mScalingKeys[k].mValue.y;
+                    kf.vScale.z = (float)chan->mScalingKeys[k].mValue.z;
+                    kf.fTrackPosition = (float)chan->mScalingKeys[k].mTime;
+                }
+                if (k < nRot) {
+                    kf.vRotation.x = (float)chan->mRotationKeys[k].mValue.x;
+                    kf.vRotation.y = (float)chan->mRotationKeys[k].mValue.y;
+                    kf.vRotation.z = (float)chan->mRotationKeys[k].mValue.z;
+                    kf.vRotation.w = (float)chan->mRotationKeys[k].mValue.w;
+                    kf.fTrackPosition = (float)chan->mRotationKeys[k].mTime;
+                }
+                if (k < nPos) {
+                    kf.vTranslation.x = (float)chan->mPositionKeys[k].mValue.x;
+                    kf.vTranslation.y = (float)chan->mPositionKeys[k].mValue.y;
+                    kf.vTranslation.z = (float)chan->mPositionKeys[k].mValue.z;
+                    kf.fTrackPosition = (float)chan->mPositionKeys[k].mTime;
+                }
+                fwrite(&kf, sizeof(KEYFRAME), 1, fp);
+            }
+        }
+    }
+
+    fclose(fp);
+    printf("BIN(애니) 저장 완료: %s\n", binPath);
+}
+
+void CMainApp::ExportModelToBin_NonAnim(const MapObject& obj, const char* binPath)
+{
+    Assimp::Importer importer;
+    const aiScene* scene = importer.ReadFile(
+        obj.fbxPath,
+        aiProcess_ConvertToLeftHanded |
+        aiProcessPreset_TargetRealtime_Fast |
+        aiProcess_PreTransformVertices
+    );
+
+    if (!scene) {
+        printf("FBX 로드 실패: %s\n", importer.GetErrorString());
+        return;
+    }
+
+    uint32_t numMeshes = scene->mNumMeshes;
+
+    FILE* fp = fopen(binPath, "wb");
+    if (!fp) {
+        printf("BIN 파일 열기 실패: %s\n", binPath);
+        return;
+    }
+
+    // 1) 메시 개수
+    fwrite(&numMeshes, sizeof(uint32_t), 1, fp);
+
+    std::vector<MeshInfoBin>          meshInfos(numMeshes);
+    std::vector<std::vector<VTXMESH>> allVertices(numMeshes);
+    std::vector<std::vector<uint32_t>> allIndices(numMeshes);
+
+    for (uint32_t i = 0; i < numMeshes; ++i) {
+        aiMesh* mesh = scene->mMeshes[i];
+        MeshInfoBin& info = meshInfos[i];
+        std::memset(&info, 0, sizeof(MeshInfoBin));
+        std::strncpy(info.Name, mesh->mName.C_Str(), 63);
+        info.Name[63] = 0;
+        info.MaterialIndex = mesh->mMaterialIndex;
+        info.NumVertices = mesh->mNumVertices;
+        info.NumFaces = mesh->mNumFaces;
+        info.NumIndices = mesh->mNumFaces * 3;
+
+        auto& vertices = allVertices[i];
+        vertices.resize(info.NumVertices);
+
+        for (uint32_t v = 0; v < info.NumVertices; ++v) {
+            VTXMESH& vert = vertices[v];
+            vert.vPosition.x = mesh->mVertices[v].x;
+            vert.vPosition.y = mesh->mVertices[v].y;
+            vert.vPosition.z = mesh->mVertices[v].z;
+
+            if (mesh->HasNormals()) {
+                vert.vNormal.x = mesh->mNormals[v].x;
+                vert.vNormal.y = mesh->mNormals[v].y;
+                vert.vNormal.z = mesh->mNormals[v].z;
+            }
+            else {
+                vert.vNormal = XMFLOAT3(0, 0, 0);
+            }
+
+            if (mesh->HasTangentsAndBitangents()) {
+                vert.vTangent.x = mesh->mTangents[v].x;
+                vert.vTangent.y = mesh->mTangents[v].y;
+                vert.vTangent.z = mesh->mTangents[v].z;
+                vert.vBinormal.x = mesh->mBitangents[v].x;
+                vert.vBinormal.y = mesh->mBitangents[v].y;
+                vert.vBinormal.z = mesh->mBitangents[v].z;
+            }
+            else {
+                vert.vTangent = XMFLOAT3(0, 0, 0);
+                vert.vBinormal = XMFLOAT3(0, 0, 0);
+            }
+
+            if (mesh->HasTextureCoords(0)) {
+                vert.vTexcoord.x = mesh->mTextureCoords[0][v].x;
+                vert.vTexcoord.y = mesh->mTextureCoords[0][v].y;
+            }
+            else {
+                vert.vTexcoord = XMFLOAT2(0, 0);
+            }
+        }
+
+        auto& indices = allIndices[i];
+        indices.resize(info.NumIndices);
+        uint32_t idx = 0;
+        for (uint32_t f = 0; f < mesh->mNumFaces; ++f) {
+            aiFace& face = mesh->mFaces[f];
+            indices[idx++] = face.mIndices[0];
+            indices[idx++] = face.mIndices[1];
+            indices[idx++] = face.mIndices[2];
+        }
+    }
+
+    // 2) MeshInfo들
+    for (uint32_t i = 0; i < numMeshes; ++i)
+        fwrite(&meshInfos[i], sizeof(MeshInfoBin), 1, fp);
+
+    // 3) 각 메시의 버텍스
+    for (uint32_t i = 0; i < numMeshes; ++i)
+        if (meshInfos[i].NumVertices)
+            fwrite(allVertices[i].data(), sizeof(VTXMESH), meshInfos[i].NumVertices, fp);
+
+    // 4) 각 메시의 인덱스
+    for (uint32_t i = 0; i < numMeshes; ++i)
+        if (meshInfos[i].NumIndices)
+            fwrite(allIndices[i].data(), sizeof(uint32_t), meshInfos[i].NumIndices, fp);
+
+    // 5) 머티리얼
+    uint32_t numMaterials = scene->mNumMaterials;
+    fwrite(&numMaterials, sizeof(uint32_t), 1, fp);
+
+    std::vector<MaterialInfoBin2> matInfos(numMaterials);
+    for (uint32_t i = 0; i < numMaterials; ++i) {
+        aiMaterial* material = scene->mMaterials[i];
+        MaterialInfoBin2& matInfo = matInfos[i];
+        std::memset(&matInfo, 0, sizeof(MaterialInfoBin2));
+        matInfo.numTextures = 0;
+
+        aiString path;
+        if (material->GetTexture(aiTextureType_DIFFUSE, 0, &path) == AI_SUCCESS) {
+            matInfo.textures[matInfo.numTextures].type = (int)TextureType::DIFFUSE;
+            std::strncpy(matInfo.textures[matInfo.numTextures].path, path.C_Str(), 259);
+            matInfo.textures[matInfo.numTextures].path[259] = 0;
+            matInfo.numTextures++;
+        }
+        if (material->GetTexture(aiTextureType_NORMALS, 0, &path) == AI_SUCCESS) {
+            matInfo.textures[matInfo.numTextures].type = (int)TextureType::NORMAL;
+            std::strncpy(matInfo.textures[matInfo.numTextures].path, path.C_Str(), 259);
+            matInfo.textures[matInfo.numTextures].path[259] = 0;
+            matInfo.numTextures++;
+        }
+    }
+    if (numMaterials) fwrite(matInfos.data(), sizeof(MaterialInfoBin2), numMaterials, fp);
+
+    fclose(fp);
+    printf("BIN(논애니) 저장 완료: %s\n", binPath);
+}
+
+/* ----------------------------------------------------------- */
 /*                       ImGui 패널                            */
 /* ----------------------------------------------------------- */
 
@@ -497,6 +912,8 @@ void CMainApp::Render_ImGuiPanel()
                 case EObjectType::MONSTER_BOW:   strcpy(o.fbxPath, "../Bin/Resources/Blood_Spear/Model/Monster_Bow/Monster_Bow.fbx");   break;
                 case EObjectType::BRIDGE:        strcpy(o.fbxPath, "../Bin/Resources/Blood_Spear/Model/Bridge/Bridge.fbx");             break;
                 case EObjectType::CAVE:          strcpy(o.fbxPath, "../Bin/Resources/Blood_Spear/Model/Cave/Cave.fbx");                 break;
+                case EObjectType::SKELETON_SPEAR: strcpy(o.fbxPath, "../Bin/Resources/Blood_Spear/Model/Monster/Monster.fbx");          break;
+                case EObjectType::SKELETON_BOW:   strcpy(o.fbxPath, "../Bin/Resources/Blood_Spear/Model/Monster/Monster.fbx");          break;
                 default: o.fbxPath[0] = 0; break;
                 }
 
@@ -575,12 +992,38 @@ void CMainApp::Render_ImGuiPanel()
     }
     ImGui::End();
 
+    /* -------- Object Properties + BIN Export 버튼 삽입 -------- */
+
     ImGui::Begin("Object Properties");
+    // 선택 변경 시 BIN 경로 유도
+    static int s_PrevSelected = -1;
+    static char s_BinPath[260] = "../../Mapdata/Model.bin";
+    auto deriveBinFromFbx = [](const char* fbx, char* out, size_t outsz) {
+        if (!fbx || !fbx[0]) { std::snprintf(out, outsz, "../../Mapdata/Model.bin"); return; }
+        // 파일명 추출
+        const char* p = fbx;
+        const char* slash1 = strrchr(fbx, '/');
+        const char* slash2 = strrchr(fbx, '\\');
+        if (slash1) p = slash1 + 1;
+        if (slash2 && slash2 > p) p = slash2 + 1;
+        std::string stem = p ? p : fbx;
+        // 확장자 제거
+        size_t dot = stem.find_last_of('.');
+        if (dot != std::string::npos) stem = stem.substr(0, dot);
+        std::snprintf(out, outsz, "../../Mapdata/%s.bin", stem.c_str());
+        };
+
     if (m_Selected != -1) {
+        if (s_PrevSelected != m_Selected) {
+            deriveBinFromFbx(m_Objects[m_Selected].fbxPath, s_BinPath, sizeof(s_BinPath));
+            s_PrevSelected = m_Selected;
+        }
+
         ImGui::Text("Size");     ImGui::DragFloat3("x/y/z##size", m_TempSize, 0.1f);
         ImGui::Text("Rotation"); ImGui::DragFloat3("x/y/z##rot", m_TempRot, 0.1f);
         ImGui::Text("Position"); ImGui::DragFloat3("x/y/z##pos", m_TempPos, 0.1f);
         ImGui::InputText("FBX Path", m_Objects[m_Selected].fbxPath, 260);
+        ImGui::InputText("BIN Path", s_BinPath, 260);
 
         if (ImGui::Button("Delete")) { PushUndo(); m_Objects.erase(m_Objects.begin() + m_Selected); m_Selected = -1; RefreshScene(); }
         ImGui::SameLine();
@@ -591,40 +1034,14 @@ void CMainApp::Render_ImGuiPanel()
             std::memcpy(m_Objects[m_Selected].pos, m_TempPos, sizeof(float) * 3);
             RefreshScene();
         }
-    }
-    ImGui::End();
 
-    // ===== Navigation 편집 패널 =====
-    ImGui::Begin("Navigation");
-    ImGui::Checkbox("Edit Nav Cells", &m_NavEditMode);
-    ImGui::SameLine(); ImGui::Checkbox("Snap Grid", &m_NavSnapToGrid);
-    ImGui::SameLine(); ImGui::SetNextItemWidth(80);
-    ImGui::InputFloat("Grid(m)", &m_NavGridSize, 0.01f, 0.1f, "%.3f");
-
-    ImGui::Checkbox("Force CW (XZ)", &m_NavForceCW_XZ);
-    ImGui::SameLine(); ImGui::SetNextItemWidth(120);
-    ImGui::DragFloat("Join Radius", &m_NavJoinRadius, 0.005f, 0.0f, 0.5f, "%.3f m");
-    ImGui::SetItemTooltip("이 거리 이내의 기존 정점에 자동 부착됩니다.");
-
-    if (m_NavEditMode) {
-        ImGui::Separator();
-        ImGui::Text("Working picks: %d / 3", (int)m_NavWorking.size());
-        if (ImGui::Button("Commit (if 3)")) { Nav_CommitIfTri(); }
-        ImGui::SameLine(); if (ImGui::Button("Undo Cell")) { Nav_UndoCell(); }
-        ImGui::SameLine(); if (ImGui::Button("Clear All")) { Nav_ClearAll(); }
-        if (ImGui::Button("Save .nav")) { Nav_Save("../../Mapdata/navmesh.nav"); }
-        ImGui::SameLine(); if (ImGui::Button("Load .nav")) { Nav_Load("../../Mapdata/navmesh.nav"); }
-
-        // 네비 편집용 클릭(메시 표면 피킹)
-        if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::GetIO().WantCaptureMouse) {
-            _float4x4 V = *m_pGameInstance->Get_Transform_Float4x4(D3DTS::VIEW);
-            _float4x4 P = *m_pGameInstance->Get_Transform_Float4x4(D3DTS::PROJ);
-            XMVECTOR ro, rd; MakeRayFromMouse(ro, rd, V, P);
-            _float3 hit{};
-            if (Nav_TryPickPoint(ro, rd, hit)) {
-                m_NavWorking.push_back(hit);
-                if (m_NavWorking.size() == 3) Nav_CommitIfTri();
-            }
+        // --- BIN Export 버튼 (복구) ---
+        if (ImGui::Button("Export (Non-Anim)")) {
+            ExportModelToBin_NonAnim(m_Objects[m_Selected], s_BinPath);
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Export (Anim)")) {
+            ExportModelToBin_Anim(m_Objects[m_Selected], s_BinPath);
         }
     }
     ImGui::End();

@@ -173,7 +173,8 @@
     <ClInclude Include="..\Public\PlayerManager.h" />
     <ClInclude Include="..\Public\Terrain.h" />
     <ClInclude Include="..\Public\Weapon.h" />
-    <ClInclude Include="..\Public\Weapon_Monster_Skeleton.h" />
+    <ClInclude Include="..\Public\Weapon_Skeleton_Bow.h" />
+    <ClInclude Include="..\Public\Weapon_Skeleton_Spear.h" />
     <ClInclude Include="Client.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Resource.h" />
@@ -201,7 +202,8 @@
     <ClCompile Include="..\Private\PlayerManager.cpp" />
     <ClCompile Include="..\Private\Terrain.cpp" />
     <ClCompile Include="..\Private\Weapon.cpp" />
-    <ClCompile Include="..\Private\Weapon_Monster_Skeleton.cpp" />
+    <ClCompile Include="..\Private\Weapon_Skeleton_Bow.cpp" />
+    <ClCompile Include="..\Private\Weapon_Skeleton_Spear.cpp" />
     <ClCompile Include="Client.cpp" />
   </ItemGroup>
   <ItemGroup>

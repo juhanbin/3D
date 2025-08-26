@@ -11,7 +11,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
-#include "BinType.h"  // BoneInfoBin 등 사용 시 유지
+#include "BinType.h"  // BoneInfoBin, MeshInfoBin, VTX(MESH/ANIMMESH) 등
 
 NS_BEGIN(Engine)
 class CGameInstance;
@@ -51,7 +51,10 @@ public: // MapTool
 
 private: // Picking helpers (월드 변환/레이)
     DirectX::XMMATRIX MakeWorld(const MapObject& o) const;
-    DirectX::XMMATRIX GetModelPreTransform(const MapObject& o) const; // 렌더와 동일 전처리
+
+    // 렌더와 동일한 전처리(로더와 1:1)
+    DirectX::XMMATRIX GetModelPreTransform(const MapObject& o) const;
+
     bool RaycastGround(const DirectX::XMVECTOR& rayPosW,
         const DirectX::XMVECTOR& rayDirW,
         DirectX::XMFLOAT3& outHitW) const;
@@ -106,6 +109,15 @@ private: // Picking helpers (월드 변환/레이)
         const OBB& box, float& outT, int& outFace,
         DirectX::XMVECTOR& outP, DirectX::XMVECTOR& outN);
 
+    // ====== BIN Export ======
+public:
+    void ExportModelToBin_NonAnim(const MapObject& obj, const char* binPath);
+    void ExportModelToBin_Anim(const MapObject& obj, const char* binPath);
+
+private:
+    // UI에서 쓸 기본 출력 경로 버퍼
+    char m_ExportBinPath[260];
+
 private:
     std::vector<BoneInfoBin> m_Bones;
 
@@ -144,12 +156,12 @@ public:
     struct NavCell { _float3 A, B, C; };
 
 private:
-    bool  m_NavEditMode = false; // 네비 편집 모드
-    bool  m_NavSnapToGrid = true;  // 그리드 스냅
-    float m_NavGridSize = 0.01f; // 1cm
-    float m_NavSnapEps = 0.002f;// 재사용 epsilon
-    bool  m_NavForceCW_XZ = true;  // XZ 기준 시계방향 강제
-    float m_NavJoinRadius = 0.5f; // 50cm: 기존 정점 자동 부착 반경
+    bool  m_NavEditMode = false;     // 네비 편집 모드
+    bool  m_NavSnapToGrid = true;    // 그리드 스냅
+    float m_NavGridSize = 0.01f;     // 1cm
+    float m_NavSnapEps = 0.002f;     // 재사용 epsilon
+    bool  m_NavForceCW_XZ = true;    // XZ 기준 시계방향 강제
+    float m_NavJoinRadius = 0.5f;    // 50cm: 기존 정점 자동 부착 반경
 
     std::vector<_float3> m_NavVerts;          // 전역 정점 풀(좌표 동일성 보장)
     std::vector<NavCell> m_NavCells;          // 완성된 셀

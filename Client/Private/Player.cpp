@@ -4,16 +4,14 @@
 #include "Body_Player.h"
 #include "Weapon.h"
 
-CPlayer::CPlayer(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
-    : CContainerObject { pDevice, pContext }
-{
+USING(Client)
 
+CPlayer::CPlayer(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
+    : CContainerObject{ pDevice, pContext } {
 }
 
 CPlayer::CPlayer(const CPlayer& Prototype)
-    : CContainerObject { Prototype }
-{
-
+    : CContainerObject{ Prototype } {
 }
 
 HRESULT CPlayer::Initialize_Prototype()
@@ -23,9 +21,9 @@ HRESULT CPlayer::Initialize_Prototype()
 
 HRESULT CPlayer::Initialize(void* pArg)
 {
-    GAMEOBJECT_DESC         Desc{};
+    GAMEOBJECT_DESC Desc{};
     Desc.fSpeedPerSec = 10.f;
-    Desc.fRotationPerSec = XMConvertToRadians(180.0f);
+    Desc.fRotationPerSec = XMConvertToRadians(180.f);
 
     if (FAILED(__super::Initialize(&Desc)))
         return E_FAIL;
@@ -34,42 +32,24 @@ HRESULT CPlayer::Initialize(void* pArg)
     {
         HERO_DESC* pDesc = static_cast<HERO_DESC*>(pArg);
         m_eType = pDesc->type;
-        //크기
-        XMMATRIX matScale = XMMatrixScaling(pDesc->vScale.x, pDesc->vScale.y, pDesc->vScale.z);
 
-        //회전
-        XMMATRIX matRot = XMMatrixRotationRollPitchYaw(
+        XMMATRIX S = XMMatrixScaling(pDesc->vScale.x, pDesc->vScale.y, pDesc->vScale.z);
+        XMMATRIX R = XMMatrixRotationRollPitchYaw(
             XMConvertToRadians(pDesc->vRot.x),
             XMConvertToRadians(pDesc->vRot.y),
             XMConvertToRadians(pDesc->vRot.z));
+        XMMATRIX T = XMMatrixTranslation(pDesc->vPos.x, pDesc->vPos.y, pDesc->vPos.z);
 
-        //위치
-        XMMATRIX matTrans = XMMatrixTranslation(pDesc->vPos.x, pDesc->vPos.y, pDesc->vPos.z);
+        XMFLOAT4X4 W; XMStoreFloat4x4(&W, S * R * T);
 
-        XMMATRIX matWorld = matScale * matRot * matTrans;
-
-        XMFLOAT4X4 matWorld4x4;
-        XMStoreFloat4x4(&matWorld4x4, matWorld);
-
-        m_pTransformCom->Set_State(Engine::STATE::RIGHT, XMLoadFloat4((XMFLOAT4*)&matWorld4x4.m[0]));
-        m_pTransformCom->Set_State(Engine::STATE::UP, XMLoadFloat4((XMFLOAT4*)&matWorld4x4.m[1]));
-        m_pTransformCom->Set_State(Engine::STATE::LOOK, XMLoadFloat4((XMFLOAT4*)&matWorld4x4.m[2]));
-        m_pTransformCom->Set_State(Engine::STATE::POSITION, XMLoadFloat4((XMFLOAT4*)&matWorld4x4.m[3]));
-
-        char szDbg[256];
-        sprintf_s(szDbg, sizeof(szDbg), "type=%d scale=(%.2f,%.2f,%.2f) rot=(%.2f,%.2f,%.2f) pos=(%.2f,%.2f,%.2f)\n",
-            (int)m_eType,
-            pDesc->vScale.x, pDesc->vScale.y, pDesc->vScale.z,
-            pDesc->vRot.x, pDesc->vRot.y, pDesc->vRot.z,
-            pDesc->vPos.x, pDesc->vPos.y, pDesc->vPos.z);
-        OutputDebugStringA(szDbg);
+        m_pTransformCom->Set_State(Engine::STATE::RIGHT, XMLoadFloat4((XMFLOAT4*)&W.m[0]));
+        m_pTransformCom->Set_State(Engine::STATE::UP, XMLoadFloat4((XMFLOAT4*)&W.m[1]));
+        m_pTransformCom->Set_State(Engine::STATE::LOOK, XMLoadFloat4((XMFLOAT4*)&W.m[2]));
+        m_pTransformCom->Set_State(Engine::STATE::POSITION, XMLoadFloat4((XMFLOAT4*)&W.m[3]));
     }
 
-    if (FAILED(Ready_Components()))
-        return E_FAIL;  
-
-    if (FAILED(Ready_PartObjects()))
-        return E_FAIL;
+    if (FAILED(Ready_Components()))   return E_FAIL;
+    if (FAILED(Ready_PartObjects()))  return E_FAIL;
 
     CPlayerManager::GetInstance()->Register(0, this, 100.f);
     CPlayerManager::GetInstance()->SetActive(0);
@@ -84,7 +64,7 @@ void CPlayer::Priority_Update(_float fTimeDelta)
 
 void CPlayer::Update(_float fTimeDelta)
 {
-    // --- 키 입력 ---
+    // --- 입력 ---
     const bool w = m_pGameInstance->KeyPressing(DIK_W);
     const bool a = m_pGameInstance->KeyPressing(DIK_A);
     const bool s = m_pGameInstance->KeyPressing(DIK_S);
@@ -95,42 +75,30 @@ void CPlayer::Update(_float fTimeDelta)
     const bool shiftPress = m_pGameInstance->KeyPressing(DIK_LSHIFT);
     const bool shiftUp = m_pGameInstance->KeyUp(DIK_LSHIFT);
 
-    const bool LMouseDown = m_pGameInstance->MouseDown(MOUSEKEYSTATE::LB);
-    const bool LMousePress = m_pGameInstance->MousePressing(MOUSEKEYSTATE::LB);
-    const bool LMouseUp = m_pGameInstance->MouseUp(MOUSEKEYSTATE::LB);
+    const bool LDown = m_pGameInstance->MouseDown(MOUSEKEYSTATE::LB);
+    const bool LPress = m_pGameInstance->MousePressing(MOUSEKEYSTATE::LB);
+    const bool LUp = m_pGameInstance->MouseUp(MOUSEKEYSTATE::LB);
 
-    const bool RMouseDown = m_pGameInstance->MouseDown(MOUSEKEYSTATE::RB);
-    const bool RMousePress = m_pGameInstance->MousePressing(MOUSEKEYSTATE::RB);
-    const bool RMouseUp = m_pGameInstance->MouseUp(MOUSEKEYSTATE::RB);
+    const bool RDown = m_pGameInstance->MouseDown(MOUSEKEYSTATE::RB);
+    const bool RPress = m_pGameInstance->MousePressing(MOUSEKEYSTATE::RB);
+    const bool RUp = m_pGameInstance->MouseUp(MOUSEKEYSTATE::RB);
 
-    const bool Space = m_pGameInstance->KeyDown(DIK_SPACE);
+    const bool SpaceDown = m_pGameInstance->KeyDown(DIK_SPACE);
 
-    const bool anyMouse = (LMouseDown || LMousePress || LMouseUp || RMouseDown || RMousePress || RMouseUp);
+    const bool anyMouse = (LDown || LPress || LUp || RDown || RPress || RUp);
 
-
+    // --- 마우스/공격 상태 ---
     if (anyMouse)
     {
-        if (LMouseUp || (RMousePress && LMouseDown))
-        {
+        if (LUp || (RPress && LDown))
             m_eAttack = ATTACK::THROW;
-        }
-        // 조준 종료
-        else if (RMouseUp)
-        {
+        else if (RUp)
             m_eAttack = ATTACK::NONE;
-        }
-        // 조준 진입
-        else if ((LMouseDown) && m_eAttack == ATTACK::NONE)
-        {
+        else if (LDown && m_eAttack == ATTACK::NONE)
             m_eAttack = ATTACK::ENTER;
-        }
-        else if ((RMouseDown) && m_eAttack == ATTACK::NONE)
-        {
+        else if (RDown && m_eAttack == ATTACK::NONE)
             m_eAttack = ATTACK::IDLE;
-        }
-
-        //조준 유지(방향/정지). ENTER/GROUND 중에는 덮어쓰지 않음
-        else if (LMousePress || RMousePress)
+        else if (LPress || RPress)
         {
             if (m_eAttack != ATTACK::ENTER &&
                 m_eAttack != ATTACK::GROUND &&
@@ -146,35 +114,38 @@ void CPlayer::Update(_float fTimeDelta)
     }
     else
     {
-        if (m_eAttack != ATTACK::THROW && m_eAttack != ATTACK::GROUND && m_eAttack != ATTACK::ENTER)
+        if (m_eAttack != ATTACK::THROW &&
+            m_eAttack != ATTACK::GROUND &&
+            m_eAttack != ATTACK::ENTER)
             m_eAttack = ATTACK::NONE;
 
-        if (shiftDown) {
-            m_bshiftPressed = true;
-            m_fshiftHeldSec = 0.f;
-        }
-        if (m_bshiftPressed && shiftPress) {
-            m_fshiftHeldSec += fTimeDelta;
-            if (anyMove && m_fshiftHeldSec >= RUN_HOLD_THRESHOLD)
+        // --- RUN/DASH 판정 ---
+        if (shiftDown) { m_bShiftPressed = true; m_fShiftHeldSec = 0.f; }
+        if (m_bShiftPressed && shiftPress) {
+            m_fShiftHeldSec += fTimeDelta;
+            if (anyMove && m_fShiftHeldSec >= kRunHoldThreshold)
                 m_eMoving = MOVING::RUN;
         }
         if (shiftUp) {
-            if (m_fshiftHeldSec < RUN_HOLD_THRESHOLD) {
-                // 수정해야함(네비깔면 터질수도)
-                m_pTransformCom->Go_Straight(fTimeDelta * 20.0f);
+            if (m_fShiftHeldSec < kRunHoldThreshold) {
+                // ★ 대쉬: 1프레임만 MOVING::DASH 설정 + 즉시 임펄스
                 m_eMoving = MOVING::DASH;
+                m_pTransformCom->Go_Straight(fTimeDelta * kDashImpulseMul, m_pNavigationCom);
+                m_iDashFlagFrames = 1; // 다음 프레임에 자동 해제
             }
-            m_bshiftPressed = false;
+            m_bShiftPressed = false;
         }
 
+        // 일반 로코모션(대쉬 플래그인 동안은 건드리지 않음)
         if (!shiftPress && m_eMoving != MOVING::DASH)
             m_eMoving = anyMove ? MOVING::JOG : MOVING::IDLE;
     }
 
-    if (Space)
+    if (SpaceDown)
         m_eAttack = ATTACK::GROUND;
 
-    const bool aimingHeldNow = (LMousePress || RMousePress);
+    // 조준 이동 배속
+    const bool aimingHeldNow = (LPress || RPress);
     const bool aimingModeNow =
         aimingHeldNow ||
         m_eAttack == ATTACK::ENTER ||
@@ -185,14 +156,11 @@ void CPlayer::Update(_float fTimeDelta)
         m_eAttack == ATTACK::RIGHT ||
         m_eAttack == ATTACK::THROW;
 
-    const float kRunMul = 1.3f; // 달리기
-    const float kAimWalkMul = 0.3f; // 조준 느리게
-    const float kAimRunMul = 0.6f; // 조준 빠르게(버튼 유지)
-
-    float mul = 1.0f;
-    if (aimingModeNow)               mul = (RMousePress || LMousePress) ? kAimRunMul : kAimWalkMul;
+    float mul = 1.f;
+    if (aimingModeNow)               mul = (RPress || LPress) ? kAimRunMul : kAimWalkMul;
     else if (m_eMoving == MOVING::RUN) mul = kRunMul;
 
+    // --- 이동 처리 ---
     if (aimingModeNow) {
         if (w) m_pTransformCom->Go_Straight(fTimeDelta * mul);
         if (s) m_pTransformCom->Go_Backward(fTimeDelta * mul);
@@ -202,27 +170,34 @@ void CPlayer::Update(_float fTimeDelta)
     else {
         if (w) m_pTransformCom->Go_Straight(fTimeDelta * mul, m_pNavigationCom);
         else if (s) m_pTransformCom->Go_Backward(fTimeDelta * mul);
-        else if (a)
-        {
+        else if (a) {
             m_pTransformCom->Go_Straight(fTimeDelta * mul);
             m_pTransformCom->Turn(XMVectorSet(0.f, 1.f, 0.f, 0.f), -fTimeDelta);
         }
-        else if (d)
-        {
+        else if (d) {
             m_pTransformCom->Go_Straight(fTimeDelta * mul);
             m_pTransformCom->Turn(XMVectorSet(0.f, 1.f, 0.f, 0.f), fTimeDelta);
+        }
+    }
+
+    // --- 대쉬 플래그 자동 해제(1프레임 래치) ---
+    if (m_eMoving == MOVING::DASH) {
+        if (m_iDashFlagFrames > 0) {
+            --m_iDashFlagFrames;
+        }
+        else {
+            m_eMoving = anyMove ? MOVING::JOG : MOVING::IDLE;
         }
     }
 
     __super::Update(fTimeDelta);
 }
 
-
-
 void CPlayer::Late_Update(_float fTimeDelta)
 {
     m_pTransformCom->Set_State(Engine::STATE::POSITION,
         m_pNavigationCom->Compute_OnCell(m_pTransformCom->Get_State(Engine::STATE::POSITION)));
+
     if (FAILED(m_pGameInstance->Add_RenderGroup(RENDERGROUP::NONBLEND, this)))
         return;
 
@@ -232,45 +207,33 @@ void CPlayer::Late_Update(_float fTimeDelta)
 HRESULT CPlayer::Render()
 {
 #ifdef _DEBUG
-    m_pNavigationCom->Render();
-
+    if (m_pNavigationCom) m_pNavigationCom->Render();
 #endif
     return S_OK;
 }
 
+// --- Helpers ---
 _vector CPlayer::Get_TransformState(Engine::STATE s) const
 {
     return m_pTransformCom ? m_pTransformCom->Get_State(s) : XMVectorZero();
 }
 
-_vector CPlayer::GetPos() const
-{
-    return Get_TransformState(Engine::STATE::POSITION);
-}
-
+_vector CPlayer::GetPos() const { return Get_TransformState(Engine::STATE::POSITION); }
+_vector CPlayer::GetRight() const { return XMVector3Normalize(Get_TransformState(Engine::STATE::RIGHT)); }
+_vector CPlayer::GetUp() const { return XMVector3Normalize(Get_TransformState(Engine::STATE::UP)); }
 _vector CPlayer::GetForward(bool flattenY) const
 {
     _vector f = Get_TransformState(Engine::STATE::LOOK);
-    return flattenY ? XMVector3Normalize(XMVectorSetY(f, 0.f))
-        : XMVector3Normalize(f);
-}
-
-_vector CPlayer::GetRight() const
-{
-    return XMVector3Normalize(Get_TransformState(Engine::STATE::RIGHT));
-}
-
-_vector CPlayer::GetUp() const
-{
-    return XMVector3Normalize(Get_TransformState(Engine::STATE::UP));
+    return flattenY ? XMVector3Normalize(XMVectorSetY(f, 0.f)) : XMVector3Normalize(f);
 }
 
 HRESULT CPlayer::Ready_Components()
 {
-    CNavigation::NAVIGATION_DESC        NaviDesc{};
+    CNavigation::NAVIGATION_DESC NaviDesc{};
     NaviDesc.iCurrentCellIndex = 0;
 
-    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Navigation"),
+    if (FAILED(CGameObject::Add_Component(
+        ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Navigation"),
         TEXT("Com_Navigation"), reinterpret_cast<CComponent**>(&m_pNavigationCom), &NaviDesc)))
         return E_FAIL;
 
@@ -279,28 +242,29 @@ HRESULT CPlayer::Ready_Components()
 
 HRESULT CPlayer::Ready_PartObjects()
 {
-    CBody_Player::BODY_DESC         BodyDesc{};
+    CBody_Player::BODY_DESC BodyDesc{};
     BodyDesc.pState = &m_iState;
     BodyDesc.pParentMatrix = m_pTransformCom->Get_WorldMatrixPtr();
     BodyDesc.pMoving = &m_eMoving;
     BodyDesc.pAttack = &m_eAttack;
 
-    if (FAILED(__super::Add_PartObject(TEXT("Part_Body"), ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Body_Player"), &BodyDesc)))
+    if (FAILED(__super::Add_PartObject(TEXT("Part_Body"),
+        ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Body_Player"), &BodyDesc)))
         return E_FAIL;
 
-    CPartObject*      pBody = Find_PartObject(TEXT("Part_Body"));
-    if (nullptr == pBody)
-        return E_FAIL;
-    
-    CWeapon::WEAPON_DESC                 WeaponDesc{};
-    WeaponDesc.pState = &m_iState;
-    WeaponDesc.pSocketMatrix = dynamic_cast<CBody_Player*>(pBody)->Get_BoneMatrix("jnt_Spine_01_SKN");
-    WeaponDesc.pSocketMatrix_Hand = dynamic_cast<CBody_Player*>(pBody)->Get_BoneMatrix("jnt_weapon");
-    WeaponDesc.pParentMatrix = m_pTransformCom->Get_WorldMatrixPtr();
-    WeaponDesc.pMoving = &m_eMoving;
-    WeaponDesc.pAttack = &m_eAttack;
+    CPartObject* pBody = Find_PartObject(TEXT("Part_Body"));
+    if (!pBody) return E_FAIL;
 
-    if (FAILED(__super::Add_PartObject(TEXT("Part_Weapon"), ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Weapon"), &WeaponDesc)))
+    CWeapon::WEAPON_DESC WDesc{};
+    WDesc.pState = &m_iState;
+    WDesc.pSocketMatrix = dynamic_cast<CBody_Player*>(pBody)->Get_BoneMatrix("jnt_Spine_01_SKN");
+    WDesc.pSocketMatrix_Hand = dynamic_cast<CBody_Player*>(pBody)->Get_BoneMatrix("jnt_weapon");
+    WDesc.pParentMatrix = m_pTransformCom->Get_WorldMatrixPtr();
+    WDesc.pMoving = &m_eMoving;
+    WDesc.pAttack = &m_eAttack;
+
+    if (FAILED(__super::Add_PartObject(TEXT("Part_Weapon"),
+        ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Weapon"), &WDesc)))
         return E_FAIL;
 
     return S_OK;
@@ -309,32 +273,27 @@ HRESULT CPlayer::Ready_PartObjects()
 CPlayer* CPlayer::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 {
     CPlayer* pInstance = new CPlayer(pDevice, pContext);
-
     if (FAILED(pInstance->Initialize_Prototype()))
     {
         MSG_BOX(TEXT("Failed to Created : CPlayer"));
         Safe_Release(pInstance);
     }
-
     return pInstance;
 }
 
 CGameObject* CPlayer::Clone(void* pArg)
 {
     CPlayer* pInstance = new CPlayer(*this);
-
     if (FAILED(pInstance->Initialize(pArg)))
     {
         MSG_BOX(TEXT("Failed to Clone : CPlayer"));
         Safe_Release(pInstance);
     }
-
     return pInstance;
 }
 
 void CPlayer::Free()
 {
     __super::Free();
-
     Safe_Release(m_pNavigationCom);
 }

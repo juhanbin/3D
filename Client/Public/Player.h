@@ -1,79 +1,84 @@
 #pragma once
 
 #include "Client_Defines.h"
-#include "ContainerObject.h"
+#include "ContainerObject.h"   // CContainerObject
+#include "Transform.h"         // _vector helpers
 
 NS_BEGIN(Engine)
 class CNavigation;
 NS_END
 
 NS_BEGIN(Client)
+class CBody_Player;
+class CWeapon;
 
 class CPlayer final : public CContainerObject
 {
 public:
-	struct HERO_DESC : public CGameObject::GAMEOBJECT_DESC
-	{
-		EObjectType type{ EObjectType::HERO };
-		_float3 vScale{ 1.f,1.f,1.f };
-		_float3 vRot{ 0.f,0.f,0.f };
-		_float3 vPos{ 0.f,0.f,0.f };
-	};
-	enum STATE { 
-		IDLE	= 0x00000001, 
-		JOG		= 0x00000002,
-		RUN		= 0x00000004,
-		DASH	= 0x00000008,
-	};
-
-public:
-	const _float4x4* GetWorldMatrixPtr() const {
-		return m_pTransformCom ? m_pTransformCom->Get_WorldMatrixPtr() : nullptr;
-	}
+    struct HERO_DESC
+    {
+        EObjectType type{ EObjectType::HERO };
+        _float3 vScale{ 1.f,1.f,1.f };
+        _float3 vRot{ 0.f,0.f,0.f };
+        _float3 vPos{ 0.f,0.f,0.f };
+    };
 
 private:
-	CPlayer(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
-	CPlayer(const CPlayer& Prototype);
-	virtual ~CPlayer() = default;
+    CPlayer(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
+    CPlayer(const CPlayer& Prototype);
+    virtual ~CPlayer() = default;
 
 public:
-	virtual HRESULT Initialize_Prototype();
-	virtual HRESULT Initialize(void* pArg);
-	virtual void Priority_Update(_float fTimeDelta);
-	virtual void Update(_float fTimeDelta);
-	virtual void Late_Update(_float fTimeDelta);
-	virtual HRESULT Render();
+    // CGameObject
+    virtual HRESULT Initialize_Prototype() override;
+    virtual HRESULT Initialize(void* pArg) override;
+    virtual void    Priority_Update(_float fTimeDelta) override;
+    virtual void    Update(_float fTimeDelta) override;
+    virtual void    Late_Update(_float fTimeDelta) override;
+    virtual HRESULT Render() override;
 
 public:
-	//트랜스폼
-	_vector Get_TransformState(Engine::STATE s) const;
-	_vector GetPos() const;                          // POSITION
-	_vector GetForward(bool flattenY = false) const; // LOOK 
-	_vector GetRight() const;                        // RIGHT
-	_vector GetUp() const;                           // UP
+    // Helper getters
+    _vector Get_TransformState(Engine::STATE s) const;
+    _vector GetPos() const;
+    _vector GetForward(bool flattenY) const;
+    _vector GetRight() const;
+    _vector GetUp() const;
 
 private:
-	EObjectType			m_eType = { EObjectType::HERO };
-	_uint				m_iState = { };
-	MOVING				m_eMoving = MOVING::IDLE;
-	_bool				m_bFinishAnim = { true };
-	_bool				m_bDashQueued = { false };
+    HRESULT Ready_Components();
+    HRESULT Ready_PartObjects();
 
-	ATTACK				m_eAttack = ATTACK::NONE;
-
-	_bool				m_bshiftPressed = false;
-	_float				m_fshiftHeldSec = 0.f;
-	const float			RUN_HOLD_THRESHOLD = 0.20f;
-
-	CNavigation* m_pNavigationCom = { nullptr };
 private:
-	HRESULT Ready_Components();	
-	HRESULT Ready_PartObjects();
+    // --- 외부 컴포넌트 ---
+    Engine::CNavigation* m_pNavigationCom = nullptr;
+
+    // --- 상태 ---
+    _uint   m_iState = 0;
+    EObjectType    m_eType = EObjectType::HERO;
+
+    MOVING  m_eMoving = MOVING::IDLE;
+    ATTACK  m_eAttack = ATTACK::NONE;
+
+    // Shift 입력으로 RUN/DASH 구분
+    bool    m_bShiftPressed = false;
+    float   m_fShiftHeldSec = 0.f;
+
+    // 대쉬 플래그를 딱 1프레임만 유지하기 위한 래치
+    int     m_iDashFlagFrames = 0;
+
+private:
+    // 튜닝 파라미터
+    static constexpr float kRunHoldThreshold = 0.23f; // 이 시간 이상이면 RUN, 미만이면 DASH
+    static constexpr float kDashImpulseMul = 20.0f; // 대쉬 즉시 임펄스( dt * mul )
+    static constexpr float kRunMul = 1.3f;
+    static constexpr float kAimWalkMul = 0.3f;
+    static constexpr float kAimRunMul = 0.6f;
 
 public:
-	static CPlayer* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
-	virtual CGameObject* Clone(void* pArg) override;
-	virtual void Free() override;
+    static CPlayer* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
+    virtual CGameObject* Clone(void* pArg) override;
+    virtual void         Free() override;
 };
 
 NS_END

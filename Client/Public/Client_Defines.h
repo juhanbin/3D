@@ -15,6 +15,8 @@ namespace Client
 	enum class MOVING {IDLE,JOG,RUN,DASH};
 	enum class ATTACK { NONE ,ENTER, IDLE, THROW, FRONT, BACK, RIGHT, LEFT, GROUND };
 
+	enum class MONSTER { SPEARE_IDLE, WALK, SPEARE_ATTACK, Bow_IDLE, BOW_ATTACK };
+
 	enum class EObjectType : int
 	{
 		MONSTER = 0,
@@ -24,6 +26,9 @@ namespace Client
 		MONSTER_SPEAR,
 		MONSTER_BOW,
 		BRIDGE,
+		CAVE,
+		SKELETON_SPEAR,
+		SKELETON_BOW,
 		END
 	};
 

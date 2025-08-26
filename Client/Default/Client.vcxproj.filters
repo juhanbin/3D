@@ -82,6 +82,12 @@
     <Filter Include="02.GameObject\Camera\Player">
       <UniqueIdentifier>{aab85b7a-2a7c-4ebc-99ba-047c180c72b5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02.GameObject\Monster_Skeleton\Weapon\Spear">
+      <UniqueIdentifier>{2d591703-2109-4a3b-8e29-e262af9a3c6d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObject\Monster_Skeleton\Weapon\Bow">
+      <UniqueIdentifier>{e8d4639e-12c3-4a46-86f0-30d4fa604870}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h">
@@ -153,9 +159,6 @@
     <ClInclude Include="..\Public\Body_Monster_Skeleton.h">
       <Filter>02.GameObject\Monster_Skeleton\Body</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\Weapon_Monster_Skeleton.h">
-      <Filter>02.GameObject\Monster_Skeleton\Weapon</Filter>
-    </ClInclude>
     <ClInclude Include="..\Public\Navi_Bridge.h">
       <Filter>02.GameObject\Navi</Filter>
     </ClInclude>
@@ -164,6 +167,12 @@
     </ClInclude>
     <ClInclude Include="..\Public\Camera_Player.h">
       <Filter>02.GameObject\Camera\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Weapon_Skeleton_Spear.h">
+      <Filter>02.GameObject\Monster_Skeleton\Weapon\Spear</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Weapon_Skeleton_Bow.h">
+      <Filter>02.GameObject\Monster_Skeleton\Weapon\Bow</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -237,9 +246,6 @@
     <ClCompile Include="..\Private\Body_Monster_Skeleton.cpp">
       <Filter>02.GameObject\Monster_Skeleton\Body</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\Weapon_Monster_Skeleton.cpp">
-      <Filter>02.GameObject\Monster_Skeleton\Weapon</Filter>
-    </ClCompile>
     <ClCompile Include="..\Private\Navi_Bridge.cpp">
       <Filter>02.GameObject\Navi</Filter>
     </ClCompile>
@@ -248,6 +254,12 @@
     </ClCompile>
     <ClCompile Include="..\Private\Camera_Player.cpp">
       <Filter>02.GameObject\Camera\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Weapon_Skeleton_Spear.cpp">
+      <Filter>02.GameObject\Monster_Skeleton\Weapon\Spear</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Weapon_Skeleton_Bow.cpp">
+      <Filter>02.GameObject\Monster_Skeleton\Weapon\Bow</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

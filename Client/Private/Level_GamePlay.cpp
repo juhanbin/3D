@@ -201,9 +201,9 @@ HRESULT CLevel_GamePlay::Ready_Layer_Player(const _wstring& strLayerTag)
 
 HRESULT CLevel_GamePlay::Ready_Layer_Monster(const _wstring& strLayerTag)
 {
-	/*for (auto& obj : m_SceneObjects)
+	for (auto& obj : m_SceneObjects)
 	{
-		if ((EObjectType)obj.type == EObjectType::MONSTER)
+		if ((EObjectType)obj.type == EObjectType::MONSTER || (EObjectType)obj.type == EObjectType::SKELETON_SPEAR || (EObjectType)obj.type == EObjectType::SKELETON_BOW)
 		{
 			CMonster_Skeleton::Monster_Skeleton_DESC desc{};
 			desc.type = static_cast<EObjectType>(obj.type);
@@ -213,12 +213,12 @@ HRESULT CLevel_GamePlay::Ready_Layer_Monster(const _wstring& strLayerTag)
 
 			if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(
 				ENUM_CLASS(LEVEL::GAMEPLAY), strLayerTag,
-				ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Monster_Skeleton"), &desc)))
+				ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Skeleton"), &desc)))
 			{
 				OutputDebugStringW(L"[SCENE] Monster Add ½ÇÆÐ!\n");
 			}
 		}
-	}*/
+	}
 	return S_OK;
 }
 

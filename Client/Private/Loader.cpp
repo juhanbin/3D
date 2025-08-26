@@ -17,6 +17,10 @@
 #include "Body_Player.h"
 #include "Weapon.h"
 #include "Navi_Bridge.h"
+
+#include "Body_Monster_Skeleton.h"
+#include "Weapon_Skeleton_Spear.h"
+#include "Weapon_Skeleton_Bow.h"
 //#include "Effect.h"
 //#include "Sky.h"
 
@@ -290,6 +294,8 @@ HRESULT CLoader::Loading_For_GamePlay_Level()
 		CCamera_Player::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	/* Prototype_GameObject_Player */
 	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Player"),
 		CPlayer::Create(m_pDevice, m_pContext))))
@@ -304,8 +310,27 @@ HRESULT CLoader::Loading_For_GamePlay_Level()
 	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Weapon"),
 		CWeapon::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	/* Prototype_GameObject_Player */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Skeleton"),
+		CMonster_Skeleton::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
 
+	/* Prototype_GameObject_Body_Player */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Body_Skeleton"),
+		CBody_Monster_Skeleton::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	/* Prototype_GameObject_Weapon */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Weapon_Skeleton_Spear"),
+		CWeapon_Skeleton_Spear::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	/* Prototype_GameObject_Weapon */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Weapon_Skeleton_Bow"),
+		CWeapon_Skeleton_Bow::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
 
 	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_MapObject"),
 		CMapObject::Create(m_pDevice, m_pContext))))

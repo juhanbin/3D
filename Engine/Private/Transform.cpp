@@ -70,6 +70,18 @@ void CTransform::Go_Straight(_float fTimeDelta, CNavigation* pNavigation)
 		Set_State(STATE::POSITION, vPosition);
 }
 
+void CTransform::Go_Straight(_float fTimeDelta, _float speedMul, CNavigation* pNavigation)
+{
+	_vector vPosition = Get_State(STATE::POSITION);
+	_vector vLook = XMVector3Normalize(Get_State(STATE::LOOK));
+
+	const _float speed = m_fSpeedPerSec * max(0.f, speedMul);
+	vPosition += vLook * speed * fTimeDelta;
+
+	if (nullptr == pNavigation || true == pNavigation->isMove(vPosition))
+		Set_State(STATE::POSITION, vPosition);
+}
+
 void CTransform::Go_Left(_float fTimeDelta)
 {
 	_vector		vPosition = Get_State(STATE::POSITION);
