@@ -86,7 +86,7 @@ private:
     HRESULT Ready_Animations(ifstream& ifs);
 
 public:
-    static CModel* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, MODELTYPE eModelType, FILETYPE eFileType, const _char* pModelFilePath, _fmatrix PreTransformMatrix);
+    static CModel* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, MODELTYPE eModelType, FILETYPE eFileType, const _char* pModelFilePath, _fmatrix PreTransformMatrix = DirectX::XMMatrixIdentity());
     virtual CComponent* Clone(void* pArg) override;
     virtual void Free() override;
 };
