@@ -1,6 +1,6 @@
 #include "Player.h"
 #include "GameInstance.h"
-
+#include "PlayerManager.h"
 #include "Body_Player.h"
 #include "Weapon.h"
 
@@ -70,6 +70,9 @@ HRESULT CPlayer::Initialize(void* pArg)
 
     if (FAILED(Ready_PartObjects()))
         return E_FAIL;
+
+    CPlayerManager::GetInstance()->Register(0, this, 100.f);
+    CPlayerManager::GetInstance()->SetActive(0);
 
     return S_OK;
 }
@@ -233,6 +236,33 @@ HRESULT CPlayer::Render()
 
 #endif
     return S_OK;
+}
+
+_vector CPlayer::Get_TransformState(Engine::STATE s) const
+{
+    return m_pTransformCom ? m_pTransformCom->Get_State(s) : XMVectorZero();
+}
+
+_vector CPlayer::GetPos() const
+{
+    return Get_TransformState(Engine::STATE::POSITION);
+}
+
+_vector CPlayer::GetForward(bool flattenY) const
+{
+    _vector f = Get_TransformState(Engine::STATE::LOOK);
+    return flattenY ? XMVector3Normalize(XMVectorSetY(f, 0.f))
+        : XMVector3Normalize(f);
+}
+
+_vector CPlayer::GetRight() const
+{
+    return XMVector3Normalize(Get_TransformState(Engine::STATE::RIGHT));
+}
+
+_vector CPlayer::GetUp() const
+{
+    return XMVector3Normalize(Get_TransformState(Engine::STATE::UP));
 }
 
 HRESULT CPlayer::Ready_Components()

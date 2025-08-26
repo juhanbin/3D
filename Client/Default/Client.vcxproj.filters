@@ -76,6 +76,12 @@
     <Filter Include="02.GameObject\Navi">
       <UniqueIdentifier>{5d634320-9e3b-4c36-8a89-c0f3d3f0451a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02.GameObject\Hero\PlayerManager">
+      <UniqueIdentifier>{ce077623-04e8-4c40-8af9-f2569ee5e2a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObject\Camera\Player">
+      <UniqueIdentifier>{aab85b7a-2a7c-4ebc-99ba-047c180c72b5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h">
@@ -152,6 +158,12 @@
     </ClInclude>
     <ClInclude Include="..\Public\Navi_Bridge.h">
       <Filter>02.GameObject\Navi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\PlayerManager.h">
+      <Filter>02.GameObject\Hero\PlayerManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Camera_Player.h">
+      <Filter>02.GameObject\Camera\Player</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -230,6 +242,12 @@
     </ClCompile>
     <ClCompile Include="..\Private\Navi_Bridge.cpp">
       <Filter>02.GameObject\Navi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\PlayerManager.cpp">
+      <Filter>02.GameObject\Hero\PlayerManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Camera_Player.cpp">
+      <Filter>02.GameObject\Camera\Player</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

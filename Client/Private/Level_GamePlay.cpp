@@ -2,6 +2,7 @@
 
 #include "GameInstance.h"
 #include "Camera_Free.h"
+#include "Camera_Player.h"
 #include "Monster_Skeleton.h"
 #include "Player.h"
 #include "MapObject.h"
@@ -34,7 +35,10 @@ HRESULT CLevel_GamePlay::Initialize()
 		return E_FAIL;
 
 	/* 현재 레벨을 구성해주기 위한 객체들을 생성한다. */
-	if (FAILED(Ready_Layer_Camera(TEXT("Layer_Camera"))))
+	/*if (FAILED(Ready_Layer_Camera(TEXT("Layer_Camera"))))
+		return E_FAIL;*/
+
+	if (FAILED(Ready_Layer_Camera_Player(TEXT("Layer_Camera"))))
 		return E_FAIL;
 
 	if (FAILED(Ready_Layer_BackGround(TEXT("Layer_BackGround"))))
@@ -129,6 +133,31 @@ HRESULT CLevel_GamePlay::Ready_Layer_Camera(const _wstring& strLayerTag)
 
 	if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::GAMEPLAY), strLayerTag,
 		ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Camera_Free"), &CameraDesc)))
+		return E_FAIL;
+
+	return S_OK;
+}
+
+HRESULT CLevel_GamePlay::Ready_Layer_Camera_Player(const _wstring& strLayerTag)
+{
+	CCamera_Player::CAMERA_FREE_DESC CameraDesc{};
+
+	// 기본 카메라(베이스) 파라미터
+	CameraDesc.vEye = _float4(0.f, 2.f, -5.f, 1.f);
+	CameraDesc.vAt = _float4(0.f, 1.5f, 0.f, 1.f);
+	CameraDesc.fFovy = XMConvertToRadians(60.0f);
+	CameraDesc.fNear = 0.1f;
+	CameraDesc.fFar = 500.f;
+	CameraDesc.fSpeedPerSec = 10.f;
+	CameraDesc.fRotationPerSec = XMConvertToRadians(180.0f);
+
+	// 플레이어 카메라 전용 파라미터
+	CameraDesc.fMouseSensor = 0.002f;   // 마우스 감도(라디안/픽셀)
+	CameraDesc.fInitDistance = 1.5f;    // 시작 거리
+
+	if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(
+		ENUM_CLASS(LEVEL::GAMEPLAY), strLayerTag,
+		ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Camera_Player"), &CameraDesc)))
 		return E_FAIL;
 
 	return S_OK;

@@ -25,6 +25,12 @@ public:
 		RUN		= 0x00000004,
 		DASH	= 0x00000008,
 	};
+
+public:
+	const _float4x4* GetWorldMatrixPtr() const {
+		return m_pTransformCom ? m_pTransformCom->Get_WorldMatrixPtr() : nullptr;
+	}
+
 private:
 	CPlayer(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	CPlayer(const CPlayer& Prototype);
@@ -37,6 +43,14 @@ public:
 	virtual void Update(_float fTimeDelta);
 	virtual void Late_Update(_float fTimeDelta);
 	virtual HRESULT Render();
+
+public:
+	//Æ®·£½ºÆû
+	_vector Get_TransformState(Engine::STATE s) const;
+	_vector GetPos() const;                          // POSITION
+	_vector GetForward(bool flattenY = false) const; // LOOK 
+	_vector GetRight() const;                        // RIGHT
+	_vector GetUp() const;                           // UP
 
 private:
 	EObjectType			m_eType = { EObjectType::HERO };

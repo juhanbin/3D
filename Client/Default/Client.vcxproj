@@ -155,6 +155,7 @@
     <ClInclude Include="..\Public\Body_Monster_Skeleton.h" />
     <ClInclude Include="..\Public\Body_Player.h" />
     <ClInclude Include="..\Public\Camera_Free.h" />
+    <ClInclude Include="..\Public\Camera_Player.h" />
     <ClInclude Include="..\Public\Client_Defines.h" />
     <ClInclude Include="..\Public\Cursor.h" />
     <ClInclude Include="..\Public\Fade.h" />
@@ -169,6 +170,7 @@
     <ClInclude Include="..\Public\Monster_Skeleton.h" />
     <ClInclude Include="..\Public\Navi_Bridge.h" />
     <ClInclude Include="..\Public\Player.h" />
+    <ClInclude Include="..\Public\PlayerManager.h" />
     <ClInclude Include="..\Public\Terrain.h" />
     <ClInclude Include="..\Public\Weapon.h" />
     <ClInclude Include="..\Public\Weapon_Monster_Skeleton.h" />
@@ -182,6 +184,7 @@
     <ClCompile Include="..\Private\Body_Monster_Skeleton.cpp" />
     <ClCompile Include="..\Private\Body_Player.cpp" />
     <ClCompile Include="..\Private\Camera_Free.cpp" />
+    <ClCompile Include="..\Private\Camera_Player.cpp" />
     <ClCompile Include="..\Private\Cursor.cpp" />
     <ClCompile Include="..\Private\Fade.cpp" />
     <ClCompile Include="..\Private\Level_GamePlay.cpp" />
@@ -195,6 +198,7 @@
     <ClCompile Include="..\Private\Monster_Skeleton.cpp" />
     <ClCompile Include="..\Private\Navi_Bridge.cpp" />
     <ClCompile Include="..\Private\Player.cpp" />
+    <ClCompile Include="..\Private\PlayerManager.cpp" />
     <ClCompile Include="..\Private\Terrain.cpp" />
     <ClCompile Include="..\Private\Weapon.cpp" />
     <ClCompile Include="..\Private\Weapon_Monster_Skeleton.cpp" />

@@ -98,11 +98,6 @@ public:
 	CEventBus* Get_EventBus() const { return m_pEventBus; }
 #pragma endregion
 
-	//
-	//#pragma region PICKING 
-	//	void Transform_Picking_ToLocalSpace(class CTransform* pTransformCom);
-	//	_bool isPicked_InLocalSpace(const _float3& vPointA, const _float3& vPointB, const _float3& vPointC, _float3* pOut);
-	//#pragma endregion
 public:
 	CGraphic_Device* GetGraphicDevice();
 

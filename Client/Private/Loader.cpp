@@ -9,6 +9,7 @@
 #include "Monster_Skeleton.h"
 #include "MapObject.h"
 #include "Camera_Free.h"
+#include "Camera_Player.h"
 #include "Cursor.h"
 #include "Fade.h"
 #include "Client_Defines.h"
@@ -241,14 +242,7 @@ HRESULT CLoader::Loading_For_GamePlay_Level()
 		return E_FAIL;
 	}
 
-	
-
 	lstrcpy(m_szLoadingText, TEXT("네비게이션을 로딩중입니다."));
-	///* Prototype_Component_Navigation */
-	//if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Navigation"),
-	//	CNavigation::Create(m_pDevice, m_pContext, TEXT("../Bin/DataFiles/Navigation.dat")))))
-	//	return E_FAIL;
-
 	/* Prototype_Component_Navigation */
 	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Navigation"),
 		CNavigation::Create(m_pDevice, m_pContext, TEXT("../../Mapdata/navmesh.nav")))))
@@ -291,6 +285,10 @@ HRESULT CLoader::Loading_For_GamePlay_Level()
 		CCamera_Free::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
+	/* Prototype_GameObject_Camera_Player */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Camera_Player"),
+		CCamera_Player::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
 
 	/* Prototype_GameObject_Player */
 	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Player"),
