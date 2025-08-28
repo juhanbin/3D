@@ -2,9 +2,10 @@
 
 #include "Client_Defines.h"
 #include "ContainerObject.h"   // CContainerObject
-#include "Transform.h"         // _vector helpers
+//#include "Transform.h"         // _vector helpers
 
 NS_BEGIN(Engine)
+class CCollider;
 class CNavigation;
 NS_END
 
@@ -38,7 +39,6 @@ public:
     virtual HRESULT Render() override;
 
 public:
-    // Helper getters
     _vector Get_TransformState(Engine::STATE s) const;
     _vector GetPos() const;
     _vector GetForward(bool flattenY) const;
@@ -50,27 +50,25 @@ private:
     HRESULT Ready_PartObjects();
 
 private:
-    // --- 외부 컴포넌트 ---
     Engine::CNavigation* m_pNavigationCom = nullptr;
+    CCollider* m_pColliderCom = { nullptr };
 
-    // --- 상태 ---
+    //상태
     _uint   m_iState = 0;
     EObjectType    m_eType = EObjectType::HERO;
 
     MOVING  m_eMoving = MOVING::IDLE;
     ATTACK  m_eAttack = ATTACK::NONE;
 
-    // Shift 입력으로 RUN/DASH 구분
     bool    m_bShiftPressed = false;
     float   m_fShiftHeldSec = 0.f;
 
-    // 대쉬 플래그를 딱 1프레임만 유지하기 위한 래치
     int     m_iDashFlagFrames = 0;
 
 private:
-    // 튜닝 파라미터
-    static constexpr float kRunHoldThreshold = 0.23f; // 이 시간 이상이면 RUN, 미만이면 DASH
-    static constexpr float kDashImpulseMul = 20.0f; // 대쉬 즉시 임펄스( dt * mul )
+
+    static constexpr float kRunHoldThreshold = 0.23f; 
+    static constexpr float kDashImpulseMul = 20.0f;
     static constexpr float kRunMul = 1.3f;
     static constexpr float kAimWalkMul = 0.3f;
     static constexpr float kAimRunMul = 0.6f;

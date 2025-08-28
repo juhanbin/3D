@@ -37,7 +37,6 @@ void CPlayerManager::SetActive(_uint id)
     m_activeId = id;
 }
 
-// ---------- 위치/방향 : Player의 편의 Getter 사용 ----------
 _vector CPlayerManager::GetPos() const
 {
     return m_pActive ? m_pActive->GetPos() : XMVectorZero();
@@ -60,9 +59,6 @@ _vector CPlayerManager::GetUp() const
     return m_pActive ? m_pActive->GetUp()
         : XMVectorSet(0.f, 1.f, 0.f, 0.f);
 }
-// ----------------------------------------------------------
-
-// ---- HP ----
 _float CPlayerManager::GetHP(_uint id) const
 {
     auto it = m_players.find(id);

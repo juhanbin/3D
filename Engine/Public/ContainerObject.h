@@ -12,6 +12,10 @@ protected:
 	virtual ~CContainerObject() = default;
 
 public:
+	class CComponent* Get_Component(const _wstring& strPartTag, const _wstring& strComponentTag);
+
+
+public:
 	virtual HRESULT Initialize_Prototype() override;
 	virtual HRESULT Initialize(void* pArg) override;
 	virtual void Priority_Update(_float fTimeDelta) override;

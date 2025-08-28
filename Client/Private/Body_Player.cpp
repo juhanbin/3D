@@ -32,7 +32,6 @@ HRESULT CBody_Player::Initialize(void* pArg)
     if (FAILED(__super::Initialize(pArg))) return E_FAIL;
     if (FAILED(Ready_Components()))       return E_FAIL;
 
-    // 초기 상태
     m_iCurAnim = -1;
     m_bCurLoop = true;
     m_fCurBlend = 0.f;
@@ -50,12 +49,11 @@ HRESULT CBody_Player::Initialize(void* pArg)
 
 void CBody_Player::Priority_Update(_float /*fTimeDelta*/)
 {
-    // 필요 시 선행 처리
+
 }
 
 void CBody_Player::Update(_float fTimeDelta)
 {
-    // --- 대쉬 재트리거 쿨다운 감소 ---
     if (m_fDashFinishBlock > 0.f)
         m_fDashFinishBlock -= fTimeDelta;
 
@@ -65,7 +63,6 @@ void CBody_Player::Update(_float fTimeDelta)
 
     const bool finished = m_pModelCom->Play_Animation(playDt);
 
-    // one-shot 종료 후 정리(현재 재생중 클립 기준)
     if (m_bDashPlaying && m_iCurAnim == 2 && finished) {
         m_bDashPlaying = false;
         m_fDashFinishBlock = 0.03f; // 같은 프레임 재트리거 방지
@@ -79,16 +76,12 @@ void CBody_Player::Update(_float fTimeDelta)
         if (m_pAttack) *m_pAttack = ATTACK::NONE;
     }
 
-    // -------------------------------------------------
-    // 1) 다음 클립 선택
-    // -------------------------------------------------
     int   nextAnim = -1;
     bool  nextLoop = true;
     bool  forceStart = false;
 
     const bool dashRequested = (m_pMoving && *m_pMoving == MOVING::DASH);
 
-    // 대쉬: 진행중이면 유지, 아니면 요청이 있고 쿨다운이 0일 때 1회 시작
     if (m_bDashPlaying) {
         nextAnim = 2; nextLoop = false;
     }
@@ -98,13 +91,11 @@ void CBody_Player::Update(_float fTimeDelta)
         nextAnim = 2; nextLoop = false;
     }
     else {
-        // 지면찍기(one-shot)
         if (m_pAttack && *m_pAttack == ATTACK::GROUND) {
             if (!m_bGroundPlaying) { forceStart = true; m_bGroundPlaying = true; }
             nextAnim = 7; nextLoop = false;
         }
 
-        // 공격/조준
         if (nextAnim < 0 && m_pAttack && *m_pAttack != ATTACK::NONE) {
             switch (*m_pAttack) {
             case ATTACK::ENTER:  nextAnim = 0;  nextLoop = false; forceStart = true; break;
@@ -118,7 +109,6 @@ void CBody_Player::Update(_float fTimeDelta)
             }
         }
 
-        // 로코모션
         if (nextAnim < 0 && m_pMoving) {
             switch (*m_pMoving) {
             case MOVING::RUN:  nextAnim = 15; nextLoop = true; break;
@@ -128,10 +118,8 @@ void CBody_Player::Update(_float fTimeDelta)
         }
     }
 
-    // 안전가드
     if (nextAnim < 0) { nextAnim = (m_iCurAnim >= 0) ? m_iCurAnim : 10; nextLoop = true; }
 
-    // 로코모션 히스테리시스(깜빡임 방지)
     auto isLoco = [](int a) { return (a == 10 || a == 11 || a == 15); };
     if (isLoco(nextAnim)) {
         if (m_LastLocoAnim < 0) {
@@ -155,12 +143,11 @@ void CBody_Player::Update(_float fTimeDelta)
         m_LocoHold = 0.f;
     }
 
-    // -------------------------------------------------
-    // 2) 선택 결과 적용(이 프레임에는 추가 재생 X)
-    // -------------------------------------------------
     SetClipSmart(nextAnim, nextLoop, 0.25f, forceStart);
 
     Update_CombinedMatrix();
+
+    m_pColliderCom->Update(XMLoadFloat4x4(&m_CombinedWorldMatrix));
 }
 
 void CBody_Player::Late_Update(_float fTimeDelta)
@@ -190,26 +177,31 @@ HRESULT CBody_Player::Render()
         m_pShaderCom->Begin(0);
         m_pModelCom->Render(i);
     }
+
+#ifdef _DEBUG
+    m_pColliderCom->Render();
+#endif
+
     return S_OK;
 }
 
 void CBody_Player::SetClipSmart(int animIndex, bool loop, _float blendDur, bool forceRestart)
 {
-    // 1) 다른 인덱스면 무조건 세팅(재시작)
+
     if (animIndex != m_iCurAnim) {
         m_pModelCom->Set_Animation(animIndex, loop, blendDur, true);
         m_iCurAnim = animIndex; m_bCurLoop = loop; m_fCurBlend = blendDur;
         return;
     }
 
-    // 2) 같은 인덱스지만 강제 재시작이면 리스타트
+
     if (forceRestart) {
         m_pModelCom->Set_Animation(animIndex, loop, blendDur, true);
         m_bCurLoop = loop; m_fCurBlend = blendDur;
         return;
     }
 
-    // 3) 같은 인덱스 + loop/fade 변경만 → 리스타트 없이 반영
+
     if (loop != m_bCurLoop || std::fabs(blendDur - m_fCurBlend) > 1e-3f) {
         m_pModelCom->Set_Animation(animIndex, loop, blendDur, false);
         m_bCurLoop = loop; m_fCurBlend = blendDur;
@@ -227,6 +219,14 @@ HRESULT CBody_Player::Ready_Components()
     if (FAILED(CGameObject::Add_Component(
         ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Model_Hero"),
         TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom), nullptr)))
+        return E_FAIL;
+
+    CBounding_Sphere::BOUNDING_SPHERE_DESC  SphereDesc{};
+    SphereDesc.fRadius = 0.7f;
+    SphereDesc.vCenter = _float3(0.f, SphereDesc.fRadius, 0.f);
+
+    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Collider_Sphere"),
+        TEXT("Com_Collider"), reinterpret_cast<CComponent**>(&m_pColliderCom), &SphereDesc)))
         return E_FAIL;
 
     return S_OK;

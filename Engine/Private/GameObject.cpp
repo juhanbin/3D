@@ -4,8 +4,8 @@
 
 CGameObject::CGameObject(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	: m_pDevice{ pDevice }
-	, m_pContext { pContext }
-	, m_pGameInstance { CGameInstance::GetInstance() }
+	, m_pContext{ pContext }
+	, m_pGameInstance{ CGameInstance::GetInstance() }
 {
 	Safe_AddRef(m_pGameInstance);
 	Safe_AddRef(m_pDevice);
@@ -28,7 +28,7 @@ CComponent* CGameObject::Get_Component(const _wstring& strComponentTag)
 	if (iter == m_Components.end())
 		return nullptr;
 
-	return iter->second;	
+	return iter->second;
 }
 
 HRESULT CGameObject::Initialize_Prototype()
@@ -43,9 +43,9 @@ HRESULT CGameObject::Initialize(void* pArg)
 		return E_FAIL;
 
 	if (FAILED(m_pTransformCom->Initialize(pArg)))
-		return E_FAIL;	
+		return E_FAIL;
 
-	m_Components.emplace(TEXT("Com_Transform"), m_pTransformCom);		
+	m_Components.emplace(TEXT("Com_Transform"), m_pTransformCom);
 
 	Safe_AddRef(m_pTransformCom);
 
@@ -74,7 +74,7 @@ HRESULT CGameObject::Add_Component(_uint iPrototypeLevelIndex, const _wstring& s
 	if (nullptr != Get_Component(strComponentTag))
 		return E_FAIL;
 
-	CComponent*		pComponent = dynamic_cast<CComponent*>(m_pGameInstance->Clone_Prototype(PROTOTYPE::COMPONENT, iPrototypeLevelIndex, strPrototypeTag, pArg));
+	CComponent* pComponent = dynamic_cast<CComponent*>(m_pGameInstance->Clone_Prototype(PROTOTYPE::COMPONENT, iPrototypeLevelIndex, strPrototypeTag, pArg));
 	if (nullptr == pComponent)
 		return E_FAIL;
 

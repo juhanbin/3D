@@ -59,11 +59,11 @@ private: // Picking helpers (월드 변환/레이)
         const DirectX::XMVECTOR& rayDirW,
         DirectX::XMFLOAT3& outHitW) const;
 
-    // 화면 좌표 → 레이 생성
+    // 화면 좌표 -> 레이 생성
     static void MakeRayFromMouse(DirectX::XMVECTOR& ro, DirectX::XMVECTOR& rd,
         const _float4x4& V, const _float4x4& P);
 
-    // ====== 메시(삼각형) 피킹 ======
+    // 메시(삼각형) 피킹 
     struct MeshCache {
         std::vector<DirectX::XMFLOAT3> vertices; // 로컬 좌표(PreTransform bake)
         std::vector<uint32_t>          indices;  // 3의 배수
@@ -80,29 +80,25 @@ private: // Picking helpers (월드 변환/레이)
     bool LoadFbxForPicking_FBX(const char* fbx, const DirectX::XMMATRIX& P, ModelCache& out);
     const ModelCache* GetModelCacheFbx(const char* fbxPath, const DirectX::XMMATRIX& pre);
 
-    // 레이-삼각형 교차 (M?ller?Trumbore)
     static bool RayTriangleMT(DirectX::FXMVECTOR ro, DirectX::FXMVECTOR rd,
         DirectX::FXMVECTOR v0, DirectX::FXMVECTOR v1, DirectX::FXMVECTOR v2,
         float& t, float& u, float& v);
 
-    // 가장 가까운 “실제 표면(A)” 피킹
     bool PickSurface_Mesh(DirectX::XMFLOAT3& outHitPointW,
         DirectX::XMFLOAT3& outNormalW,
-        int& outObjIdx); // 엔진 레이 사용 버전
+        int& outObjIdx); 
 
-    // 레이를 직접 넣는 버전(첫 클릭 안정화용)
     bool PickSurface_Mesh(const DirectX::XMVECTOR& ro, const DirectX::XMVECTOR& rd,
         DirectX::XMFLOAT3& outHitPointW,
         DirectX::XMFLOAT3& outNormalW,
         int& outObjIdx);
 
-    // ====== OBB (브로드페이즈용, 선택) ======
     struct OBB {
-        DirectX::XMFLOAT3 C;       // center (world)
-        DirectX::XMFLOAT3 AxisX;   // world unit axis
+        DirectX::XMFLOAT3 C;      
+        DirectX::XMFLOAT3 AxisX;  
         DirectX::XMFLOAT3 AxisY;
         DirectX::XMFLOAT3 AxisZ;
-        DirectX::XMFLOAT3 Extent;  // half-size (scale 반영)
+        DirectX::XMFLOAT3 Extent; 
     };
     bool  BuildOBB(const MapObject& o, const ModelCache& mdl, OBB& out) const;
     static bool RayOBB_Face(const DirectX::XMVECTOR& ro, const DirectX::XMVECTOR& rd,
@@ -148,7 +144,6 @@ private:
     _float3  m_DebugHitPoint{ 0,0,0 };
     _float3  m_DebugHitNormal{ 0,1,0 };
 
-    // FBX 캐시(키: fbxPath + pre-transform)
     std::unordered_map<std::string, ModelCache> m_ModelCache;
 
     // ======== Navigation Editing ========
@@ -156,18 +151,17 @@ public:
     struct NavCell { _float3 A, B, C; };
 
 private:
-    bool  m_NavEditMode = false;     // 네비 편집 모드
-    bool  m_NavSnapToGrid = true;    // 그리드 스냅
-    float m_NavGridSize = 0.01f;     // 1cm
-    float m_NavSnapEps = 0.002f;     // 재사용 epsilon
-    bool  m_NavForceCW_XZ = true;    // XZ 기준 시계방향 강제
-    float m_NavJoinRadius = 0.5f;    // 50cm: 기존 정점 자동 부착 반경
+    bool  m_NavEditMode = false;    
+    bool  m_NavSnapToGrid = true;   
+    float m_NavGridSize = 0.01f;    
+    float m_NavSnapEps = 0.002f;    
+    bool  m_NavForceCW_XZ = true;   
+    float m_NavJoinRadius = 0.5f;   
 
-    std::vector<_float3> m_NavVerts;          // 전역 정점 풀(좌표 동일성 보장)
-    std::vector<NavCell> m_NavCells;          // 완성된 셀
-    std::vector<_float3> m_NavWorking;        // 0~3개 작업점
+    std::vector<_float3> m_NavVerts;          
+    std::vector<NavCell> m_NavCells;          
+    std::vector<_float3> m_NavWorking;        
 
-    // Nav 편집 유틸
     bool    Nav_TryPickPoint(const DirectX::XMVECTOR& ro, const DirectX::XMVECTOR& rd, _float3& out);
     _float3 Nav_SnapAndRegister(const _float3& p);
     void    Nav_EnsureCCW_Up(_float3& A, _float3& B, _float3& C);

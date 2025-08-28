@@ -56,22 +56,20 @@ private:
     _float  m_MinDist = 3.0f;
     _float  m_MaxDist = 7.5f;
 
-    // 줌 파라미터
+    // 줌 
     float m_DefaultDist = 0.1f;                     // 평상시 거리
-    float m_AimDist = -1.f;                    // 조준(줌) 거리
+    float m_AimDist = -1.f;                         // 조준(줌) 거리
     float m_ZoomLerpSpeed = 10.f;                    // 거리 보간 속도
 
-    // FOV 보간(선택)
     float m_DefaultFov = XMConvertToRadians(60.f);
     float m_AimFov = XMConvertToRadians(45.f);
     float m_FovLerpSpeed = 8.f;
 
-    // 숄더뷰 오프셋(플레이어 로컬 기준)
+    // 숄더뷰 오프셋
     _float  m_ShoulderRight = 0.5f;  // +X
     _float  m_TargetHeight = 1.5f;  // +Y
-    _float  m_LookRightBias = 0.2f;  // 살짝 오른쪽을 보게
+    _float  m_LookRightBias = 0.2f;  // 살짝 오른쪽
 
-    // 위치 부드러움
     _float  m_PosSmoothTime = 0.12f;
     _vector m_PrevPos = XMVectorZero();
     _bool   m_FirstTick = true;

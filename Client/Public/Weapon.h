@@ -6,6 +6,7 @@
 #include "Player.h"
 
 NS_BEGIN(Engine)
+class CCollider;
 class CShader;
 class CModel;
 NS_END
@@ -37,6 +38,7 @@ public:
 	virtual HRESULT Render();
 
 private:
+	CCollider* m_pColliderCom = { nullptr };
 	CShader* m_pShaderCom = { nullptr };
 	CModel* m_pModelCom = { nullptr };
 
@@ -51,7 +53,7 @@ private:
 private:
 	bool      m_lastAiming = false; // 직전 프레임 조준 여부
 	XMFLOAT3  m_eulerEquip = { XMConvertToRadians(0.f),  XMConvertToRadians(0.f),  XMConvertToRadians(0.f) }; // 허리 장착 각
-	XMFLOAT3  m_eulerAim = { XMConvertToRadians(120.f), XMConvertToRadians(0.f),   XMConvertToRadians(0.f) }; // 조준 각(튜닝)
+	XMFLOAT3  m_eulerAim = { XMConvertToRadians(120.f), XMConvertToRadians(0.f),   XMConvertToRadians(0.f) }; // 조준 각
 
 private:
 	HRESULT Ready_Components();

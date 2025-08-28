@@ -1,3 +1,5 @@
+// MainApp.cpp  (통째로 교체)
+
 #include "MainApp.h"
 #include "GameInstance.h"
 #include "Level_Loading.h"
@@ -177,7 +179,7 @@ bool CMainApp::LoadFbxForPicking_FBX(const char* fbx,
 
         for (uint32_t v = 0; v < m->mNumVertices; ++v) {
             DirectX::XMFLOAT3 p{ m->mVertices[v].x, m->mVertices[v].y, m->mVertices[v].z };
-            // 렌더와 동일한 PreTransform 추가 적용
+
             XMVECTOR lp = XMLoadFloat3(&p);
             XMFLOAT3 pp;
             XMStoreFloat3(&pp, XMVector3TransformCoord(lp, P));
@@ -239,7 +241,6 @@ const CMainApp::ModelCache* CMainApp::GetModelCacheFbx(const char* fbxPath, cons
     return &m_ModelCache.find(key)->second;
 }
 
-/* --------------- 레이-삼각형 & 메시 표면 피킹 --------------- */
 
 bool CMainApp::RayTriangleMT(FXMVECTOR ro, FXMVECTOR rd,
     FXMVECTOR v0, FXMVECTOR v1, FXMVECTOR v2,
@@ -268,7 +269,6 @@ bool CMainApp::RayTriangleMT(FXMVECTOR ro, FXMVECTOR rd,
     return t > 0.f;
 }
 
-// 엔진이 제공하는 레이를 그대로 쓰는 버전(호환 유지)
 bool CMainApp::PickSurface_Mesh(XMFLOAT3& outHitPointW,
     XMFLOAT3& outNormalW,
     int& outObjIdx)
@@ -280,7 +280,6 @@ bool CMainApp::PickSurface_Mesh(XMFLOAT3& outHitPointW,
     return PickSurface_Mesh(ro, rdv, outHitPointW, outNormalW, outObjIdx);
 }
 
-// 레이를 직접 넣는 버전(첫 클릭에서도 정확)
 bool CMainApp::PickSurface_Mesh(const XMVECTOR& rayPosW, const XMVECTOR& rayDirW,
     XMFLOAT3& outHitPointW, XMFLOAT3& outNormalW, int& outObjIdx)
 {
@@ -293,14 +292,11 @@ bool CMainApp::PickSurface_Mesh(const XMVECTOR& rayPosW, const XMVECTOR& rayDirW
     {
         const MapObject& o = m_Objects[i];
 
-        // FBX 캐시 로드 (렌더와 동일한 PreTransform)
         XMMATRIX Pre = GetModelPreTransform(o);
         const ModelCache* model = GetModelCacheFbx(o.fbxPath, Pre);
         if (!model || !model->loaded) continue;
 
-        // 월드 변환
         XMMATRIX W = MakeWorld(o);
-        // 비균일 스케일 대비 노멀 변환 행렬
         XMMATRIX Nmat = XMMatrixInverse(nullptr, XMMatrixTranspose(W));
 
         for (const MeshCache& m : model->meshes)
@@ -341,7 +337,6 @@ bool CMainApp::PickSurface_Mesh(const XMVECTOR& rayPosW, const XMVECTOR& rayDirW
         return true;
     }
 
-    // 메시 미히트 → y=0 평면 교차라도 반환
     XMFLOAT3 g{};
     if (RaycastGround(rayPosW, rayDirW, g)) {
         outHitPointW = g; outNormalW = XMFLOAT3(0, 1, 0); outObjIdx = -1;
@@ -349,10 +344,6 @@ bool CMainApp::PickSurface_Mesh(const XMVECTOR& rayPosW, const XMVECTOR& rayDirW
     }
     return false;
 }
-
-/* ----------------------------------------------------------- */
-/*                       OBB 유틸(옵션)                        */
-/* ----------------------------------------------------------- */
 
 bool CMainApp::BuildOBB(const MapObject& o, const ModelCache& mdl, OBB& out) const
 {
@@ -463,9 +454,7 @@ void CMainApp::MakeRayFromMouse(XMVECTOR& ro, XMVECTOR& rd,
     rd = XMVector3Normalize(pFar - pNear);
 }
 
-/* ----------------------------------------------------------- */
-/*                       BIN Export (복구 + 통합)              */
-/* ----------------------------------------------------------- */
+/* ------------------- BIN Export (Anim / Non-Anim) ------------------- */
 
 void CMainApp::ExportModelToBin_Anim(const MapObject& obj, const char* binPath)
 {
@@ -512,7 +501,7 @@ void CMainApp::ExportModelToBin_Anim(const MapObject& obj, const char* binPath)
 
         // MeshInfo
         MeshInfoBin info{};
-        std::memset(info.Name, 0, sizeof(info.Name));
+        std::memset(info.Name, 0, sizeof(MeshInfoBin));
         std::strncpy(info.Name, mesh->mName.C_Str(), sizeof(info.Name) - 1);
         info.MaterialIndex = mesh->mMaterialIndex;
         info.NumVertices = mesh->mNumVertices;
@@ -823,7 +812,7 @@ void CMainApp::ExportModelToBin_NonAnim(const MapObject& obj, const char* binPat
         auto& indices = allIndices[i];
         indices.resize(info.NumIndices);
         uint32_t idx = 0;
-        for (uint32_t f = 0; f < mesh->mNumFaces; ++f) {
+        for (uint32_t f = 0; f < info.NumFaces; ++f) {
             aiFace& face = mesh->mFaces[f];
             indices[idx++] = face.mIndices[0];
             indices[idx++] = face.mIndices[1];
@@ -876,12 +865,14 @@ void CMainApp::ExportModelToBin_NonAnim(const MapObject& obj, const char* binPat
     printf("BIN(논애니) 저장 완료: %s\n", binPath);
 }
 
-/* ----------------------------------------------------------- */
-/*                       ImGui 패널                            */
-/* ----------------------------------------------------------- */
+
+/* ------------------------------ IMGUI ------------------------------ */
 
 void CMainApp::Render_ImGuiPanel()
 {
+    // Nav 편집 모드 토글(로컬 static: 프레임 간 유지)
+    static bool sNavEnabled = true;
+
     ImGui::Begin("Map Tool Panel");
 
     if (ImGui::Button("Create Object")) ImGui::OpenPopup("CreateObjectPopup");
@@ -943,9 +934,11 @@ void CMainApp::Render_ImGuiPanel()
     }
 
     // 클릭 → 메시표면(A) 정확 피킹
+    // Nav 편집 모드일 때는 디버그 피킹 비활성화(!sNavEnabled 가드)
     if (m_PickDebugEnabled &&
+        !sNavEnabled &&
         ImGui::IsMouseClicked(ImGuiMouseButton_Left) &&
-        !ImGui::GetIO().WantCaptureMouse) // ImGui가 입력을 잡으면 피킹 금지
+        !ImGui::GetIO().WantCaptureMouse)
     {
         _float4x4 V = *m_pGameInstance->Get_Transform_Float4x4(D3DTS::VIEW);
         _float4x4 P = *m_pGameInstance->Get_Transform_Float4x4(D3DTS::PROJ);
@@ -992,11 +985,10 @@ void CMainApp::Render_ImGuiPanel()
     }
     ImGui::End();
 
-    /* -------- Object Properties + BIN Export 버튼 삽입 -------- */
+    /* -------- Object Properties + BIN Export 버튼 -------- */
 
     ImGui::Begin("Object Properties");
-    // 선택 변경 시 BIN 경로 유도
-    static int s_PrevSelected = -1;
+    static int  s_PrevSelected = -1;
     static char s_BinPath[260] = "../../Mapdata/Model.bin";
     auto deriveBinFromFbx = [](const char* fbx, char* out, size_t outsz) {
         if (!fbx || !fbx[0]) { std::snprintf(out, outsz, "../../Mapdata/Model.bin"); return; }
@@ -1010,7 +1002,7 @@ void CMainApp::Render_ImGuiPanel()
         // 확장자 제거
         size_t dot = stem.find_last_of('.');
         if (dot != std::string::npos) stem = stem.substr(0, dot);
-        std::snprintf(out, outsz, "../../Mapdata/%s.bin", stem.c_str());
+        std::snprintf(out, outsz, "../../Mapdata/%s.bin", (int)stem.size() ? stem.c_str() : "Model");
         };
 
     if (m_Selected != -1) {
@@ -1035,18 +1027,69 @@ void CMainApp::Render_ImGuiPanel()
             RefreshScene();
         }
 
-        // --- BIN Export 버튼 (복구) ---
-        if (ImGui::Button("Export (Non-Anim)")) {
-            ExportModelToBin_NonAnim(m_Objects[m_Selected], s_BinPath);
-        }
+        // --- BIN Export 버튼
+        if (ImGui::Button("Export (Non-Anim)")) { ExportModelToBin_NonAnim(m_Objects[m_Selected], s_BinPath); }
         ImGui::SameLine();
-        if (ImGui::Button("Export (Anim)")) {
-            ExportModelToBin_Anim(m_Objects[m_Selected], s_BinPath);
-        }
+        if (ImGui::Button("Export (Anim)")) { ExportModelToBin_Anim(m_Objects[m_Selected], s_BinPath); }
     }
     ImGui::End();
 
-    // ===== 2D 디버그 오버레이 =====
+    /*  NavMesh Tool 패널 */
+
+    ImGui::Begin("NavMesh Tool");
+
+    ImGui::Checkbox("Enable Nav Edit (LMB to add)", &sNavEnabled);
+    ImGui::SameLine();
+    ImGui::Text("Cells: %d  Work: %d", (int)m_NavCells.size(), (int)m_NavWorking.size());
+
+    static bool sAutoCommit = true;
+    ImGui::Checkbox("Auto Commit Triangle", &sAutoCommit);
+    ImGui::Checkbox("Snap to Grid", &m_NavSnapToGrid);
+    ImGui::SameLine(); ImGui::DragFloat("Grid", &m_NavGridSize, 0.05f, 0.05f, 10.f, "%.2f");
+    ImGui::DragFloat("Join Radius", &m_NavJoinRadius, 0.01f, 0.0f, 2.0f, "%.3f");
+    ImGui::DragFloat("Snap Epsilon", &m_NavSnapEps, 1e-4f, 0.0f, 0.1f, "%.5f");
+    ImGui::Checkbox("Force CW on XZ", &m_NavForceCW_XZ);
+
+    if (sNavEnabled &&
+        ImGui::IsMouseClicked(ImGuiMouseButton_Left) &&
+        !ImGui::GetIO().WantCaptureMouse)
+    {
+        _float4x4 V = *m_pGameInstance->Get_Transform_Float4x4(D3DTS::VIEW);
+        _float4x4 P = *m_pGameInstance->Get_Transform_Float4x4(D3DTS::PROJ);
+        XMVECTOR ro, rd;
+        MakeRayFromMouse(ro, rd, V, P);
+
+        _float3 hit{};
+        if (Nav_TryPickPoint(ro, rd, hit)) {
+            m_NavWorking.push_back(hit);
+            if (sAutoCommit && m_NavWorking.size() >= 3)
+                Nav_CommitIfTri();
+        }
+    }
+
+    if (ImGui::Button("Commit Triangle")) { Nav_CommitIfTri(); }
+    ImGui::SameLine();
+    if (ImGui::Button("Undo Working Point")) { if (!m_NavWorking.empty()) m_NavWorking.pop_back(); }
+    ImGui::SameLine();
+    if (ImGui::Button("Undo Cell")) { Nav_UndoCell(); }
+    ImGui::SameLine();
+    if (ImGui::Button("Clear All")) { Nav_ClearAll(); }
+
+    static char sNavPath[260] = "../../Mapdata/navmesh.bin";
+    ImGui::InputText("Nav BIN Path", sNavPath, 260);
+    if (ImGui::Button("Save Nav")) {
+        if (Nav_Save(sNavPath)) OutputDebugStringA("[NavMesh] save OK\n");
+        else                    OutputDebugStringA("[NavMesh] save FAILED\n");
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Load Nav")) {
+        if (Nav_Load(sNavPath)) { OutputDebugStringA("[NavMesh] load OK\n"); RefreshScene(); }
+        else                    OutputDebugStringA("[NavMesh] load FAILED\n");
+    }
+
+    ImGui::End();
+
+    // ===== 2D 디버그 오버레이 (셀/작업점 표시) =====
     auto WorldToScreen = [this](const DirectX::XMFLOAT3& wpos, ImVec2& out)->bool {
         using namespace DirectX;
         _float4x4 V = *m_pGameInstance->Get_Transform_Float4x4(D3DTS::VIEW);
@@ -1077,18 +1120,16 @@ void CMainApp::Render_ImGuiPanel()
         }
         ImVec2 a, b;
         if (WorldToScreen(p0, a) && WorldToScreen(p1, b))
-            dl->AddLine(a, b, IM_COL32(255, 215, 0, 255), 2.0f); // 노란 레이
+            dl->AddLine(a, b, IM_COL32(255, 215, 0, 255), 2.0f);
     }
 
-    // 교차점: 메시면 초록, ground면 시안
-    if (m_LastPickValid) {
+    /*if (m_LastPickValid) {
         ImVec2 sh;
         if (WorldToScreen(m_DebugHitPoint, sh)) {
             ImU32 col = m_DebugHasHit ? IM_COL32(64, 255, 64, 255) : IM_COL32(64, 255, 255, 255);
             dl->AddCircleFilled(sh, 5.f, col, 16);
         }
 
-        // 노말 미니 화살표
         XMFLOAT3 tip = {
             m_DebugHitPoint.x + m_DebugHitNormal.x * 0.35f,
             m_DebugHitPoint.y + m_DebugHitNormal.y * 0.35f,
@@ -1098,15 +1139,12 @@ void CMainApp::Render_ImGuiPanel()
         if (WorldToScreen(m_DebugHitPoint, a) && WorldToScreen(tip, b)) {
             dl->AddLine(a, b, IM_COL32(200, 200, 255, 255), 2.0f);
         }
-    }
+    }*/
 
-    // 네비 오버레이(완성 셀/작업점)
     Nav_RenderOverlay();
 }
 
-/* ----------------------------------------------------------- */
-/*                      저장/로드/기타                         */
-/* ----------------------------------------------------------- */
+/* ---------------- Scene Save / Load & Helpers ---------------- */
 
 void CMainApp::SaveScene(const char* filename)
 {
@@ -1165,7 +1203,7 @@ void CMainApp::Free()
     m_pGameInstance->Release_Engine(); Safe_Release(m_pGameInstance);
 }
 
-/* ======================= Navigation 편집 구현 ======================= */
+/* ------------------------ Nav 편집 보조 유틸 ------------------------ */
 
 // 보조 유틸(그리드 양자화)
 static inline _float3 Quantize(const _float3& p, float grid) {
@@ -1190,7 +1228,6 @@ static inline const _float3* FindNearestNavVertex(const std::vector<_float3>& ve
     return nearest;
 }
 
-// XZ 평면 CCW(+)/CW(-) 판정
 static inline float SignedAreaXZ(const _float3& A, const _float3& B, const _float3& C)
 {
     float x1 = B.x - A.x, z1 = B.z - A.z;
@@ -1209,15 +1246,11 @@ _float3 CMainApp::Nav_SnapAndRegister(const _float3& pIn)
 {
     _float3 p = pIn;
 
-    // (a) 기존 정점에 "부착"
     if (const _float3* nv = FindNearestNavVertex(m_NavVerts, p, m_NavJoinRadius)) {
-        return *nv; // 비트 동일 값 재사용
+        return *nv;
     }
-
-    // (b) 그리드 스냅(선택)
     _float3 key = m_NavSnapToGrid ? Quantize(p, m_NavGridSize) : p;
 
-    // (c) epsilon 재사용
     for (const auto& v : m_NavVerts) {
         if (fabsf(v.x - key.x) <= m_NavSnapEps &&
             fabsf(v.y - key.y) <= m_NavSnapEps &&
@@ -1233,12 +1266,10 @@ _float3 CMainApp::Nav_SnapAndRegister(const _float3& pIn)
 
 void CMainApp::Nav_EnsureCCW_Up(_float3& A, _float3& B, _float3& C)
 {
-    // 1) 경사면에서도 법선이 +Y로 향하도록
     XMVECTOR a = XMLoadFloat3(&A), b = XMLoadFloat3(&B), c = XMLoadFloat3(&C);
     float ny = XMVectorGetY(XMVector3Cross(b - a, c - a));
     if (ny < 0.f) std::swap(B, C);
 
-    // 2) XZ 기준 시계방향 강제 옵션
     if (m_NavForceCW_XZ) {
         float area = SignedAreaXZ(A, B, C); // +: CCW, -: CW
         if (area > 0.f) std::swap(B, C);  // CCW면 뒤집어서 CW로

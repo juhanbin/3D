@@ -30,7 +30,6 @@ public:
     _float4x4* Get_BoneMatrix(const _char* pBoneName);
 
 public:
-    // CGameObject
     virtual HRESULT Initialize_Prototype() override;
     virtual HRESULT Initialize(void* pArg) override;
     virtual void    Priority_Update(_float fTimeDelta) override;
@@ -39,7 +38,6 @@ public:
     virtual HRESULT Render() override;
 
 public:
-    // 같은 인덱스여도 loop/blend 변경 반영, forceRestart로 재시작
     void SetClipSmart(int animIndex, bool loop, _float blendDur, bool forceRestart = false);
 
 private:
@@ -47,30 +45,25 @@ private:
     HRESULT Bind_ShaderResources();
 
 private:
-    // Components
     CShader* m_pShaderCom = nullptr;
     CModel* m_pModelCom = nullptr;
+    CCollider* m_pColliderCom = { nullptr };
 
-    // External state from Player
     _uint* m_pParentState = nullptr;
     MOVING* m_pMoving = nullptr;
     ATTACK* m_pAttack = nullptr;
 
-    // Current clip state
     int   m_iCurAnim = -1;
     bool  m_bCurLoop = true;
     float m_fCurBlend = 0.f;
 
-    // One-shot latches
     bool  m_bDashPlaying = false;
     bool  m_bGroundPlaying = false;
 
-    // Locomotion hysteresis (toggle 방지)
-    int   m_LastLocoAnim = -1;    // 10/11/15 중 최근
-    float m_LocoHold = 0.f;   // 유지시간
+    int   m_LastLocoAnim = -1;   
+    float m_LocoHold = 0.f;   
     const float LOCO_MIN_HOLD = 0.03f;
 
-    // Dash 재트리거 방지 쿨다운(종료 직후 몇 프레임 봉인)
     float m_fDashFinishBlock = 0.f;
 
 public:

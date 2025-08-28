@@ -50,17 +50,30 @@ void CBody_Monster_Skeleton::Update(_float fTimeDelta)
 	// 이번 프레임에 현재 클립이 끝났는지
 	const bool finished = m_pModelCom->Play_Animation(fTimeDelta);
 
-	constexpr int ANIM_IDLE = 6;
-	constexpr int ANIM_WALK = 17;
-	constexpr int ANIM_ATTACK = 4;
+	constexpr int ANIM_IDLE = 7;
+	constexpr int ANIM_WALK = 19;
+	constexpr int ANIM_ATTACK = 5;
 	constexpr int ANIM_BOW_IDLE = 1;
 	constexpr int ANIM_BOW_ATTACK = 2;
+	constexpr int ANIM_DIE_START = 17;
+	constexpr int ANIM_DIE_END = 18;
 
 	const MONSTER cur = *m_pParentState;
 	const bool stateChanged = (cur != m_prevState);
 
 	switch (cur)
 	{
+	case MONSTER::HIT:
+		if (stateChanged) {
+			SetClipSmart(ANIM_DIE_START, false, 0.08f, true);
+		}
+		else {
+			if (finished && m_iCurAnim == ANIM_DIE_START) {
+				SetClipSmart(ANIM_DIE_END, false, 0.0f, true);
+			}
+		}
+		break;
+
 	case MONSTER::SPEARE_IDLE:
 		SetClipSmart(ANIM_IDLE, true, 0.15f, stateChanged);
 		break;
@@ -71,12 +84,10 @@ void CBody_Monster_Skeleton::Update(_float fTimeDelta)
 
 	case MONSTER::SPEARE_ATTACK:
 		if (stateChanged) {
-			// Idle/Walk -> Attack 전이: 강제 리스타트
 			SetClipSmart(ANIM_ATTACK, false, 0.05f, true);
 			m_AttackCooldown = m_AttackRepeatGap;
 		}
 		else {
-			// 공격 상태 유지 중: 이번 프레임에 끝났다면 텀 이후 재시작
 			if (finished && m_AttackCooldown <= 0.f) {
 				SetClipSmart(ANIM_ATTACK, false, 0.0f, true);
 				m_AttackCooldown = m_AttackRepeatGap;
@@ -89,12 +100,10 @@ void CBody_Monster_Skeleton::Update(_float fTimeDelta)
 
 	case MONSTER::BOW_ATTACK:
 		if (stateChanged) {
-			// Idle/Walk -> Attack 전이: 강제 리스타트
 			SetClipSmart(ANIM_BOW_ATTACK, false, 0.05f, true);
 			m_AttackCooldown = m_AttackRepeatGap;
 		}
 		else {
-			// 공격 상태 유지 중: 이번 프레임에 끝났다면 텀 이후 재시작
 			if (finished && m_AttackCooldown <= 0.f) {
 				SetClipSmart(ANIM_BOW_ATTACK, false, 0.0f, true);
 				m_AttackCooldown = m_AttackRepeatGap;

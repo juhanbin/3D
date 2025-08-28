@@ -4,7 +4,7 @@
 #include <unordered_map>
 
 NS_BEGIN(Engine)
-class CTransform; // 있어도 되고 없어도 됨(직접 안 씀)
+class CTransform;
 NS_END
 
 NS_BEGIN(Client)
@@ -14,7 +14,7 @@ class CPlayerManager final : public CBase {
     DECLARE_SINGLETON(CPlayerManager)
 public:
     struct PlayerData {
-        CPlayer* pPlayer = nullptr; // 소유 X, 생명주기는 게임오브젝트가 가짐
+        CPlayer* pPlayer = nullptr; 
         _float   hp = 100.f;
         _float   maxHp = 100.f;
     };
@@ -26,9 +26,9 @@ public:
     CPlayer* GetActive() const { return m_pActive; }
     _uint   GetActiveId() const { return m_activeId; }
 
-    // 위치/방향 (카메라/AI용)
-    _vector GetPos() const;                         // 활성 플레이어 위치
-    _vector GetForward(bool flattenY = true) const; // 전방(필요시 수평화)
+    // 위치/방향 (카메라용)
+    _vector GetPos() const;                         
+    _vector GetForward(bool flattenY = true) const; 
     _vector GetRight() const;
     _vector GetUp() const;
 
@@ -39,7 +39,7 @@ public:
     void    ApplyDamage(_uint id, _float amount);
     void    Heal(_uint id, _float amount);
 
-    // 편의: 활성 대상
+
     _float  GetActiveHP() const;
     void    ApplyDamageActive(_float amount);
     void    HealActive(_float amount);

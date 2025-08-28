@@ -30,10 +30,10 @@ public:
 	virtual HRESULT Render();
 
 protected:
-	ID3D11Device*				m_pDevice = { nullptr };
-	ID3D11DeviceContext*		m_pContext = { nullptr };
-	class CGameInstance*		m_pGameInstance = { nullptr };
-	class CTransform*			m_pTransformCom = { nullptr };
+	ID3D11Device* m_pDevice = { nullptr };
+	ID3D11DeviceContext* m_pContext = { nullptr };
+	class CGameInstance* m_pGameInstance = { nullptr };
+	class CTransform* m_pTransformCom = { nullptr };
 
 	map<const _wstring, class CComponent*>		m_Components;
 
@@ -41,10 +41,10 @@ protected:
 	/*원형컴포넌트를 찾아서 복제한다. */
 	/*map컨테이너에 보관한다.  */
 	/*자식의 멤버변수에도 저장한다. */
-	HRESULT Add_Component(_uint iPrototypeLevelIndex, const _wstring& strPrototypeTag, 
+	HRESULT Add_Component(_uint iPrototypeLevelIndex, const _wstring& strPrototypeTag,
 		const _wstring& strComponentTag, CComponent** ppOut, void* pArg = nullptr);
 
-public:	
+public:
 	virtual CGameObject* Clone(void* pArg) = 0;
 	virtual void Free() override;
 

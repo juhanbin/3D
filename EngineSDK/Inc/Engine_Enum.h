@@ -4,6 +4,7 @@
 namespace Engine
 {
 	enum class MODELTYPE { NONANIM, ANIM };
+	enum class COLLIDER { AABB, OBB, SPHERE, END };
 	enum class NAVPOINT { A, B, C, END };
 	enum class LINE { AB, BC, CA, END };
 	enum class D3DTS { VIEW, PROJ, END };

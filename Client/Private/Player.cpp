@@ -64,7 +64,6 @@ void CPlayer::Priority_Update(_float fTimeDelta)
 
 void CPlayer::Update(_float fTimeDelta)
 {
-    // --- 입력 ---
     const bool w = m_pGameInstance->KeyPressing(DIK_W);
     const bool a = m_pGameInstance->KeyPressing(DIK_A);
     const bool s = m_pGameInstance->KeyPressing(DIK_S);
@@ -87,7 +86,6 @@ void CPlayer::Update(_float fTimeDelta)
 
     const bool anyMouse = (LDown || LPress || LUp || RDown || RPress || RUp);
 
-    // --- 마우스/공격 상태 ---
     if (anyMouse)
     {
         if (LUp || (RPress && LDown))
@@ -119,7 +117,6 @@ void CPlayer::Update(_float fTimeDelta)
             m_eAttack != ATTACK::ENTER)
             m_eAttack = ATTACK::NONE;
 
-        // --- RUN/DASH 판정 ---
         if (shiftDown) { m_bShiftPressed = true; m_fShiftHeldSec = 0.f; }
         if (m_bShiftPressed && shiftPress) {
             m_fShiftHeldSec += fTimeDelta;
@@ -128,15 +125,13 @@ void CPlayer::Update(_float fTimeDelta)
         }
         if (shiftUp) {
             if (m_fShiftHeldSec < kRunHoldThreshold) {
-                // ★ 대쉬: 1프레임만 MOVING::DASH 설정 + 즉시 임펄스
                 m_eMoving = MOVING::DASH;
                 m_pTransformCom->Go_Straight(fTimeDelta * kDashImpulseMul, m_pNavigationCom);
-                m_iDashFlagFrames = 1; // 다음 프레임에 자동 해제
+                m_iDashFlagFrames = 1;
             }
             m_bShiftPressed = false;
         }
 
-        // 일반 로코모션(대쉬 플래그인 동안은 건드리지 않음)
         if (!shiftPress && m_eMoving != MOVING::DASH)
             m_eMoving = anyMove ? MOVING::JOG : MOVING::IDLE;
     }
@@ -144,7 +139,6 @@ void CPlayer::Update(_float fTimeDelta)
     if (SpaceDown)
         m_eAttack = ATTACK::GROUND;
 
-    // 조준 이동 배속
     const bool aimingHeldNow = (LPress || RPress);
     const bool aimingModeNow =
         aimingHeldNow ||
@@ -160,7 +154,6 @@ void CPlayer::Update(_float fTimeDelta)
     if (aimingModeNow)               mul = (RPress || LPress) ? kAimRunMul : kAimWalkMul;
     else if (m_eMoving == MOVING::RUN) mul = kRunMul;
 
-    // --- 이동 처리 ---
     if (aimingModeNow) {
         if (w) m_pTransformCom->Go_Straight(fTimeDelta * mul);
         if (s) m_pTransformCom->Go_Backward(fTimeDelta * mul);
@@ -180,7 +173,6 @@ void CPlayer::Update(_float fTimeDelta)
         }
     }
 
-    // --- 대쉬 플래그 자동 해제(1프레임 래치) ---
     if (m_eMoving == MOVING::DASH) {
         if (m_iDashFlagFrames > 0) {
             --m_iDashFlagFrames;
@@ -190,6 +182,7 @@ void CPlayer::Update(_float fTimeDelta)
         }
     }
 
+    m_pColliderCom->Update(m_pTransformCom->Get_WorldMatrix());
     __super::Update(fTimeDelta);
 }
 
@@ -207,6 +200,7 @@ void CPlayer::Late_Update(_float fTimeDelta)
 HRESULT CPlayer::Render()
 {
 #ifdef _DEBUG
+    m_pColliderCom->Render();
     if (m_pNavigationCom) m_pNavigationCom->Render();
 #endif
     return S_OK;
@@ -235,6 +229,15 @@ HRESULT CPlayer::Ready_Components()
     if (FAILED(CGameObject::Add_Component(
         ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Navigation"),
         TEXT("Com_Navigation"), reinterpret_cast<CComponent**>(&m_pNavigationCom), &NaviDesc)))
+        return E_FAIL;
+
+    CBounding_AABB::BOUNDING_AABB_DESC  AABBDesc{};
+    AABBDesc.vExtents = _float3(0.4f, 0.7f, 0.4f);
+    AABBDesc.vCenter = _float3(0.f, AABBDesc.vExtents.y, 0.f);
+
+
+    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Collider_AABB"),
+        TEXT("Com_Collider"), reinterpret_cast<CComponent**>(&m_pColliderCom), &AABBDesc)))
         return E_FAIL;
 
     return S_OK;
@@ -295,5 +298,6 @@ CGameObject* CPlayer::Clone(void* pArg)
 void CPlayer::Free()
 {
     __super::Free();
+    Safe_Release(m_pColliderCom);
     Safe_Release(m_pNavigationCom);
 }

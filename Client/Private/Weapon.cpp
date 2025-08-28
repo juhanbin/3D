@@ -55,7 +55,6 @@ void CWeapon::Update(_float fTimeDelta)
             *m_pAttack == ATTACK::LEFT || *m_pAttack == ATTACK::RIGHT ||
             *m_pAttack == ATTACK::GROUND);
 
-    // 1) 상태 전환 시에만 각도 '절대' 세팅 (누적 회전 금지)
     if (aiming != m_lastAiming) {
         if (aiming)
         {
@@ -70,21 +69,22 @@ void CWeapon::Update(_float fTimeDelta)
         m_lastAiming = aiming;
     }
 
-    // 2) 소켓 선택
     _matrix BoneMatrix = aiming ? XMLoadFloat4x4(m_pSocketMatrix_Hand)
         : XMLoadFloat4x4(m_pSocketMatrix);
 
-    // 3) 결합
     for (int i = 0; i < 3; ++i) BoneMatrix.r[i] = XMVector3Normalize(BoneMatrix.r[i]);
 
     XMStoreFloat4x4(
         &m_CombinedWorldMatrix,
-        m_pTransformCom->Get_WorldMatrix() *  // 무기 로컬(오프셋/회전)
-        BoneMatrix *                           // 소켓
-        XMLoadFloat4x4(m_pParentMatrix)        // 부모 월드
+        m_pTransformCom->Get_WorldMatrix() *  
+        BoneMatrix *                          
+        XMLoadFloat4x4(m_pParentMatrix)       
     );
 
+
     m_pModelCom->Play_Animation(fTimeDelta);
+
+    m_pColliderCom->Update(XMLoadFloat4x4(&m_CombinedWorldMatrix));
 }
 
 
@@ -120,6 +120,10 @@ HRESULT CWeapon::Render()
         m_pModelCom->Render(i);
     }
 
+#ifdef _DEBUG
+    m_pColliderCom->Render();
+#endif
+
     return S_OK;
 }
 
@@ -132,6 +136,15 @@ HRESULT CWeapon::Ready_Components()
     if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Model_Spear"),
         TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom), nullptr)))
         return E_FAIL;    
+
+    CBounding_OBB::BOUNDING_OBB_DESC  OBBDesc{};
+    OBBDesc.vAngles = _float3(0.f, 0.f, 0.f);
+    OBBDesc.vExtents = _float3(1.0f, 1.5f, 2.f);
+    OBBDesc.vCenter = _float3(0.f, OBBDesc.vExtents.y, 0.f);
+
+    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Collider_OBB"),
+        TEXT("Com_Collider"), reinterpret_cast<CComponent**>(&m_pColliderCom), &OBBDesc)))
+        return E_FAIL;
 
     return S_OK;
 }
@@ -199,5 +212,6 @@ void CWeapon::Free()
     __super::Free();
 
     Safe_Release(m_pModelCom);
+    Safe_Release(m_pColliderCom);
     Safe_Release(m_pShaderCom);
 }

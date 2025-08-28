@@ -4,6 +4,7 @@
 #include "Transform.h"
 
 NS_BEGIN(Engine)
+class CCollider;
 class CNavigation;
 NS_END
 
@@ -38,11 +39,13 @@ public:
 
 private:
 	CNavigation* m_pNavigationCom = nullptr;
-
+	CCollider* m_pColliderCom[ENUM_CLASS(COLLIDER::END)] = { nullptr };
 private:
 	MONSTER   m_iState = MONSTER::SPEARE_IDLE;
 	EObjectType m_eType = { EObjectType::MONSTER };
 
+	_bool		m_bisHit = false;
+	_float		m_fHitTimer = 0.f;
 	template<typename T>
 	static inline T clamp_compat(T v, T lo, T hi) {
 		return (v < lo) ? lo : (v > hi) ? hi : v;
@@ -50,6 +53,7 @@ private:
 private:
 	HRESULT Ready_Components();
 	HRESULT Ready_PartObjects();
+	_bool Collision_ToPlayer();
 
 public:
 	static CMonster_Skeleton* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
