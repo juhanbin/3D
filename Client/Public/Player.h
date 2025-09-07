@@ -45,6 +45,8 @@ public:
     _vector GetRight() const;
     _vector GetUp() const;
 
+    void Throw_Spear();
+
 private:
     HRESULT Ready_Components();
     HRESULT Ready_PartObjects();

@@ -3,6 +3,10 @@
 #include "Client_Defines.h"
 #include "Level.h"
 
+NS_BEGIN(Engine)
+class CGameObject;
+NS_END
+
 NS_BEGIN(Client)
 
 class CLevel_GamePlay final : public CLevel
@@ -17,6 +21,8 @@ public:
 	virtual HRESULT Render() override;
 
 private:
+	void Pool_Initialize();
+	Engine::CGameObject* CreateSpear_ForPool();
 	HRESULT Ready_Lights();
 	HRESULT Ready_Layer_Camera(const _wstring& strLayerTag);
 	HRESULT Ready_Layer_Camera_Player(const _wstring& strLayerTag);

@@ -64,6 +64,27 @@ namespace Engine
 		};
 	}VTXMESH;
 
+	// VertexLayouts.h 등
+	namespace VTXMESH_SIMPLE
+	{
+		static const D3D11_INPUT_ELEMENT_DESC Elements[] =
+		{
+			// POSITION @ 0
+			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,
+			  0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+
+			  // NORMAL   @ 12
+			  { "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT,
+				0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+
+				// TEXCOORD @ 48  ← Tangent(12) + Binormal(12)를 건너뛴다
+				{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,
+				  0, 48, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		};
+		static const UINT iNumElements = _countof(Elements);
+	}
+
+
 	typedef struct tagVertexAnimMesh
 	{
 		XMFLOAT3		vPosition;

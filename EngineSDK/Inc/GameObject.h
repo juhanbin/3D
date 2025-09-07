@@ -29,6 +29,11 @@ public:
 	virtual void Late_Update(_float fTimeDelta);
 	virtual HRESULT Render();
 
+	virtual void    Set_Active(bool b) { m_bActive = b; }
+	virtual void    Reuse_Begin(void* /*pArg*/) {}
+	virtual void    Reuse_End() {}
+	bool            Is_Active() const { return m_bActive; }
+
 protected:
 	ID3D11Device* m_pDevice = { nullptr };
 	ID3D11DeviceContext* m_pContext = { nullptr };
@@ -37,10 +42,9 @@ protected:
 
 	map<const _wstring, class CComponent*>		m_Components;
 
+	bool m_bActive = true;
+
 protected:
-	/*원형컴포넌트를 찾아서 복제한다. */
-	/*map컨테이너에 보관한다.  */
-	/*자식의 멤버변수에도 저장한다. */
 	HRESULT Add_Component(_uint iPrototypeLevelIndex, const _wstring& strPrototypeTag,
 		const _wstring& strComponentTag, CComponent** ppOut, void* pArg = nullptr);
 

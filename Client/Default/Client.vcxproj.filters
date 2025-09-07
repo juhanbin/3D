@@ -88,6 +88,12 @@
     <Filter Include="02.GameObject\Monster_Skeleton\Weapon\Bow">
       <UniqueIdentifier>{e8d4639e-12c3-4a46-86f0-30d4fa604870}</UniqueIdentifier>
     </Filter>
+    <Filter Include="97. PoolingManager">
+      <UniqueIdentifier>{b27e1194-32bb-47ca-ad09-d5b52af10a9e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObject\Hero\Player_Speare">
+      <UniqueIdentifier>{05066e06-fc36-4390-93d5-37814a85ca27}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h">
@@ -173,6 +179,12 @@
     </ClInclude>
     <ClInclude Include="..\Public\Weapon_Skeleton_Bow.h">
       <Filter>02.GameObject\Monster_Skeleton\Weapon\Bow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Object_Pool_Manager.h">
+      <Filter>97. PoolingManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Player_Speare.h">
+      <Filter>02.GameObject\Hero\Player_Speare</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -260,6 +272,12 @@
     </ClCompile>
     <ClCompile Include="..\Private\Weapon_Skeleton_Bow.cpp">
       <Filter>02.GameObject\Monster_Skeleton\Weapon\Bow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Object_Pool_Manager.cpp">
+      <Filter>97. PoolingManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Player_Speare.cpp">
+      <Filter>02.GameObject\Hero\Player_Speare</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

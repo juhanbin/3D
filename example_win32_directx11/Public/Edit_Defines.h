@@ -36,12 +36,24 @@ enum class EObjectType : int
     ROCK_AA,
     HERO,
     SPEAR,
+    SPEAR_STATIC,
     MONSTER_SPEAR,
     MONSTER_BOW,
     BRIDGE,
     CAVE,
     SKELETON_SPEAR,
     SKELETON_BOW,
+    BOSS_EYE_MID,
+    BOSS_EYE_TOP,
+    BOSS_FIRE,
+    BOSS_HAND_L,
+    BOSS_HAND_R,
+    BOSS_MASK,
+    EYESPAWNER,
+    MONSTER_EYE,
+    MUSHROOM,
+    SMALLMUSHROOM,
+    PARASIT_EYE,
     END
 };
 
@@ -68,13 +80,26 @@ inline const char* ToObjectTypeString(EObjectType type)
     case EObjectType::ROCK_AA:          return "Rock_AA";
     case EObjectType::HERO:             return "Hero";
     case EObjectType::SPEAR:            return "Spear";
+    case EObjectType::SPEAR_STATIC:     return "Spear_Static";
     case EObjectType::MONSTER_SPEAR:    return "Monster_Spear";
     case EObjectType::MONSTER_BOW:      return "Monster_Bow";
     case EObjectType::BRIDGE:           return "Bridge";
     case EObjectType::CAVE:             return "Cave";
     case EObjectType::SKELETON_SPEAR:   return "Skeleton_Spear";
     case EObjectType::SKELETON_BOW:     return "Skeleton_Bow";
+    case EObjectType::BOSS_EYE_MID:     return "Boss_Eye_Mid";
+    case EObjectType::BOSS_EYE_TOP:     return "Boss_Eye_Top";
+    case EObjectType::BOSS_FIRE:        return "Boss_Fire";
+    case EObjectType::BOSS_HAND_L:      return "Boss_Hand_L";
+    case EObjectType::BOSS_HAND_R:      return "Boss_Hand_R";
+    case EObjectType::BOSS_MASK:        return "Boss_Mask";
+    case EObjectType::EYESPAWNER:       return "EyeSpawner";
+    case EObjectType::MONSTER_EYE:      return "Monster_Eye";
+    case EObjectType::MUSHROOM:         return "Mushroom";
+    case EObjectType::SMALLMUSHROOM:    return "SmallMushroom";
+    case EObjectType::PARASIT_EYE:      return "Parasit_Eye";
     default:                            return "Unknown";
+
     }
 }
 static constexpr int NumObjectTypes = static_cast<int>(EObjectType::END);

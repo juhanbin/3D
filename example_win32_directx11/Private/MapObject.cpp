@@ -56,6 +56,11 @@ HRESULT CMapObject::Initialize(void* pArg)
     if (m_eType == EObjectType::SPEAR)   m_pModelCom->Set_Animation(0, true);
     if (m_eType == EObjectType::SKELETON_SPEAR) m_pModelCom->Set_Animation(1, true);
     if (m_eType == EObjectType::SKELETON_BOW) m_pModelCom->Set_Animation(0, true);
+    if (m_eType == EObjectType::BOSS_HAND_L) m_pModelCom->Set_Animation(0, true);
+    if (m_eType == EObjectType::BOSS_HAND_R) m_pModelCom->Set_Animation(0, true);
+    if (m_eType == EObjectType::EYESPAWNER) m_pModelCom->Set_Animation(0, true);
+    if (m_eType == EObjectType::MONSTER_EYE) m_pModelCom->Set_Animation(0, true);
+    if (m_eType == EObjectType::MUSHROOM) m_pModelCom->Set_Animation(0, true);
     // 전역 레지스트리에 등록
     s_All.push_back(this);
     return S_OK;
@@ -64,11 +69,16 @@ HRESULT CMapObject::Initialize(void* pArg)
 void CMapObject::Priority_Update(_float) {}
 void CMapObject::Update(_float dt)
 {
-    if (m_eType == EObjectType::MONSTER) m_pModelCom->Play_Animation(dt);
-    if (m_eType == EObjectType::HERO)    m_pModelCom->Play_Animation(dt);
-    if (m_eType == EObjectType::SPEAR)   m_pModelCom->Play_Animation(dt);
-    if (m_eType == EObjectType::SKELETON_SPEAR) m_pModelCom->Play_Animation(dt);
-    if (m_eType == EObjectType::SKELETON_BOW) m_pModelCom->Play_Animation(dt);
+    if (m_eType == EObjectType::MONSTER)            m_pModelCom->Play_Animation(dt);
+    if (m_eType == EObjectType::HERO)               m_pModelCom->Play_Animation(dt);
+    if (m_eType == EObjectType::SPEAR)              m_pModelCom->Play_Animation(dt);
+    if (m_eType == EObjectType::SKELETON_SPEAR)     m_pModelCom->Play_Animation(dt);
+    if (m_eType == EObjectType::SKELETON_BOW)       m_pModelCom->Play_Animation(dt);
+    if (m_eType == EObjectType::BOSS_HAND_L)        m_pModelCom->Play_Animation(dt);
+    if (m_eType == EObjectType::BOSS_HAND_R)        m_pModelCom->Play_Animation(dt);
+    if (m_eType == EObjectType::EYESPAWNER)         m_pModelCom->Play_Animation(dt);
+    if (m_eType == EObjectType::MONSTER_EYE)        m_pModelCom->Play_Animation(dt);
+    if (m_eType == EObjectType::MUSHROOM)           m_pModelCom->Play_Animation(dt);
 }
 void CMapObject::Late_Update(_float)
 {
@@ -86,7 +96,8 @@ HRESULT CMapObject::Render()
         if (FAILED(m_pModelCom->Bind_Materials(m_pShaderCom, "g_DiffuseTexture", i, aiTextureType_DIFFUSE, 0)))
             return E_FAIL;
 
-        if (m_eType == EObjectType::MONSTER || m_eType == EObjectType::HERO || m_eType == EObjectType::SPEAR || m_eType == EObjectType::SKELETON_SPEAR || m_eType == EObjectType::SKELETON_BOW)
+        if (m_eType == EObjectType::MONSTER || m_eType == EObjectType::HERO || m_eType == EObjectType::SPEAR || m_eType == EObjectType::SKELETON_SPEAR || m_eType == EObjectType::SKELETON_BOW ||
+            m_eType == EObjectType::BOSS_HAND_L || m_eType == EObjectType::BOSS_HAND_R || m_eType == EObjectType::EYESPAWNER || m_eType == EObjectType::MONSTER_EYE || m_eType == EObjectType::MUSHROOM)
             if (FAILED(m_pModelCom->Bind_BoneMatrices(m_pShaderCom, "g_BoneMatrices", i))) return E_FAIL;
 
         m_pShaderCom->Begin(0);
@@ -120,6 +131,11 @@ HRESULT CMapObject::Ready_Components()
         if (FAILED(Add_Component(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Shader_VtxAnimMesh"),
             TEXT("Com_Shader"), (CComponent**)&m_pShaderCom, nullptr))) return E_FAIL;
         break;
+    case EObjectType::SPEAR_STATIC:
+        modelProto = TEXT("Prototype_Component_Model_Spear_Static");
+        if (FAILED(Add_Component(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Shader_VtxMesh"),
+            TEXT("Com_Shader"), (CComponent**)&m_pShaderCom, nullptr))) return E_FAIL;
+        break;
     case EObjectType::MONSTER_SPEAR:
         modelProto = TEXT("Prototype_Component_Model_Monster_Spear");
         if (FAILED(Add_Component(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Shader_VtxMesh"),
@@ -148,6 +164,62 @@ HRESULT CMapObject::Ready_Components()
     case EObjectType::SKELETON_BOW:
         modelProto = TEXT("Prototype_Component_Model_Monster");
         if (FAILED(Add_Component(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Shader_VtxAnimMesh"),
+            TEXT("Com_Shader"), (CComponent**)&m_pShaderCom, nullptr))) return E_FAIL;
+        break;
+    case EObjectType::BOSS_EYE_MID:
+        modelProto = TEXT("Prototype_Component_Model_Boss_Eye_Mid");
+        if (FAILED(Add_Component(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Shader_VtxMesh"),
+            TEXT("Com_Shader"), (CComponent**)&m_pShaderCom, nullptr))) return E_FAIL;
+        break;
+    case EObjectType::BOSS_EYE_TOP:
+        modelProto = TEXT("Prototype_Component_Model_Boss_Eye_TOP");
+        if (FAILED(Add_Component(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Shader_VtxMesh"),
+            TEXT("Com_Shader"), (CComponent**)&m_pShaderCom, nullptr))) return E_FAIL;
+        break;
+    case EObjectType::BOSS_FIRE:
+        modelProto = TEXT("Prototype_Component_Model_Boss_Fire");
+        if (FAILED(Add_Component(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Shader_VtxMesh"),
+            TEXT("Com_Shader"), (CComponent**)&m_pShaderCom, nullptr))) return E_FAIL;
+        break;
+    case EObjectType::BOSS_HAND_L:
+        modelProto = TEXT("Prototype_Component_Model_Boss_Hand_L");
+        if (FAILED(Add_Component(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Shader_VtxAnimMesh"),
+            TEXT("Com_Shader"), (CComponent**)&m_pShaderCom, nullptr))) return E_FAIL;
+        break;
+    case EObjectType::BOSS_HAND_R:
+        modelProto = TEXT("Prototype_Component_Model_Boss_Hand_R");
+        if (FAILED(Add_Component(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Shader_VtxAnimMesh"),
+            TEXT("Com_Shader"), (CComponent**)&m_pShaderCom, nullptr))) return E_FAIL;
+        break;
+    case EObjectType::BOSS_MASK:
+        modelProto = TEXT("Prototype_Component_Model_Boss_Mask");
+        if (FAILED(Add_Component(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Shader_VtxMesh"),
+            TEXT("Com_Shader"), (CComponent**)&m_pShaderCom, nullptr))) return E_FAIL;
+        break;
+    case EObjectType::EYESPAWNER:
+        modelProto = TEXT("Prototype_Component_Model_EyeSpawner");
+        if (FAILED(Add_Component(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Shader_VtxAnimMesh"),
+            TEXT("Com_Shader"), (CComponent**)&m_pShaderCom, nullptr))) return E_FAIL;
+        break;
+    case EObjectType::MONSTER_EYE:
+        modelProto = TEXT("Prototype_Component_Model_Monster_Eye");
+        if (FAILED(Add_Component(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Shader_VtxAnimMesh"),
+            TEXT("Com_Shader"), (CComponent**)&m_pShaderCom, nullptr))) return E_FAIL;
+        break;
+    case EObjectType::MUSHROOM:
+        modelProto = TEXT("Prototype_Component_Model_Mushroom");
+        if (FAILED(Add_Component(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Shader_VtxAnimMesh"),
+            TEXT("Com_Shader"), (CComponent**)&m_pShaderCom, nullptr))) return E_FAIL;
+        break;
+
+    case EObjectType::SMALLMUSHROOM:
+        modelProto = TEXT("Prototype_Component_Model_Small_Mushroom");
+        if (FAILED(Add_Component(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Shader_VtxMesh"),
+            TEXT("Com_Shader"), (CComponent**)&m_pShaderCom, nullptr))) return E_FAIL;
+        break;
+    case EObjectType::PARASIT_EYE:
+        modelProto = TEXT("Prototype_Component_Model_Parasit_Eye");
+        if (FAILED(Add_Component(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Shader_VtxMesh"),
             TEXT("Com_Shader"), (CComponent**)&m_pShaderCom, nullptr))) return E_FAIL;
         break;
     default: return E_FAIL;

@@ -7,6 +7,9 @@
 #include "Player.h"
 #include "MapObject.h"
 #include <fstream>
+#include "Object_Pool_Manager.h"
+#include "Player_Speare.h"
+#include <functional>
 
 // 공용 MapObject 구조체는 헤더에 정의
 //#pragma pack(push,1)
@@ -58,7 +61,7 @@ HRESULT CLevel_GamePlay::Initialize()
 	if (FAILED(Ready_Layer_Effect(TEXT("Layer_Effect"))))
 		return E_FAIL;
 
-
+	Pool_Initialize();
 
 
 	return S_OK;
@@ -98,6 +101,39 @@ vector<MapObject> CLevel_GamePlay::LoadSceneObjects(const char* file)
 	OutputDebugStringW(buf);
 
 	return objs;
+}
+
+void CLevel_GamePlay::Pool_Initialize() {
+	auto* pool = CObject_Pool_Manager::GetInstance();
+	auto hr = pool->Register_Pool(
+		LEVEL::GAMEPLAY, L"Layer_Spear", 64,
+		std::bind(&CLevel_GamePlay::CreateSpear_ForPool, this)
+	);
+#ifdef _DEBUG
+	if (FAILED(hr)) OutputDebugStringW(L"[POOL] Register_Pool 실패\n");
+	else OutputDebugStringW(L"[POOL] Register_Pool OK (64)\n");
+#endif
+}
+
+
+Engine::CGameObject* CLevel_GamePlay::CreateSpear_ForPool()
+{
+	// 1) 프로토타입에서 복제 (로더에서 Add_Prototype 해둔 태그 사용)
+	CGameObject* p = static_cast<CGameObject*>(
+		CGameInstance::GetInstance()->Clone_Prototype(
+			PROTOTYPE::GAMEOBJECT,
+			ENUM_CLASS(LEVEL::GAMEPLAY),
+			TEXT("Prototype_GameObject_Spear"),
+			nullptr)); // 프리워밍이라 pArg 없음
+	if (!p) return nullptr;
+
+	// 2) 레이어에 올려두기
+	CGameInstance::GetInstance()
+		->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::GAMEPLAY), L"Layer_Spear", p);
+
+	// (선택) 확실히 비활성화
+	p->Set_Active(false);
+	return p;
 }
 
 HRESULT CLevel_GamePlay::Ready_Lights()
@@ -289,6 +325,6 @@ void CLevel_GamePlay::Free()
 {
 	__super::Free();
 
-
+	CObject_Pool_Manager::GetInstance()->Clear_All();
 
 }

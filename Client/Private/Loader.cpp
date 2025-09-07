@@ -16,6 +16,7 @@
 #include "Player.h"
 #include "Body_Player.h"
 #include "Weapon.h"
+#include "Player_Speare.h"
 #include "Navi_Bridge.h"
 
 #include "Body_Monster_Skeleton.h"
@@ -210,6 +211,20 @@ HRESULT CLoader::Loading_For_GamePlay_Level()
 		return E_FAIL;
 	}
 
+	// Spear_Static 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.1f, 0.1f, 0.1f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+	
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::GAMEPLAY),
+		TEXT("Prototype_Component_Model_Spear_Static"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/Spear_Static.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] Spear_Static 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
+
 	// Monster 프로토타입 등록
 	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
 	if (FAILED(m_pGameInstance->Add_Prototype(
@@ -279,6 +294,11 @@ HRESULT CLoader::Loading_For_GamePlay_Level()
 		CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxMesh.hlsl"), VTXMESH::Elements, VTXMESH::iNumElements))))
 		return E_FAIL;
 
+	/* Prototype_Component_Shader_VtxMesh_simple */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Shader_VtxMesh_Simple"),
+		CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxMesh_Simple.hlsl"), VTXMESH_SIMPLE::Elements, VTXMESH_SIMPLE::iNumElements))))
+		return E_FAIL;
+
 	/* Prototype_Component_Shader_VtxAnimMesh */
 	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Shader_VtxAnimMesh"),
 		CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxAnimMesh.hlsl"), VTXANIMMESH::Elements, VTXANIMMESH::iNumElements))))
@@ -325,6 +345,11 @@ HRESULT CLoader::Loading_For_GamePlay_Level()
 	/* Prototype_GameObject_Weapon */
 	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Weapon"),
 		CWeapon::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	/* Prototype_GameObject_Player_Spear */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Spear"),
+		CPlayer_Speare::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

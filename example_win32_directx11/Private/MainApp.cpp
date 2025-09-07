@@ -899,12 +899,24 @@ void CMainApp::Render_ImGuiPanel()
                 case EObjectType::ROCK_AA:       strcpy(o.fbxPath, "../Bin/Resources/Blood_Spear/Model/Rock/Rock_AA.fbx");              break;
                 case EObjectType::HERO:          strcpy(o.fbxPath, "../Bin/Resources/Blood_Spear/Model/Hero/Hero.fbx");                 break;
                 case EObjectType::SPEAR:         strcpy(o.fbxPath, "../Bin/Resources/Blood_Spear/Model/Spear/Spear.fbx");               break;
+                case EObjectType::SPEAR_STATIC:         strcpy(o.fbxPath, "../Bin/Resources/Blood_Spear/Model/Spear_Static/Spear_Static.fbx");               break;
                 case EObjectType::MONSTER_SPEAR: strcpy(o.fbxPath, "../Bin/Resources/Blood_Spear/Model/Monster_Spear/Monster_Spear.fbx"); break;
                 case EObjectType::MONSTER_BOW:   strcpy(o.fbxPath, "../Bin/Resources/Blood_Spear/Model/Monster_Bow/Monster_Bow.fbx");   break;
                 case EObjectType::BRIDGE:        strcpy(o.fbxPath, "../Bin/Resources/Blood_Spear/Model/Bridge/Bridge.fbx");             break;
                 case EObjectType::CAVE:          strcpy(o.fbxPath, "../Bin/Resources/Blood_Spear/Model/Cave/Cave.fbx");                 break;
                 case EObjectType::SKELETON_SPEAR: strcpy(o.fbxPath, "../Bin/Resources/Blood_Spear/Model/Monster/Monster.fbx");          break;
                 case EObjectType::SKELETON_BOW:   strcpy(o.fbxPath, "../Bin/Resources/Blood_Spear/Model/Monster/Monster.fbx");          break;
+                case EObjectType::BOSS_EYE_MID:       strcpy(o.fbxPath, "../Bin/Resources/Blood_Spear/Model/Boss_Eye_Mid/Boss_Eye_Mid.fbx");           break;
+                case EObjectType::BOSS_EYE_TOP:       strcpy(o.fbxPath, "../Bin/Resources/Blood_Spear/Model/Boss_Eye_Top/Boss_Eye_Top.fbx");              break;
+                case EObjectType::BOSS_FIRE:          strcpy(o.fbxPath, "../Bin/Resources/Blood_Spear/Model/Boss_Fire/Boss_Fire.fbx");                 break;
+                case EObjectType::BOSS_HAND_L:         strcpy(o.fbxPath, "../Bin/Resources/Blood_Spear/Model/Boss_Hand_L/Boss_Hand_L.fbx");               break;
+                case EObjectType::BOSS_HAND_R: strcpy(o.fbxPath, "../Bin/Resources/Blood_Spear/Model/Boss_Hand_R/Boss_Hand_R.fbx"); break;
+                case EObjectType::BOSS_MASK:   strcpy(o.fbxPath, "../Bin/Resources/Blood_Spear/Model/Boss_Mask/Boss_Mask.fbx");   break;
+                case EObjectType::EYESPAWNER:        strcpy(o.fbxPath, "../Bin/Resources/Blood_Spear/Model/EyeSpawner/EyeSpawner.fbx");             break;
+                case EObjectType::MONSTER_EYE:        strcpy(o.fbxPath, "../Bin/Resources/Blood_Spear/Model/Eye/Eye.fbx"); break;
+                case EObjectType::MUSHROOM:          strcpy(o.fbxPath, "../Bin/Resources/Blood_Spear/Model/Mushroom/Mushroom.fbx");                 break;
+                case EObjectType::SMALLMUSHROOM: strcpy(o.fbxPath, "../Bin/Resources/Blood_Spear/Model/Small_Mushroom/Small_Mushroom.fbx");          break;
+                case EObjectType::PARASIT_EYE:   strcpy(o.fbxPath, "../Bin/Resources/Blood_Spear/Model/Eye/Eye.fbx");          break;
                 default: o.fbxPath[0] = 0; break;
                 }
 
@@ -1123,7 +1135,7 @@ void CMainApp::Render_ImGuiPanel()
             dl->AddLine(a, b, IM_COL32(255, 215, 0, 255), 2.0f);
     }
 
-    /*if (m_LastPickValid) {
+    if (m_LastPickValid) {
         ImVec2 sh;
         if (WorldToScreen(m_DebugHitPoint, sh)) {
             ImU32 col = m_DebugHasHit ? IM_COL32(64, 255, 64, 255) : IM_COL32(64, 255, 255, 255);
@@ -1139,7 +1151,7 @@ void CMainApp::Render_ImGuiPanel()
         if (WorldToScreen(m_DebugHitPoint, a) && WorldToScreen(tip, b)) {
             dl->AddLine(a, b, IM_COL32(200, 200, 255, 255), 2.0f);
         }
-    }*/
+    }
 
     Nav_RenderOverlay();
 }

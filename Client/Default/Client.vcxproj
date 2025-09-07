@@ -169,8 +169,10 @@
     <ClInclude Include="..\Public\MapObject.h" />
     <ClInclude Include="..\Public\Monster_Skeleton.h" />
     <ClInclude Include="..\Public\Navi_Bridge.h" />
+    <ClInclude Include="..\Public\Object_Pool_Manager.h" />
     <ClInclude Include="..\Public\Player.h" />
     <ClInclude Include="..\Public\PlayerManager.h" />
+    <ClInclude Include="..\Public\Player_Speare.h" />
     <ClInclude Include="..\Public\Terrain.h" />
     <ClInclude Include="..\Public\Weapon.h" />
     <ClInclude Include="..\Public\Weapon_Skeleton_Bow.h" />
@@ -198,8 +200,10 @@
     <ClCompile Include="..\Private\MapObject.cpp" />
     <ClCompile Include="..\Private\Monster_Skeleton.cpp" />
     <ClCompile Include="..\Private\Navi_Bridge.cpp" />
+    <ClCompile Include="..\Private\Object_Pool_Manager.cpp" />
     <ClCompile Include="..\Private\Player.cpp" />
     <ClCompile Include="..\Private\PlayerManager.cpp" />
+    <ClCompile Include="..\Private\Player_Speare.cpp" />
     <ClCompile Include="..\Private\Terrain.cpp" />
     <ClCompile Include="..\Private\Weapon.cpp" />
     <ClCompile Include="..\Private\Weapon_Skeleton_Bow.cpp" />

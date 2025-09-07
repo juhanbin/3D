@@ -39,6 +39,10 @@ HRESULT CWeapon::Initialize(void* pArg)
     m_pTransformCom->Set_State(STATE::POSITION, XMVectorSet(0.f, -1.f, 0.2f, 1.f));
     m_pModelCom->Set_Animation(2, true);
 
+    wchar_t wbuf[128];
+    swprintf(wbuf, 128, L"[ADDR] Weapon model=%p shader=%p\n", m_pModelCom, m_pShaderCom);
+    OutputDebugStringW(wbuf);
+
     return S_OK;
 }
 
@@ -108,8 +112,12 @@ HRESULT CWeapon::Render()
     {
         if (FAILED(m_pModelCom->Bind_Materials_Bin(m_pShaderCom, "g_DiffuseTexture", i, ENUM_CLASS(TextureType::DIFFUSE), 0))) // 0: DIFFUSE
         {
-            //OutputDebugStringA("Spear_머티리얼 바인딩 실패!\n");
+            //OutputDebugStringA("Weapon_머티리얼 바인딩 실패!\n");
             return E_FAIL;
+        }
+        else
+        {
+            //OutputDebugStringA("Spear_머티리얼 바인딩 성공!\n");
         }
 
         if (FAILED(m_pModelCom->Bind_BoneMatrices(m_pShaderCom, "g_BoneMatrices", i)))

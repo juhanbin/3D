@@ -3,6 +3,9 @@
 #include "PlayerManager.h"
 #include "Body_Player.h"
 #include "Weapon.h"
+#include "Player_Speare.h"
+
+#include "Object_Pool_Manager.h"
 
 USING(Client)
 
@@ -183,6 +186,12 @@ void CPlayer::Update(_float fTimeDelta)
     }
 
     m_pColliderCom->Update(m_pTransformCom->Get_WorldMatrix());
+
+    if (m_eAttack == ATTACK::THROW)
+    {
+        Throw_Spear();              // 풀에서 창 발사
+        m_eAttack = ATTACK::NONE;   // 다음 프레임부터 평상 상태로
+    }
     __super::Update(fTimeDelta);
 }
 
@@ -215,6 +224,59 @@ _vector CPlayer::Get_TransformState(Engine::STATE s) const
 _vector CPlayer::GetPos() const { return Get_TransformState(Engine::STATE::POSITION); }
 _vector CPlayer::GetRight() const { return XMVector3Normalize(Get_TransformState(Engine::STATE::RIGHT)); }
 _vector CPlayer::GetUp() const { return XMVector3Normalize(Get_TransformState(Engine::STATE::UP)); }
+
+void CPlayer::Throw_Spear()
+{
+    using namespace DirectX;
+
+    // 현재 플레이어 트랜스폼 상태
+    XMVECTOR pos = m_pTransformCom->Get_State(Engine::STATE::POSITION);
+    XMVECTOR up = GetUp();                // 단위벡터
+    XMVECTOR fwd = GetForward(false);      // 단위벡터 (flattenY=false)
+
+    // 스폰 위치 계산
+    XMVECTOR spawn = pos + up * 1.8f + fwd * 2.5f;
+
+    // 디버그용 값 뽑기
+    const float px = XMVectorGetX(pos);
+    const float py = XMVectorGetY(pos);
+    const float pz = XMVectorGetZ(pos);
+
+    const float sx = XMVectorGetX(spawn);
+    const float sy = XMVectorGetY(spawn);
+    const float sz = XMVectorGetZ(spawn);
+
+    const float dx = XMVectorGetX(fwd);
+    const float dy = XMVectorGetY(fwd);
+    const float dz = XMVectorGetZ(fwd);
+
+    // 풀에 전달할 DESC
+    CPlayer_Speare::DESC desc{};
+    XMStoreFloat3(&desc.pos, spawn);
+    desc.pos.y += 5.f;          // ★ XMStoreFloat3 이후에 높이 보정
+    XMStoreFloat3(&desc.dir, fwd);
+    desc.speed = 4.5f;
+    desc.gravity = -9.8f;
+    desc.maxLife = 10.f;
+    desc.owner = this;
+
+    // 디버그 로그
+    wchar_t buf[256];
+    swprintf(buf, 256,
+        L"[SPEAR] player pos=(%.2f,%.2f,%.2f)  spawn=(%.2f,%.2f,%.2f)  dir=(%.2f,%.2f,%.2f)  speed=%.2f\n",
+        px, py, pz, sx, sy, sz, dx, dy, dz, desc.speed);
+    OutputDebugStringW(buf);
+
+    auto* obj = CObject_Pool_Manager::GetInstance()
+        ->Acquire(LEVEL::GAMEPLAY, L"Layer_Spear", &desc);
+
+#ifdef _DEBUG
+    OutputDebugStringW(obj ? L"[SPEAR] Acquire 성공\n" : L"[SPEAR] Acquire 실패 (풀 미등록/생성 실패)\n");
+#endif
+}
+
+
+
 _vector CPlayer::GetForward(bool flattenY) const
 {
     _vector f = Get_TransformState(Engine::STATE::LOOK);

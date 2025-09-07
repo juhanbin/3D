@@ -58,6 +58,34 @@ HRESULT CObject_Manager::Add_GameObject_ToLayer(_uint iLayerLevelIndex, const _w
 	return S_OK;
 }
 
+HRESULT CObject_Manager::Add_GameObject_ToLayer(_uint iLayerLevelIndex, const _wstring& strLayerTag, CGameObject* pGameObject)
+{
+	if (!pGameObject) return E_FAIL;
+
+	CLayer* pLayer = Find_Layer(iLayerLevelIndex, strLayerTag);
+	if (!pLayer) {
+		pLayer = CLayer::Create();
+		if (!pLayer) return E_FAIL;
+
+		// 레이어 테이블에 먼저 등록
+		m_pLayers[iLayerLevelIndex].emplace(strLayerTag, pLayer);
+
+		// 오브젝트 추가 실패 시 롤백
+		if (FAILED(pLayer->Add_GameObject(pGameObject))) {
+			m_pLayers[iLayerLevelIndex].erase(strLayerTag);
+			Safe_Release(pLayer);
+			return E_FAIL;
+		}
+		return S_OK;
+	}
+
+	// 기존 레이어가 있을 때 실패 처리
+	if (FAILED(pLayer->Add_GameObject(pGameObject)))
+		return E_FAIL;
+
+	return S_OK;
+}
+
 HRESULT CObject_Manager::Clear_Layer(_uint iLayerLevelIndex, const _wstring& strLayerTag)
 {
 	CLayer* pLayer = Find_Layer(iLayerLevelIndex, strLayerTag);
