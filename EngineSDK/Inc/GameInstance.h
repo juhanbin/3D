@@ -100,6 +100,9 @@ public:
 	CEventBus* Get_EventBus() const { return m_pEventBus; }
 #pragma endregion
 
+	ID3D11RasterizerState* Get_RS_CullNone() const { return m_pRS_CullNone; }
+private:
+	ID3D11RasterizerState* m_pRS_CullNone = nullptr;
 public:
 	CGraphic_Device* GetGraphicDevice();
 

@@ -260,19 +260,19 @@ void CPlayer::Throw_Spear()
     desc.maxLife = 10.f;
     desc.owner = this;
 
-    // 디버그 로그
-    wchar_t buf[256];
-    swprintf(buf, 256,
-        L"[SPEAR] player pos=(%.2f,%.2f,%.2f)  spawn=(%.2f,%.2f,%.2f)  dir=(%.2f,%.2f,%.2f)  speed=%.2f\n",
-        px, py, pz, sx, sy, sz, dx, dy, dz, desc.speed);
-    OutputDebugStringW(buf);
-
+//    // 디버그 로그
+//    wchar_t buf[256];
+//    swprintf(buf, 256,
+//        L"[SPEAR] player pos=(%.2f,%.2f,%.2f)  spawn=(%.2f,%.2f,%.2f)  dir=(%.2f,%.2f,%.2f)  speed=%.2f\n",
+//        px, py, pz, sx, sy, sz, dx, dy, dz, desc.speed);
+//    OutputDebugStringW(buf);
+//
     auto* obj = CObject_Pool_Manager::GetInstance()
         ->Acquire(LEVEL::GAMEPLAY, L"Layer_Spear", &desc);
-
-#ifdef _DEBUG
-    OutputDebugStringW(obj ? L"[SPEAR] Acquire 성공\n" : L"[SPEAR] Acquire 실패 (풀 미등록/생성 실패)\n");
-#endif
+//
+//#ifdef _DEBUG
+//    OutputDebugStringW(obj ? L"[SPEAR] Acquire 성공\n" : L"[SPEAR] Acquire 실패 (풀 미등록/생성 실패)\n");
+//#endif
 }
 
 

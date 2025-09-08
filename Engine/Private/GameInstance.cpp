@@ -213,9 +213,10 @@ HRESULT CGameInstance::Add_GameObject_ToLayer(_uint iLayerLevelIndex, const _wst
 
 HRESULT CGameInstance::Add_GameObject_ToLayer(_uint iLayerLevelIndex, const _wstring& strLayerTag, CGameObject* pGameObject)
 {
-	return m_pObject_Manager
-		? m_pObject_Manager->Add_GameObject_ToLayer(iLayerLevelIndex, strLayerTag, pGameObject)
-		: E_FAIL;
+	if (nullptr == m_pObject_Manager)
+		return E_FAIL;
+
+	return m_pObject_Manager->Add_GameObject_ToLayer(iLayerLevelIndex, strLayerTag, pGameObject);
 }
 
 #pragma endregion

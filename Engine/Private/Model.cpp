@@ -5,6 +5,7 @@
 #include "MeshMaterial.h"
 #include "Animation.h"
 #include <fstream>
+#include <cfloat> // FLT_MAX
 
 CModel::CModel(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
     : CComponent{ pDevice ,pContext }
@@ -20,7 +21,7 @@ CModel::CModel(const CModel& Prototype)
     , m_iNumMaterials{ Prototype.m_iNumMaterials }
     , m_Materials{ Prototype.m_Materials }
     , m_iNumAnimations{ Prototype.m_iNumAnimations }
-    , m_bFromBin{ Prototype.m_bFromBin } // ★ 복사
+    , m_bFromBin{ Prototype.m_bFromBin }
 {
     for (auto& pPrototypeAnimation : Prototype.m_Animations)
         m_Animations.push_back(pPrototypeAnimation->Clone());
@@ -51,7 +52,7 @@ HRESULT CModel::Initialize_Prototype(MODELTYPE eModelType, FILETYPE eFileType, c
 {
     m_eModelType = eModelType;
     XMStoreFloat4x4(&m_PreTransformMatrix, PreTransformMatrix);
-    m_bFromBin = (eFileType == FILETYPE::BIN); // ★ 세팅
+    m_bFromBin = (eFileType == FILETYPE::BIN);
 
     if (eFileType == FILETYPE::BIN)
     {
@@ -214,46 +215,57 @@ _bool CModel::Play_Animation(_float fTimeDelta)
     return m_isFinished;
 }
 
-// ★ FBX일 때만 실제 버텍스 기반 바운딩박스 계산
-void CModel::ComputeBoundingBox(DirectX::BoundingBox& outBox) const
-{
-    using namespace DirectX;
-
-    if (m_bFromBin) {
-        // BIN 로드 모델은 바운딩박스 "없어도 됨" 규칙: 0 extents 박스 반환
-        outBox = BoundingBox(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0));
-        return;
-    }
-
-    bool first = true;
-    XMFLOAT3 vMin{}, vMax{};
-
-    for (const auto& mesh : m_Meshes)
-    {
-        const auto& positions = mesh->GetPositions();
-        for (const auto& v : positions)
-        {
-            if (first) {
-                vMin = vMax = v;
-                first = false;
-            }
-            else {
-                vMin.x = min(vMin.x, v.x); vMin.y = min(vMin.y, v.y); vMin.z = min(vMin.z, v.z);
-                vMax.x = max(vMax.x, v.x); vMax.y = max(vMax.y, v.y); vMax.z = max(vMax.z, v.z);
-            }
-        }
-    }
-
-    if (first) {
-        // 포지션이 하나도 없을 경우(이례적) 0 extents
-        outBox = BoundingBox(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0));
-        return;
-    }
-
-    XMFLOAT3 center = { (vMin.x + vMax.x) * 0.5f, (vMin.y + vMax.y) * 0.5f, (vMin.z + vMax.z) * 0.5f };
-    XMFLOAT3 extents = { (vMax.x - vMin.x) * 0.5f, (vMax.y - vMin.y) * 0.5f, (vMax.z - vMin.z) * 0.5f };
-    outBox = BoundingBox(center, extents);
-}
+/*
+ * BIN/FBX 공통 바운딩박스 계산:
+ * - 모든 Mesh의 CPU-side position을 사용
+ * - 비어 있으면 작은 기본 extents로 만들어 컬링 방지
+ * - 너무 작은 상자는 최소값으로 보정
+ */
+//void CModel::ComputeBoundingBox(DirectX::BoundingBox& outBox) const
+//{
+//    using namespace DirectX;
+//
+//    bool any = false;
+//    XMFLOAT3 vMin(FLT_MAX, FLT_MAX, FLT_MAX);
+//    XMFLOAT3 vMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+//
+//    for (const auto& mesh : m_Meshes)
+//    {
+//        const auto& positions = mesh->GetPositions(); // CMesh가 채워줌 (BIN/FBX 공통)
+//        for (const auto& v : positions)
+//        {
+//            any = true;
+//            if (v.x < vMin.x) vMin.x = v.x; if (v.y < vMin.y) vMin.y = v.y; if (v.z < vMin.z) vMin.z = v.z;
+//            if (v.x > vMax.x) vMax.x = v.x; if (v.y > vMax.y) vMax.y = v.y; if (v.z > vMax.z) vMax.z = v.z;
+//        }
+//    }
+//
+//    if (!any)
+//    {
+//        // 포지션이 하나도 없으면 기본 상자 (작게)로라도 생성
+//        outBox = BoundingBox(XMFLOAT3(0, 0, 0), XMFLOAT3(0.5f, 0.5f, 0.5f));
+//        return;
+//    }
+//
+//    XMFLOAT3 center{
+//        (vMin.x + vMax.x) * 0.5f,
+//        (vMin.y + vMax.y) * 0.5f,
+//        (vMin.z + vMax.z) * 0.5f
+//    };
+//    XMFLOAT3 extents{
+//        (vMax.x - vMin.x) * 0.5f,
+//        (vMax.y - vMin.y) * 0.5f,
+//        (vMax.z - vMin.z) * 0.5f
+//    };
+//
+//    // 너무 작아도 프러스텀에서 사라지지 않게 최소 보정
+//    const float kMin = 0.25f;
+//    if (extents.x < kMin) extents.x = kMin;
+//    if (extents.y < kMin) extents.y = kMin;
+//    if (extents.z < kMin) extents.z = kMin;
+//
+//    outBox = BoundingBox(center, extents);
+//}
 
 HRESULT CModel::Render(_uint iMeshIndex)
 {

@@ -68,6 +68,23 @@ public:
 	void Turn(_fvector vAxis, _float fTimeDelta);
 	void LookAt(_fvector vAt);
 	void Chase(_fvector vTargetPos, _float fTimeDelta, _float fLimit = 0.f);
+
+	void ScalingKeepPos(_float3 vScale);
+	void RotationKeepPos(_float rx, _float ry, _float rz);
+	void RotationKeepPos(_fvector axis, _float rad);
+
+private:
+	inline void SetBasisKeepPos(_fvector r, _fvector u, _fvector l) {
+		_vector pos = Get_State(STATE::POSITION);     // ★ 위치 캐시
+		Set_State(STATE::RIGHT, r);
+		Set_State(STATE::UP, u);
+		Set_State(STATE::LOOK, l);
+		Set_State(STATE::POSITION, pos);              // ★ 위치 복원
+	}
+
+public:
+	void Translate(_fvector delta);
+
 private:
 	_float4x4				m_WorldMatrix = {};
 	_float					m_fSpeedPerSec = {};

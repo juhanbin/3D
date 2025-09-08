@@ -189,6 +189,49 @@ void CTransform::Chase(_fvector vTargetPos, _float fTimeDelta, _float fLimit)
 	Set_State(STATE::POSITION, vPosition);
 }
 
+void CTransform::ScalingKeepPos(_float3 vScale)
+{
+	SetBasisKeepPos(
+		Get_State(STATE::RIGHT) * vScale.x,
+		Get_State(STATE::UP) * vScale.y,
+		Get_State(STATE::LOOK) * vScale.z
+	);
+}
+
+void CTransform::RotationKeepPos(_float rx, _float ry, _float rz)
+{
+	const _float3 s = Get_Scaled();
+	_vector r = XMVectorSet(1, 0, 0, 0) * s.x;
+	_vector u = XMVectorSet(0, 1, 0, 0) * s.y;
+	_vector l = XMVectorSet(0, 0, 1, 0) * s.z;
+
+	_matrix R = XMMatrixRotationRollPitchYaw(rx, ry, rz);
+	SetBasisKeepPos(
+		XMVector4Transform(r, R),
+		XMVector4Transform(u, R),
+		XMVector4Transform(l, R)
+	);
+}
+
+void CTransform::RotationKeepPos(_fvector axis, _float rad)
+{
+	const _float3 s = Get_Scaled();
+	_vector r = XMVectorSet(1, 0, 0, 0) * s.x;
+	_vector u = XMVectorSet(0, 1, 0, 0) * s.y;
+	_vector l = XMVectorSet(0, 0, 1, 0) * s.z;
+
+	_matrix R = XMMatrixRotationAxis(axis, rad);
+	SetBasisKeepPos(
+		XMVector4Transform(r, R),
+		XMVector4Transform(u, R),
+		XMVector4Transform(l, R)
+	);
+}
+
+void CTransform::Translate(_fvector delta)
+{
+	Set_State(STATE::POSITION, Get_State(STATE::POSITION) + XMVectorSetW(delta, 0.f));
+}
 CTransform* CTransform::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 {
 	CTransform* pInstance = new CTransform(pDevice, pContext);

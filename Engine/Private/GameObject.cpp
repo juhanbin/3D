@@ -93,35 +93,6 @@ HRESULT CGameObject::Add_Component(_uint iPrototypeLevelIndex, const _wstring& s
 	return S_OK;
 }
 
-HRESULT CGameObject::Add_GameObject_ToLayer(_uint iLayerLevelIndex, const _wstring& strLayerTag, CGameObject* pGameObject)
-{
-	if (!pGameObject) return E_FAIL;
-	if (iLayerLevelIndex >= m_Layers.size()) return E_FAIL;
-
-	CLayer* pLayer = Find_Layer(iLayerLevelIndex, strLayerTag);
-	if (!pLayer) {
-		pLayer = CLayer::Create();
-		if (!pLayer) return E_FAIL;
-
-		// 레이어 테이블에 먼저 등록
-		m_Layers[iLayerLevelIndex].emplace(strLayerTag, pLayer);
-
-		// 오브젝트 추가 실패 시 롤백
-		if (FAILED(pLayer->Add_GameObject(pGameObject))) {
-			m_Layers[iLayerLevelIndex].erase(strLayerTag);
-			Safe_Release(pLayer);
-			return E_FAIL;
-		}
-		return S_OK;
-	}
-
-	// 기존 레이어가 있을 때 실패 처리
-	if (FAILED(pLayer->Add_GameObject(pGameObject)))
-		return E_FAIL;
-
-	return S_OK;
-}
-
 void CGameObject::Free()
 {
 	__super::Free();

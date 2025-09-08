@@ -32,17 +32,16 @@ public:
     _bool   Play_Animation(_float fTimeDelta);
 
 public:
-    // ★ FBX일 때만 실제 바운딩박스 계산, BIN은 "없어도 됨" 규칙에 따라 0 extents 반환
-    void ComputeBoundingBox(DirectX::BoundingBox& outBox) const;
+    // BIN/FBX 공통: 실제 버텍스로 계산. 포지션이 없으면 최소 상자로 만들어 컬링 방지.
+    //void ComputeBoundingBox(DirectX::BoundingBox& outBox) const;
 
 private:
-    /* 파일로부터 읽은 모든 정보를 다 저장해주는 구조체. */
     const aiScene* m_pAIScene = { nullptr };
     Assimp::Importer       m_Importer = {};
     MODELTYPE              m_eModelType = {};
     _float4x4              m_PreTransformMatrix = {};
 
-    // ★ 추가: BIN 로드 여부 플래그
+    // 로딩 소스 표시는 남겨두되 컬링 로직에는 사용하지 않음
     bool                   m_bFromBin = false;
 
 private:
