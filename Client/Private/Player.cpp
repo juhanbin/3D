@@ -229,51 +229,26 @@ void CPlayer::Throw_Spear()
 {
     using namespace DirectX;
 
-    // 현재 플레이어 트랜스폼 상태
     XMVECTOR pos = m_pTransformCom->Get_State(Engine::STATE::POSITION);
-    XMVECTOR up = GetUp();                // 단위벡터
-    XMVECTOR fwd = GetForward(false);      // 단위벡터 (flattenY=false)
+    XMVECTOR up = GetUp();                 // 단위
+    XMVECTOR fwd = GetForward(false);       // 단위
 
-    // 스폰 위치 계산
-    XMVECTOR spawn = pos + up * 1.8f + fwd * 2.5f;
+    // 살짝 위/앞 (너무 크게 주지 말기)
+    XMVECTOR spawn = pos + up * 1.6f + fwd * 0.6f;
 
-    // 디버그용 값 뽑기
-    const float px = XMVectorGetX(pos);
-    const float py = XMVectorGetY(pos);
-    const float pz = XMVectorGetZ(pos);
-
-    const float sx = XMVectorGetX(spawn);
-    const float sy = XMVectorGetY(spawn);
-    const float sz = XMVectorGetZ(spawn);
-
-    const float dx = XMVectorGetX(fwd);
-    const float dy = XMVectorGetY(fwd);
-    const float dz = XMVectorGetZ(fwd);
-
-    // 풀에 전달할 DESC
     CPlayer_Speare::DESC desc{};
     XMStoreFloat3(&desc.pos, spawn);
-    desc.pos.y += 5.f;          // ★ XMStoreFloat3 이후에 높이 보정
     XMStoreFloat3(&desc.dir, fwd);
-    desc.speed = 4.5f;
+    desc.speed = 35.f;
     desc.gravity = -9.8f;
-    desc.maxLife = 10.f;
+    desc.maxLife = 4.f;
     desc.owner = this;
 
-//    // 디버그 로그
-//    wchar_t buf[256];
-//    swprintf(buf, 256,
-//        L"[SPEAR] player pos=(%.2f,%.2f,%.2f)  spawn=(%.2f,%.2f,%.2f)  dir=(%.2f,%.2f,%.2f)  speed=%.2f\n",
-//        px, py, pz, sx, sy, sz, dx, dy, dz, desc.speed);
-//    OutputDebugStringW(buf);
-//
-    auto* obj = CObject_Pool_Manager::GetInstance()
+    CObject_Pool_Manager::GetInstance()
         ->Acquire(LEVEL::GAMEPLAY, L"Layer_Spear", &desc);
-//
-//#ifdef _DEBUG
-//    OutputDebugStringW(obj ? L"[SPEAR] Acquire 성공\n" : L"[SPEAR] Acquire 실패 (풀 미등록/생성 실패)\n");
-//#endif
 }
+
+
 
 
 

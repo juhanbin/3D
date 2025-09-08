@@ -24,15 +24,14 @@ HRESULT CPlayer_Speare::Initialize(void* pArg)
         return E_FAIL;
 
     // 초기 스케일 (위치 보존)
-    m_pTransformCom->Scaling(_float3(5.f, 5.f, 5.f));
-
+    //m_pTransformCom->Scaling(_float3(5.f, 5.f, 5.f));
     return S_OK;
 }
 
 void CPlayer_Speare::Priority_Update(_float dt)
 {
     __super::Priority_Update(dt);
-    //if (!Is_Active()) return;
+    if (!Is_Active()) return;
 }
 
 void CPlayer_Speare::Update(_float dt)
@@ -57,46 +56,16 @@ void CPlayer_Speare::Update(_float dt)
 void CPlayer_Speare::Late_Update(_float dt)
 {
     __super::Late_Update(dt);
-    //if (!Is_Active()) return;
-#ifdef _DEBUG
-    if (Is_Active())
-    {
-        XMFLOAT4X4 m; XMStoreFloat4x4(&m, m_pTransformCom->Get_WorldMatrix());
-        char b[128]; sprintf_s(b, "[SPEAR] Late pos=(%.2f,%.2f,%.2f)\n", m._41, m._42, m._43);
-        OutputDebugStringA(b);
-    }
-#endif
+    if (!Is_Active()) return;
+
     if (FAILED(m_pGameInstance->Add_RenderGroup(RENDERGROUP::NONBLEND, this)))
         return;
 }
 HRESULT CPlayer_Speare::Render()
 {
     if (!Is_Active()) return S_OK;
+
     if (FAILED(Bind_ShaderResources())) return E_FAIL;
-
-    // --- 상태 백업
-    ID3D11RasterizerState* oldRS = nullptr;
-    ID3D11DepthStencilState* oldDS = nullptr;
-    UINT oldStencilRef = 0;
-    m_pContext->RSGetState(&oldRS);
-    m_pContext->OMGetDepthStencilState(&oldDS, &oldStencilRef);
-
-    // --- Cull None + Depth Enable
-    ID3D11RasterizerState* rsCullNone = nullptr;
-    D3D11_RASTERIZER_DESC rd{};
-    rd.FillMode = D3D11_FILL_SOLID;
-    rd.CullMode = D3D11_CULL_NONE;        // 뒤집힘/와인딩 이슈 회피
-    rd.DepthClipEnable = TRUE;
-    m_pDevice->CreateRasterizerState(&rd, &rsCullNone);
-    m_pContext->RSSetState(rsCullNone);
-
-    ID3D11DepthStencilState* dsDefault = nullptr;
-    D3D11_DEPTH_STENCIL_DESC dd{};
-    dd.DepthEnable = TRUE;
-    dd.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-    dd.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
-    m_pDevice->CreateDepthStencilState(&dd, &dsDefault);
-    m_pContext->OMSetDepthStencilState(dsDefault, 0);
 
     const _uint n = m_pModelCom->Get_NumMeshes();
     for (_uint i = 0; i < n; ++i)
@@ -107,53 +76,57 @@ HRESULT CPlayer_Speare::Render()
         m_pTransformCom->Bind_Shader_Resource(m_pShaderCom, "g_WorldMatrix");
         m_pShaderCom->Bind_Matrix("g_ViewMatrix", m_pGameInstance->Get_Transform_Float4x4(D3DTS::VIEW));
         m_pShaderCom->Bind_Matrix("g_ProjMatrix", m_pGameInstance->Get_Transform_Float4x4(D3DTS::PROJ));
-        m_pShaderCom->Begin(0);
-        m_pModelCom->Render(i);
+
+        if (FAILED(m_pShaderCom->Begin(0))) OutputDebugStringA("SPEAR: Begin(0) fail\n");
+        if (FAILED(m_pModelCom->Render(i))) OutputDebugStringA("SPEAR: Model->Render fail\n");
     }
 
 #ifdef _DEBUG
     m_pColliderCom->Render();
 #endif
 
-    // --- 상태 복원
-    m_pContext->OMSetDepthStencilState(oldDS, oldStencilRef);
-    m_pContext->RSSetState(oldRS);
-    Safe_Release(dsDefault);
-    Safe_Release(rsCullNone);
-    Safe_Release(oldDS);
-    Safe_Release(oldRS);
     return S_OK;
 }
 
-
-
 void CPlayer_Speare::Reuse_Begin(void* pArg)
 {
+    using namespace DirectX;
+
     Set_Active(true);
     if (pArg) m_desc = *reinterpret_cast<DESC*>(pArg);
 
-    using namespace DirectX;
-    XMStoreFloat3(&m_desc.dir, XMVector3Normalize(XMLoadFloat3(&m_desc.dir)));
+    // 카메라 앞 3m 스폰 (지금 잘 보이는 버전 유지)
+    auto V = XMLoadFloat4x4(m_pGameInstance->Get_Transform_Float4x4(D3DTS::VIEW));
+    auto Vinv = XMMatrixInverse(nullptr, V);
+    XMVECTOR eye = Vinv.r[3];                 // 카메라 월드 위치
+    XMVECTOR fwd = XMVector3Normalize(Vinv.r[2]); // LH: +Z가 전방
+    XMVECTOR up = XMVectorSet(0.f, 1.f, 0.f, 0.f);
 
-    m_life = m_desc.maxLife;
-    m_vel = { m_desc.dir.x * m_desc.speed, m_desc.dir.y * m_desc.speed, m_desc.dir.z * m_desc.speed };
+    XMVECTOR spawn = eye + fwd * 3.0f;
+    m_pTransformCom->Set_State(Engine::STATE::POSITION, spawn);
 
-    // 0) 스케일 값
-    const _float3 S = _float3(5.f, 5.f, 5.f);
+    // --- 초기 속도 설정 (조금 위로 각도 주기)
+    const float speed = (m_desc.speed > 0.f ? m_desc.speed : 30.f);
+    const float pitchDeg = 10.f;                           // 위로 10도 쏘기
+    const float pitchRad = XMConvertToRadians(pitchDeg);
 
-    // 1) ★ 월드 기저 완전 리셋(스케일된 단위축)
-    m_pTransformCom->Set_State(Engine::STATE::RIGHT, XMVectorSet(1.f, 0.f, 0.f, 0.f) * S.x);
-    m_pTransformCom->Set_State(Engine::STATE::UP, XMVectorSet(0.f, 1.f, 0.f, 0.f) * S.y);
-    m_pTransformCom->Set_State(Engine::STATE::LOOK, XMVectorSet(0.f, 0.f, 1.f, 0.f) * S.z);
+    XMVECTOR aimDir = XMVector3Normalize(fwd + up * tanf(pitchRad));
 
-    // 2) 위치
-    m_pTransformCom->Set_State(Engine::STATE::POSITION, XMLoadFloat3(&m_desc.pos));
+    m_vel = { XMVectorGetX(aimDir) * speed,
+              XMVectorGetY(aimDir) * speed,
+              XMVectorGetZ(aimDir) * speed };
 
-    // 3) 회전(위치 보존)
-    FaceDir(m_desc.dir); // 내부에서 RotationKeepPos 사용
+    // 수명
+    m_life = (m_desc.maxLife > 0.f ? m_desc.maxLife : 4.f);
+
+    // 처음 방향 정렬(보기 좋게)
+    XMFLOAT3 d; XMStoreFloat3(&d, aimDir);
+    FaceDir(d);
 
     m_pColliderCom->Update(m_pTransformCom->Get_WorldMatrix());
 }
+
+
 
 void CPlayer_Speare::Reuse_End()
 {
@@ -172,11 +145,22 @@ void CPlayer_Speare::FaceDir(const XMFLOAT3& dir)
 
 void CPlayer_Speare::Tick_Move(float dt)
 {
+    // 중력 먼저 적용
     m_vel.y += m_desc.gravity * dt;
+
+    // 속도 적분
     const _vector pos = m_pTransformCom->Get_State(Engine::STATE::POSITION);
     const _vector dv = XMVectorSet(m_vel.x * dt, m_vel.y * dt, m_vel.z * dt, 0.f);
     m_pTransformCom->Set_State(Engine::STATE::POSITION, pos + dv);
+
+    // 진행방향으로 모델 돌려주면 더 자연스러움(선택)
+    XMVECTOR v = XMVector3Normalize(dv);
+    if (XMVectorGetX(XMVector3LengthSq(v)) > 1e-6f) {
+        XMFLOAT3 face; XMStoreFloat3(&face, v);
+        FaceDir(face);
+    }
 }
+
 
 bool CPlayer_Speare::Check_Hit()
 {
