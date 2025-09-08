@@ -234,7 +234,7 @@ void CPlayer::Throw_Spear()
     XMVECTOR fwd = GetForward(false);       // 단위
 
     // 살짝 위/앞 (너무 크게 주지 말기)
-    XMVECTOR spawn = pos + up * 1.6f + fwd * 0.6f;
+    XMVECTOR spawn = pos + up * 1.5f + fwd * 0.6f;
 
     CPlayer_Speare::DESC desc{};
     XMStoreFloat3(&desc.pos, spawn);
