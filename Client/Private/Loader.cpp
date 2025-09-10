@@ -22,6 +22,13 @@
 #include "Body_Monster_Skeleton.h"
 #include "Weapon_Skeleton_Spear.h"
 #include "Weapon_Skeleton_Bow.h"
+#include "Weapon_Skeleton_Arrow.h"
+
+#include "Mushroom.h"
+#include "Boss_Hand_L.h"
+#include "Boss_Hand_R.h"
+#include "Boss_Mask.h"
+#include "Boss_Fire.h"
 //#include "Effect.h"
 //#include "Sky.h"
 
@@ -261,6 +268,79 @@ HRESULT CLoader::Loading_For_GamePlay_Level()
 		return E_FAIL;
 	}
 
+	// Monster_Arrow 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::GAMEPLAY),
+		TEXT("Prototype_Component_Model_Monster_Arrow"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/Monster_Arrow.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] Monster_Arrow 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
+	// Monster_Mushroom 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::GAMEPLAY),
+		TEXT("Prototype_Component_Model_Mushroom"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::ANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/Mushroom.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] Monster_Mushroom 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
+	// Boss_hand_L 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::GAMEPLAY),
+		TEXT("Prototype_Component_Model_Boss_hand_L"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::ANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/Boss_hand_L.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] Boss_hand_L 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
+	// Boss_hand_R 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::GAMEPLAY),
+		TEXT("Prototype_Component_Model_Boss_hand_R"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::ANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/Boss_hand_R.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] Boss_hand_R 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
+	// Boss_Mask 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::GAMEPLAY),
+		TEXT("Prototype_Component_Model_Boss_Mask"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/Boss_Mask.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] Boss_Mask 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
+	// Boss_Fire 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::GAMEPLAY),
+		TEXT("Prototype_Component_Model_Boss_Fire"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/Boss_Eye_Mid.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] Boss_Fire 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
+
 	lstrcpy(m_szLoadingText, TEXT("네비게이션을 로딩중입니다."));
 	/* Prototype_Component_Navigation */
 	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Navigation"),
@@ -373,9 +453,39 @@ HRESULT CLoader::Loading_For_GamePlay_Level()
 		CWeapon_Skeleton_Bow::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
+	/* Prototype_GameObject_Weapon_Arrow */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Weapon_Skeleton_Arrow"),
+		CWeapon_Skeleton_Arrow::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	/* Prototype_GameObject_Mushroom */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Mushroom"),
+		CMushroom::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	/* Prototype_GameObject_Boss_Hand_L */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Boss_Hand_L"),
+		CBoss_Hand_L::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	/* Prototype_GameObject_Boss_Hand_R */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Boss_Hand_R"),
+		CBoss_Hand_R::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	/* Prototype_GameObject_Boss_Mask */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Boss_Mask"),
+		CBoss_Mask::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Boss_Fire"),
+		CBoss_Fire::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
 	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_MapObject"),
 		CMapObject::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
+
 
 	/*if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Monster_Skeleton"),
 		CMonster_Skeleton::Create(m_pDevice, m_pContext))))

@@ -9,6 +9,10 @@
 #include <fstream>
 #include "Object_Pool_Manager.h"
 #include "Player_Speare.h"
+#include "Mushroom.h"
+#include "Boss_Hand_L.h"
+#include "Boss_Hand_R.h"
+#include "Boss_Mask.h"
 #include <functional>
 
 // 공용 MapObject 구조체는 헤더에 정의
@@ -55,6 +59,18 @@ HRESULT CLevel_GamePlay::Initialize()
 	if (FAILED(Ready_Layer_Monster(TEXT("Layer_Monster"))))
 		return E_FAIL;
 
+  	if (FAILED(Ready_Layer_Mushroom(TEXT("Layer_Mushroom"))))
+		return E_FAIL;
+
+	if (FAILED(Ready_Layer_Boss_Hand_L(TEXT("Layer_Boss_Hand_L"))))
+		return E_FAIL;
+
+	if (FAILED(Ready_Layer_Boss_Hand_R(TEXT("Layer_Boss_Hand_R"))))
+		return E_FAIL;
+
+	if (FAILED(Ready_Layer_Boss_Mask(TEXT("Ready_Layer_Boss_Mask"))))
+		return E_FAIL;
+	
 	if (FAILED(Ready_Layer_MapObjects(TEXT("Layer_MapObject"))))
 		return E_FAIL;
 
@@ -105,20 +121,34 @@ vector<MapObject> CLevel_GamePlay::LoadSceneObjects(const char* file)
 
 void CLevel_GamePlay::Pool_Initialize() {
 	auto* pool = CObject_Pool_Manager::GetInstance();
-	auto hr = pool->Register_Pool(
+
+	HRESULT hr = pool->Register_Pool(
 		LEVEL::GAMEPLAY, L"Layer_Spear", 64,
-		std::bind(&CLevel_GamePlay::CreateSpear_ForPool, this)
-	);
+		std::bind(&CLevel_GamePlay::CreateSpear_ForPool, this));
 #ifdef _DEBUG
-	if (FAILED(hr)) OutputDebugStringW(L"[POOL] Register_Pool 실패\n");
-	else OutputDebugStringW(L"[POOL] Register_Pool OK (64)\n");
+	if (FAILED(hr)) OutputDebugStringW(L"[POOL] Spear Register_Pool 실패\n");
+#endif
+
+	hr = pool->Register_Pool(
+		LEVEL::GAMEPLAY, L"Layer_Arrow", 64,
+		std::bind(&CLevel_GamePlay::CreateArrow_ForPool, this));
+#ifdef _DEBUG
+	if (FAILED(hr)) OutputDebugStringW(L"[POOL] Arrow Register_Pool 실패\n");
+	else OutputDebugStringW(L"[POOL] Arrow Register_Pool OK (64)\n");
+#endif
+	hr = pool->Register_Pool(
+		LEVEL::GAMEPLAY, L"Layer_Boss_Fire", 64,
+		std::bind(&CLevel_GamePlay::CreateBoss_Fire_ForPool, this));
+#ifdef _DEBUG
+	if (FAILED(hr)) OutputDebugStringW(L"[POOL] Boss_Fire Register_Pool 실패\n");
+	else OutputDebugStringW(L"[POOL] Boss_Fire Register_Pool OK (64)\n");
 #endif
 }
 
 
+
 Engine::CGameObject* CLevel_GamePlay::CreateSpear_ForPool()
 {
-	// 1) 프로토타입에서 복제 (로더에서 Add_Prototype 해둔 태그 사용)
 	CGameObject* p = static_cast<CGameObject*>(
 		CGameInstance::GetInstance()->Clone_Prototype(
 			PROTOTYPE::GAMEOBJECT,
@@ -127,14 +157,55 @@ Engine::CGameObject* CLevel_GamePlay::CreateSpear_ForPool()
 			nullptr)); // 프리워밍이라 pArg 없음
 	if (!p) return nullptr;
 
-	// 2) 레이어에 올려두기
 	CGameInstance::GetInstance()
 		->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::GAMEPLAY), L"Layer_Spear", p);
 
-	// (선택) 확실히 비활성화
 	p->Set_Active(false);
 	return p;
 }
+
+Engine::CGameObject* CLevel_GamePlay::CreateArrow_ForPool()
+{
+	CGameObject* p = static_cast<CGameObject*>(
+		CGameInstance::GetInstance()->Clone_Prototype(
+			PROTOTYPE::GAMEOBJECT,
+			ENUM_CLASS(LEVEL::GAMEPLAY),
+			TEXT("Prototype_GameObject_Weapon_Skeleton_Arrow"),
+			nullptr));
+
+	if (!p) {
+		OutputDebugStringW(L"[POOL][Arrow] Clone_Prototype 실패! Prototype_GameObject_Arrow 미등록 가능성\n");
+		return nullptr;
+	}
+
+	CGameInstance::GetInstance()->Add_GameObject_ToLayer(
+		ENUM_CLASS(LEVEL::GAMEPLAY), L"Layer_Arrow", p);
+
+	p->Set_Active(false);
+	return p;
+}
+
+Engine::CGameObject* CLevel_GamePlay::CreateBoss_Fire_ForPool()
+{
+	CGameObject* p = static_cast<CGameObject*>(
+		CGameInstance::GetInstance()->Clone_Prototype(
+			PROTOTYPE::GAMEOBJECT,
+			ENUM_CLASS(LEVEL::GAMEPLAY),
+			TEXT("Prototype_GameObject_Boss_Fire"),
+			nullptr));
+
+	if (!p) {
+		OutputDebugStringW(L"[POOL][Arrow] Prototype_GameObject_Boss_Fire 실패! Prototype_GameObject_Boss_Fire 미등록 가능성\n");
+		return nullptr;
+	}
+
+	CGameInstance::GetInstance()->Add_GameObject_ToLayer(
+		ENUM_CLASS(LEVEL::GAMEPLAY), L"Layer_Boss_Fire", p);
+
+	p->Set_Active(false);
+	return p;
+}
+
 
 HRESULT CLevel_GamePlay::Ready_Lights()
 {
@@ -239,7 +310,7 @@ HRESULT CLevel_GamePlay::Ready_Layer_Monster(const _wstring& strLayerTag)
 {
 	for (auto& obj : m_SceneObjects)
 	{
-		if ((EObjectType)obj.type == EObjectType::MONSTER || (EObjectType)obj.type == EObjectType::SKELETON_SPEAR || (EObjectType)obj.type == EObjectType::SKELETON_BOW)
+		if ((EObjectType)obj.type == EObjectType::MONSTER || (EObjectType)obj.type == EObjectType::SKELETON_SPEAR || (EObjectType)obj.type == EObjectType::SKELETON_BOW )
 		{
 			CMonster_Skeleton::Monster_Skeleton_DESC desc{};
 			desc.type = static_cast<EObjectType>(obj.type);
@@ -252,6 +323,98 @@ HRESULT CLevel_GamePlay::Ready_Layer_Monster(const _wstring& strLayerTag)
 				ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Skeleton"), &desc)))
 			{
 				OutputDebugStringW(L"[SCENE] Monster Add 실패!\n");
+			}
+		}
+	}
+	return S_OK;
+}
+
+HRESULT CLevel_GamePlay::Ready_Layer_Mushroom(const _wstring& strLayerTag)
+{
+	for (auto& obj : m_SceneObjects)
+	{
+		if ((EObjectType)obj.type == EObjectType::MUSHROOM)
+		{
+			CMushroom::Mushroom_DESC desc{};
+			desc.type = static_cast<EObjectType>(obj.type);
+			desc.vScale = _float3(obj.size[0], obj.size[1], obj.size[2]);
+			desc.vRot = _float3(obj.rot[0], obj.rot[1], obj.rot[2]);
+			desc.vPos = _float3(obj.pos[0], obj.pos[1], obj.pos[2]);
+
+			if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(
+				ENUM_CLASS(LEVEL::GAMEPLAY), strLayerTag,
+				ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Mushroom"), &desc)))
+			{
+				OutputDebugStringW(L"[SCENE] Mushroom Add 실패!\n");
+			}
+		}
+	}
+	return S_OK;
+}
+
+HRESULT CLevel_GamePlay::Ready_Layer_Boss_Hand_L(const _wstring& strLayerTag)
+{
+	for (auto& obj : m_SceneObjects)
+	{
+		if ((EObjectType)obj.type == EObjectType::BOSS_HAND_L)
+		{
+			CBoss_Hand_L::Boss_Hand_L_DESC desc{};
+			desc.type = static_cast<EObjectType>(obj.type);
+			desc.vScale = _float3(obj.size[0], obj.size[1], obj.size[2]);
+			desc.vRot = _float3(obj.rot[0], obj.rot[1], obj.rot[2]);
+			desc.vPos = _float3(obj.pos[0], obj.pos[1], obj.pos[2]);
+
+			if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(
+				ENUM_CLASS(LEVEL::GAMEPLAY), strLayerTag,
+				ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Boss_Hand_L"), &desc)))
+			{
+				OutputDebugStringW(L"[SCENE] Boss_Hand_L Add 실패!\n");
+			}
+		}
+	}
+	return S_OK;
+}
+
+HRESULT CLevel_GamePlay::Ready_Layer_Boss_Hand_R(const _wstring& strLayerTag)
+{
+	for (auto& obj : m_SceneObjects)
+	{
+		if ((EObjectType)obj.type == EObjectType::BOSS_HAND_R)
+		{
+			CBoss_Hand_R::Boss_Hand_R_DESC desc{};
+			desc.type = static_cast<EObjectType>(obj.type);
+			desc.vScale = _float3(obj.size[0], obj.size[1], obj.size[2]);
+			desc.vRot = _float3(obj.rot[0], obj.rot[1], obj.rot[2]);
+			desc.vPos = _float3(obj.pos[0], obj.pos[1], obj.pos[2]);
+
+			if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(
+				ENUM_CLASS(LEVEL::GAMEPLAY), strLayerTag,
+				ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Boss_Hand_R"), &desc)))
+			{
+				OutputDebugStringW(L"[SCENE] Boss_Hand_R Add 실패!\n");
+			}
+		}
+	}
+	return S_OK;
+}
+
+HRESULT CLevel_GamePlay::Ready_Layer_Boss_Mask(const _wstring& strLayerTag)
+{
+	for (auto& obj : m_SceneObjects)
+	{
+		if ((EObjectType)obj.type == EObjectType::BOSS_MASK)
+		{
+			CBoss_Mask::Boss_Mask desc{};
+			desc.type = static_cast<EObjectType>(obj.type);
+			desc.vScale = _float3(obj.size[0], obj.size[1], obj.size[2]);
+			desc.vRot = _float3(obj.rot[0], obj.rot[1], obj.rot[2]);
+			desc.vPos = _float3(obj.pos[0], obj.pos[1], obj.pos[2]);
+
+			if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(
+				ENUM_CLASS(LEVEL::GAMEPLAY), strLayerTag,
+				ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Boss_Mask"), &desc)))
+			{
+				OutputDebugStringW(L"[SCENE] Boss_Mask Add 실패!\n");
 			}
 		}
 	}

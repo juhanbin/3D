@@ -4,9 +4,9 @@
 #include "Body_Player.h"
 #include "Weapon.h"
 #include "Player_Speare.h"
-
 #include "Object_Pool_Manager.h"
-
+#include "Mushroom.h"
+#include "Weapon_Skeleton_Arrow.h"
 USING(Client)
 
 CPlayer::CPlayer(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
@@ -17,10 +17,7 @@ CPlayer::CPlayer(const CPlayer& Prototype)
     : CContainerObject{ Prototype } {
 }
 
-HRESULT CPlayer::Initialize_Prototype()
-{
-    return S_OK;
-}
+HRESULT CPlayer::Initialize_Prototype() { return S_OK; }
 
 HRESULT CPlayer::Initialize(void* pArg)
 {
@@ -54,7 +51,8 @@ HRESULT CPlayer::Initialize(void* pArg)
     if (FAILED(Ready_Components()))   return E_FAIL;
     if (FAILED(Ready_PartObjects()))  return E_FAIL;
 
-    CPlayerManager::GetInstance()->Register(0, this, 100.f);
+    // PlayerManager 등록 및 활성화
+    CPlayerManager::GetInstance()->Register(0, this, /*maxHp*/100.f);
     CPlayerManager::GetInstance()->SetActive(0);
 
     return S_OK;
@@ -67,6 +65,7 @@ void CPlayer::Priority_Update(_float fTimeDelta)
 
 void CPlayer::Update(_float fTimeDelta)
 {
+    // ---- 입력 ----
     const bool w = m_pGameInstance->KeyPressing(DIK_W);
     const bool a = m_pGameInstance->KeyPressing(DIK_A);
     const bool s = m_pGameInstance->KeyPressing(DIK_S);
@@ -89,6 +88,7 @@ void CPlayer::Update(_float fTimeDelta)
 
     const bool anyMouse = (LDown || LPress || LUp || RDown || RPress || RUp);
 
+    // ---- 공격/이동 상태 갱신(기존 로직) ----
     if (anyMouse)
     {
         if (LUp || (RPress && LDown))
@@ -153,8 +153,11 @@ void CPlayer::Update(_float fTimeDelta)
         m_eAttack == ATTACK::RIGHT ||
         m_eAttack == ATTACK::THROW;
 
+    // ---- 이동 수행(이동 전 위치 백업) ----
+    _vector prevPos = m_pTransformCom->Get_State(Engine::STATE::POSITION);
+
     float mul = 1.f;
-    if (aimingModeNow)               mul = (RPress || LPress) ? kAimRunMul : kAimWalkMul;
+    if (aimingModeNow)                mul = (RPress || LPress) ? kAimRunMul : kAimWalkMul;
     else if (m_eMoving == MOVING::RUN) mul = kRunMul;
 
     if (aimingModeNow) {
@@ -177,27 +180,35 @@ void CPlayer::Update(_float fTimeDelta)
     }
 
     if (m_eMoving == MOVING::DASH) {
-        if (m_iDashFlagFrames > 0) {
-            --m_iDashFlagFrames;
-        }
-        else {
-            m_eMoving = anyMove ? MOVING::JOG : MOVING::IDLE;
-        }
+        if (m_iDashFlagFrames > 0) --m_iDashFlagFrames;
+        else m_eMoving = anyMove ? MOVING::JOG : MOVING::IDLE;
     }
 
+    // ---- 콜라이더 업데이트 & 충돌 해결 ----
     m_pColliderCom->Update(m_pTransformCom->Get_WorldMatrix());
 
-    if (m_eAttack == ATTACK::THROW)
-    {
-        Throw_Spear();              // 풀에서 창 발사
-        m_eAttack = ATTACK::NONE;   // 다음 프레임부터 평상 상태로
+    if (ResolveBlockingCollisions()) {
+        m_pTransformCom->Set_State(Engine::STATE::POSITION, prevPos);
+        m_pColliderCom->Update(m_pTransformCom->Get_WorldMatrix());
     }
+
+    // ---- 트리거 데미지(죽은 버섯의 트리거 등) ----
+    TickDamageTriggers(fTimeDelta);
+    TickHostileHits(fTimeDelta);
+    // ---- 투척 발사 ----
+    if (m_eAttack == ATTACK::THROW) {
+        Throw_Spear();
+        m_eAttack = ATTACK::NONE;
+    }
+
     __super::Update(fTimeDelta);
 }
 
 void CPlayer::Late_Update(_float fTimeDelta)
 {
-    m_pTransformCom->Set_State(Engine::STATE::POSITION,
+    // 네비 위 보정
+    m_pTransformCom->Set_State(
+        Engine::STATE::POSITION,
         m_pNavigationCom->Compute_OnCell(m_pTransformCom->Get_State(Engine::STATE::POSITION)));
 
     if (FAILED(m_pGameInstance->Add_RenderGroup(RENDERGROUP::NONBLEND, this)))
@@ -221,19 +232,24 @@ _vector CPlayer::Get_TransformState(Engine::STATE s) const
     return m_pTransformCom ? m_pTransformCom->Get_State(s) : XMVectorZero();
 }
 
-_vector CPlayer::GetPos() const { return Get_TransformState(Engine::STATE::POSITION); }
-_vector CPlayer::GetRight() const { return XMVector3Normalize(Get_TransformState(Engine::STATE::RIGHT)); }
-_vector CPlayer::GetUp() const { return XMVector3Normalize(Get_TransformState(Engine::STATE::UP)); }
+_vector CPlayer::GetPos()    const { return Get_TransformState(Engine::STATE::POSITION); }
+_vector CPlayer::GetRight()  const { return XMVector3Normalize(Get_TransformState(Engine::STATE::RIGHT)); }
+_vector CPlayer::GetUp()     const { return XMVector3Normalize(Get_TransformState(Engine::STATE::UP)); }
+_vector CPlayer::GetForward(bool flattenY) const
+{
+    _vector f = Get_TransformState(Engine::STATE::LOOK);
+    return flattenY ? XMVector3Normalize(XMVectorSetY(f, 0.f)) : XMVector3Normalize(f);
+}
 
 void CPlayer::Throw_Spear()
 {
     using namespace DirectX;
 
     XMVECTOR pos = m_pTransformCom->Get_State(Engine::STATE::POSITION);
-    XMVECTOR up = GetUp();                 // 단위
+    XMVECTOR up = GetUp();                  // 단위
     XMVECTOR fwd = GetForward(false);       // 단위
 
-    // 살짝 위/앞 (너무 크게 주지 말기)
+    // 살짝 위/앞
     XMVECTOR spawn = pos + up * 1.5f + fwd * 0.6f;
 
     CPlayer_Speare::DESC desc{};
@@ -248,16 +264,6 @@ void CPlayer::Throw_Spear()
         ->Acquire(LEVEL::GAMEPLAY, L"Layer_Spear", &desc);
 }
 
-
-
-
-
-_vector CPlayer::GetForward(bool flattenY) const
-{
-    _vector f = Get_TransformState(Engine::STATE::LOOK);
-    return flattenY ? XMVector3Normalize(XMVectorSetY(f, 0.f)) : XMVector3Normalize(f);
-}
-
 HRESULT CPlayer::Ready_Components()
 {
     CNavigation::NAVIGATION_DESC NaviDesc{};
@@ -268,13 +274,14 @@ HRESULT CPlayer::Ready_Components()
         TEXT("Com_Navigation"), reinterpret_cast<CComponent**>(&m_pNavigationCom), &NaviDesc)))
         return E_FAIL;
 
-    CBounding_AABB::BOUNDING_AABB_DESC  AABBDesc{};
-    AABBDesc.vExtents = _float3(0.4f, 0.7f, 0.4f);
-    AABBDesc.vCenter = _float3(0.f, AABBDesc.vExtents.y, 0.f);
+    // 플레이어 본체 충돌(막힘/피격 판단에 사용)
+    CBounding_Sphere::BOUNDING_SPHERE_DESC S{};
+    S.fRadius = 0.7f;
+    S.vCenter = _float3(0.f, S.fRadius, 0.f);
 
-
-    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Collider_AABB"),
-        TEXT("Com_Collider"), reinterpret_cast<CComponent**>(&m_pColliderCom), &AABBDesc)))
+    if (FAILED(CGameObject::Add_Component(
+        ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Collider_Sphere"),
+        TEXT("Com_Collider"), reinterpret_cast<CComponent**>(&m_pColliderCom), &S)))
         return E_FAIL;
 
     return S_OK;
@@ -309,6 +316,223 @@ HRESULT CPlayer::Ready_PartObjects()
 
     return S_OK;
 }
+
+// ====== 충돌/트리거 유틸 구현 ======
+bool CPlayer::CheckBlockingWithLayer(const _wstring& layerName) const
+{
+    const _uint level = ENUM_CLASS(LEVEL::GAMEPLAY);
+
+    for (_uint i = 0;; ++i)
+    {
+        CGameObject* obj = m_pGameInstance->Find_GameObject(level, layerName, i);
+        if (!obj) break;
+
+        CCollider* col = static_cast<CCollider*>(obj->Get_Component(L"Com_Collider"));
+        if (!col) continue;
+
+        if (m_pColliderCom->Intersect(col))
+            return true;
+    }
+    return false;
+}
+
+bool CPlayer::CheckTriggerWithLayer(const _wstring& layerName) const
+{
+    const _uint level = ENUM_CLASS(LEVEL::GAMEPLAY);
+
+    for (_uint i = 0;; ++i)
+    {
+        CGameObject* obj = m_pGameInstance->Find_GameObject(level, layerName, i);
+        if (!obj) break;
+
+        CCollider* trig = static_cast<CCollider*>(obj->Get_Component(L"Com_Trigger"));
+        if (!trig) continue;
+
+        if (m_pColliderCom->Intersect(trig))
+            return true;
+    }
+    return false;
+}
+
+bool CPlayer::ResolveBlockingCollisions()
+{
+    if (!m_pTransformCom || !m_pColliderCom) return false;
+
+    const _uint    level = ENUM_CLASS(LEVEL::GAMEPLAY);
+    const _wstring layer = L"Layer_Mushroom";
+
+    DirectX::XMVECTOR prevR = m_pTransformCom->Get_State(Engine::STATE::RIGHT);
+    DirectX::XMVECTOR prevU = m_pTransformCom->Get_State(Engine::STATE::UP);
+    DirectX::XMVECTOR prevL = m_pTransformCom->Get_State(Engine::STATE::LOOK);
+    DirectX::XMVECTOR prevP = m_pTransformCom->Get_State(Engine::STATE::POSITION);
+
+    m_pColliderCom->Update(m_pTransformCom->Get_WorldMatrix());
+
+    bool blocked = false;
+
+    for (_uint i = 0;; ++i)
+    {
+        CGameObject* obj = m_pGameInstance->Find_GameObject(level, layer, i);
+        if (!obj) break;
+
+        auto* mush = dynamic_cast<CMushroom*>(obj);
+        if (!mush || !mush->IsAlive()) continue;
+
+        Engine::CCollider* cBlock = mush->GetCollider_Block();
+        if (!cBlock) continue;
+
+        if (m_pColliderCom->Intersect(cBlock)) { blocked = true; break; }
+    }
+
+    if (blocked)
+    {
+        m_pTransformCom->Set_State(Engine::STATE::RIGHT, prevR);
+        m_pTransformCom->Set_State(Engine::STATE::UP, prevU);
+        m_pTransformCom->Set_State(Engine::STATE::LOOK, prevL);
+        m_pTransformCom->Set_State(Engine::STATE::POSITION, prevP);
+
+        m_pColliderCom->Update(m_pTransformCom->Get_WorldMatrix());
+    }
+
+    return blocked;
+}
+
+void CPlayer::TickDamageTriggers(float dt)
+{
+    m_damageTickAcc += dt;
+    if (m_damageTickAcc < m_damageTickGap) return;
+    m_damageTickAcc = 0.f;
+
+    constexpr float kDeathTriggerDamage = 5.f;
+
+    auto* pm = CPlayerManager::GetInstance();
+    if (!pm) return;
+
+    const float hpBefore = pm->GetActiveHP();
+
+    const _uint level = ENUM_CLASS(LEVEL::GAMEPLAY);
+    const _wstring layer = L"Layer_Mushroom";
+
+    int hitCount = 0;
+
+    for (_uint i = 0;; ++i)
+    {
+        CGameObject* obj = m_pGameInstance->Find_GameObject(level, layer, i);
+        if (!obj) break;
+
+        auto* mush = dynamic_cast<CMushroom*>(obj);
+        if (!mush || !mush->IsDead()) continue;
+
+        Engine::CCollider* trig = mush->GetCollider_TriggerIfActive();
+        if (!trig) continue;
+
+        if (m_pColliderCom->Intersect(trig)) {
+            ++hitCount;
+            pm->ApplyDamageActive(kDeathTriggerDamage);
+        }
+    }
+
+    const float hpAfter = pm->GetActiveHP();
+
+    if (hitCount > 0) {
+        wchar_t wbuf[128];
+        swprintf(wbuf, 128, L"[PLAYER] hited HP: %.1f -> %.1f\n",
+            hpBefore, hpAfter);
+        OutputDebugStringW(wbuf);
+    }
+}
+
+void CPlayer::ApplyDamage(int amount)
+{
+    // 필요 시 다른 소스(예: 근접 피격 등)에서 호출 가능
+    auto* pm = CPlayerManager::GetInstance();
+    if (!pm) return;
+
+    // 적용 전/후 HP 로깅
+    const float hpBefore = pm->GetActiveHP();
+
+    pm->ApplyDamageActive(static_cast<float>(amount));
+
+    const float hpAfter = pm->GetActiveHP();
+
+    wchar_t wbuf[128];
+    swprintf(wbuf, 128, L"[PLAYER] ApplyDamage(%d)  HP: %.1f -> %.1f\n",
+        amount, hpBefore, hpAfter);
+    OutputDebugStringW(wbuf);
+}
+
+void CPlayer::TickHostileHits(float dt)
+{
+    auto* pm = CPlayerManager::GetInstance();
+    if (!pm || !m_pColliderCom) return;
+
+    const _uint level = ENUM_CLASS(LEVEL::GAMEPLAY);
+
+    // ---------- 1) 적 화살 ----------
+    {
+        const std::wstring layer = L"Layer_Arrow";
+        for (_uint i = 0;; ++i)
+        {
+            CGameObject* obj = m_pGameInstance->Find_GameObject(level, layer, i);
+            if (!obj) break;
+
+            auto* col = static_cast<Engine::CCollider*>(obj->Get_Component(L"Com_Collider"));
+            if (!col) continue;
+
+            if (m_pColliderCom->Intersect(col))
+            {
+                constexpr float kArrowDamage = 12.f;
+
+                const float hpBefore = pm->GetActiveHP();
+                pm->ApplyDamageActive(kArrowDamage);
+                const float hpAfter = pm->GetActiveHP();
+
+                // HP 로그
+                wchar_t wbuf[128];
+                swprintf(wbuf, 128, L"HITED Arrow =%.1f  HP: %.1f -> %.1f\n",
+                    kArrowDamage, hpBefore, hpAfter);
+                OutputDebugStringW(wbuf);
+
+                // 화살은 한 번 맞으면 풀로 복귀(중복 히트 방지)
+                if (auto* arrow = dynamic_cast<CWeapon_Skeleton_Arrow*>(obj))
+                    int a = 0;// arrow->ReturnToPool(); // public이어야 함
+                else
+                    obj->Set_Active(false); // 최소한 비활성화
+            }
+        }
+    }
+
+    // ---------- 2) 적 근접 무기(스켈레톤 창 등) ----------
+    {
+        const std::wstring layer = L"Layer_MonsterHit";
+        for (_uint i = 0;; ++i)
+        {
+            CGameObject* obj = m_pGameInstance->Find_GameObject(level, layer, i);
+            if (!obj) break;
+
+            auto* hitCol = static_cast<Engine::CCollider*>(obj->Get_Component(L"Com_Collider"));
+            if (!hitCol) continue;
+
+            if (m_pColliderCom->Intersect(hitCol))
+            {
+                constexpr float kSpearDamage = 15.f;
+
+                const float hpBefore = pm->GetActiveHP();
+                pm->ApplyDamageActive(kSpearDamage);
+                const float hpAfter = pm->GetActiveHP();
+
+                wchar_t wbuf[128];
+                swprintf(wbuf, 128, L"HITED MonsterSpear =%.1f  HP: %.1f -> %.1f\n",
+                    kSpearDamage, hpBefore, hpAfter);
+                OutputDebugStringW(wbuf);
+
+                // 근접무기는 파츠/히트박스 측에서 타격당 프레임만 Attach/Detach 하거나
+                // 이쪽에서 i-프레임 쿨다운을 걸어 다단히트 방지하는 걸 추천
+            }
+        }
+    }
+}
+
 
 CPlayer* CPlayer::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 {

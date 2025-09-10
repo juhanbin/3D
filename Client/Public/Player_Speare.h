@@ -11,6 +11,8 @@ NS_END
 
 NS_BEGIN(Client)
 
+class CMushroom; // ← 전방선언
+
 class CPlayer_Speare final : public CGameObject
 {
 public:
@@ -21,7 +23,6 @@ public:
         float  gravity = -9.8f;
         float  maxLife = 3.0f;
         void* owner = nullptr;
-
     };
 
 private:
@@ -42,16 +43,12 @@ public:
 
 private:
     void    Tick_Move(float dt);
-    bool    Check_Hit();
+    bool    Check_Hit();                 // ★ 히트 체크 (1회만)
     void    ReturnToPool();
 
     // 진행방향(속도)에 맞춰 월드 회전 정렬 (스케일/위치 보존)
     void    AlignToVelocity();
-
-    // 기존 유틸(원하면 유지)
     void    FaceDir(const DirectX::XMFLOAT3& dir);
-
-    // 현재 Transform의 스케일 길이 추출
     DirectX::XMFLOAT3 GetCurrentScale() const;
 
 private:
@@ -59,13 +56,17 @@ private:
     HRESULT Bind_ShaderResources();
 
 private:
-    CCollider* m_pColliderCom = nullptr;
-    CShader* m_pShaderCom = nullptr;
-    CModel* m_pModelCom = nullptr;
+    Engine::CCollider* m_pColliderCom = nullptr;
+    Engine::CShader* m_pShaderCom = nullptr;
+    Engine::CModel* m_pModelCom = nullptr;
 
     float              m_life = 0.f;
     DirectX::XMFLOAT3  m_vel{ 0,0,0 };
     DESC               m_desc{};
+
+    // ----- 추가: 1회 데미지 보장 -----
+    bool               m_hasDealtDamage = false;  // ★ 창당 1회 데미지 플래그
+    int                m_damage = 15;             // 창 기본 데미지(원하면 외부에서 세팅)
 
 public:
     static CPlayer_Speare* Create(ID3D11Device* dev, ID3D11DeviceContext* ctx);

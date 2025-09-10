@@ -54,6 +54,7 @@ enum class EObjectType : int
     MUSHROOM,
     SMALLMUSHROOM,
     PARASIT_EYE,
+    MONSTER_ARROW,
     END
 };
 
@@ -98,6 +99,7 @@ inline const char* ToObjectTypeString(EObjectType type)
     case EObjectType::MUSHROOM:         return "Mushroom";
     case EObjectType::SMALLMUSHROOM:    return "SmallMushroom";
     case EObjectType::PARASIT_EYE:      return "Parasit_Eye";
+    case EObjectType::MONSTER_ARROW:      return "Monster_Arrow";
     default:                            return "Unknown";
 
     }

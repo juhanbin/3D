@@ -30,6 +30,9 @@ HRESULT CWeapon_Skeleton_Spear::Initialize(void* pArg)
     if (FAILED(Ready_Components()))
         return E_FAIL;
 
+    CGameInstance::GetInstance()
+        ->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::GAMEPLAY), L"Layer_MonsterHit", this);
+
     //m_pTransformCom->Scaling(_float3(0.1f, 0.1f, 0.1f));
     //m_pTransformCom->Set_State(STATE::POSITION, XMVectorSet(0.f, 0.f, 0.f, 1.f));
 
@@ -55,6 +58,8 @@ void CWeapon_Skeleton_Spear::Update(_float fTimeDelta)
         m_pTransformCom->Get_WorldMatrix() * 
         BoneMatrix *
         XMLoadFloat4x4(m_pParentMatrix));
+
+    m_pColliderCom->Update(XMLoadFloat4x4(&m_CombinedWorldMatrix));
 }
 
 
@@ -90,6 +95,10 @@ HRESULT CWeapon_Skeleton_Spear::Render()
         m_pModelCom->Render(i);
     }
 
+#ifdef _DEBUG
+    m_pColliderCom->Render();
+#endif
+
     return S_OK;
 }
 
@@ -101,6 +110,17 @@ HRESULT CWeapon_Skeleton_Spear::Ready_Components()
 
     if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Model_Monster_Spear"),
         TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom), nullptr)))
+        return E_FAIL;
+
+    Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Model_Monster_Spear"),
+        TEXT("Com_Model"), (CComponent**)&m_pModelCom, nullptr);
+
+    CBounding_Sphere::BOUNDING_SPHERE_DESC  SphereDesc{};
+    SphereDesc.fRadius = 0.1f;
+    SphereDesc.vCenter = _float3(0.f, SphereDesc.fRadius + 1.3f, 0.f);
+
+    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Collider_Sphere"),
+        TEXT("Com_Collider"), reinterpret_cast<CComponent**>(&m_pColliderCom), &SphereDesc)))
         return E_FAIL;
 
     return S_OK;
@@ -167,7 +187,7 @@ CGameObject* CWeapon_Skeleton_Spear::Clone(void* pArg)
 void CWeapon_Skeleton_Spear::Free()
 {
     __super::Free();
-
+    Safe_Release(m_pColliderCom);
     Safe_Release(m_pModelCom);
     Safe_Release(m_pShaderCom);
 }

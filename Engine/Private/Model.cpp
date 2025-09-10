@@ -5,11 +5,12 @@
 #include "MeshMaterial.h"
 #include "Animation.h"
 #include <fstream>
-#include <cfloat> // FLT_MAX
+#include <cfloat>
+
+using namespace Engine;
 
 CModel::CModel(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
-    : CComponent{ pDevice ,pContext }
-{
+    : CComponent{ pDevice ,pContext } {
 }
 
 CModel::CModel(const CModel& Prototype)
@@ -22,6 +23,8 @@ CModel::CModel(const CModel& Prototype)
     , m_Materials{ Prototype.m_Materials }
     , m_iNumAnimations{ Prototype.m_iNumAnimations }
     , m_bFromBin{ Prototype.m_bFromBin }
+    , m_prevAnim01{ 0.f }
+    , m_curAnim01{ 0.f }
 {
     for (auto& pPrototypeAnimation : Prototype.m_Animations)
         m_Animations.push_back(pPrototypeAnimation->Clone());
@@ -29,26 +32,21 @@ CModel::CModel(const CModel& Prototype)
     for (auto& pPrototypeBone : Prototype.m_Bones)
         m_Bones.push_back(pPrototypeBone->Clone());
 
-    for (auto& pMesh : m_Meshes)
-        Safe_AddRef(pMesh);
-
-    for (auto& pMaterial : m_Materials)
-        Safe_AddRef(pMaterial);
+    for (auto& pMesh : m_Meshes)      Safe_AddRef(pMesh);
+    for (auto& pMaterial : m_Materials) Safe_AddRef(pMaterial);
 }
 
 _float4x4* CModel::Get_BoneMatrix(const _char* pBoneName)
 {
-    auto iter = find_if(m_Bones.begin(), m_Bones.end(), [&](CBone* pBone) {
-        return pBone->Compare_Name(pBoneName);
-        });
+    auto iter = find_if(m_Bones.begin(), m_Bones.end(),
+        [&](CBone* pBone) { return pBone->Compare_Name(pBoneName); });
 
-    if (iter == m_Bones.end())
-        return nullptr;
-
+    if (iter == m_Bones.end()) return nullptr;
     return (*iter)->Get_CombinedTransformationMatrixPtr();
 }
 
-HRESULT CModel::Initialize_Prototype(MODELTYPE eModelType, FILETYPE eFileType, const _char* pModelFilePath, _fmatrix PreTransformMatrix)
+HRESULT CModel::Initialize_Prototype(MODELTYPE eModelType, FILETYPE eFileType,
+    const _char* pModelFilePath, _fmatrix PreTransformMatrix)
 {
     m_eModelType = eModelType;
     XMStoreFloat4x4(&m_PreTransformMatrix, PreTransformMatrix);
@@ -80,11 +78,8 @@ HRESULT CModel::Initialize_Prototype(MODELTYPE eModelType, FILETYPE eFileType, c
             vector<BoneInfoBin> binBones(boneCount);
             ifs.read((char*)binBones.data(), sizeof(BoneInfoBin) * boneCount);
 
-            if (FAILED(Ready_Bones(binBones, -1)))
-                return E_FAIL;
-
-            if (FAILED(Ready_Meshes(ifs, eModelType)))
-                return E_FAIL;
+            if (FAILED(Ready_Bones(binBones, -1))) return E_FAIL;
+            if (FAILED(Ready_Meshes(ifs, eModelType))) return E_FAIL;
 
             uint32_t materialCount = 0;
             ifs.read((char*)&materialCount, sizeof(materialCount));
@@ -95,16 +90,13 @@ HRESULT CModel::Initialize_Prototype(MODELTYPE eModelType, FILETYPE eFileType, c
                 OutputDebugStringA("[BIN] Ready_Materials 실패 (ANIM)\n");
                 return E_FAIL;
             }
-
-            if (FAILED(Ready_Animations(ifs)))
-                return E_FAIL;
+            if (FAILED(Ready_Animations(ifs))) return E_FAIL;
         }
     }
-    else // FBX
+    else
     {
         _uint iFlag = { aiProcess_ConvertToLeftHanded | aiProcessPreset_TargetRealtime_Fast };
-        if (MODELTYPE::NONANIM == m_eModelType)
-            iFlag |= aiProcess_PreTransformVertices;
+        if (MODELTYPE::NONANIM == m_eModelType) iFlag |= aiProcess_PreTransformVertices;
 
         m_pAIScene = m_Importer.ReadFile(pModelFilePath, iFlag);
         if (nullptr == m_pAIScene) return E_FAIL;
@@ -114,13 +106,13 @@ HRESULT CModel::Initialize_Prototype(MODELTYPE eModelType, FILETYPE eFileType, c
         if (FAILED(Ready_Materials(pModelFilePath))) return E_FAIL;
         if (FAILED(Ready_Animations())) return E_FAIL;
     }
-
     return S_OK;
 }
 
 HRESULT CModel::Initialize(void* pArg) { return S_OK; }
 
-HRESULT CModel::Bind_Materials(class CShader* pShader, const _char* pConstantName, _uint iMeshIndex, aiTextureType eTextureType, _uint iIndex)
+HRESULT CModel::Bind_Materials(CShader* pShader, const _char* pConstantName,
+    _uint iMeshIndex, aiTextureType eTextureType, _uint iIndex)
 {
     if (iMeshIndex >= m_iNumMeshes) return E_FAIL;
     _uint iMaterialIndex = m_Meshes[iMeshIndex]->Get_MaterialIndex();
@@ -128,7 +120,8 @@ HRESULT CModel::Bind_Materials(class CShader* pShader, const _char* pConstantNam
     return m_Materials[iMaterialIndex]->Bind_Resources(pShader, pConstantName, eTextureType, iIndex);
 }
 
-HRESULT CModel::Bind_Materials_Bin(CShader* pShader, const _char* pConstantName, _uint iMeshIndex, int texType, _uint iIndex)
+HRESULT CModel::Bind_Materials_Bin(CShader* pShader, const _char* pConstantName,
+    _uint iMeshIndex, int texType, _uint iIndex)
 {
     if (iMeshIndex >= m_iNumMeshes) return E_FAIL;
     _uint iMaterialIndex = m_Meshes[iMeshIndex]->Get_MaterialIndex();
@@ -151,6 +144,11 @@ _bool CModel::Play_Animation(_float fTimeDelta)
         return false;
     }
 
+    // ---- 이벤트용: 업데이트 '전' 진행도 샘플(비블렌딩 구간 기준) ----
+    if (!m_inTransition) {
+        m_prevAnim01 = m_Animations[m_iCurrentAnimIndex]->Get_Progress01();
+    }
+
     if (!m_inTransition)
     {
         m_Animations[m_iCurrentAnimIndex]->Update_TransformationMatrices(
@@ -158,14 +156,16 @@ _bool CModel::Play_Animation(_float fTimeDelta)
     }
     else
     {
-        if (m_iNextAnimIndex < 0 || m_iNextAnimIndex >= (int)m_Animations.size()) {
+        if (m_iNextAnimIndex < 0 || m_iNextAnimIndex >= (int)m_Animations.size())
+        {
             m_inTransition = false;
             m_Animations[m_iCurrentAnimIndex]->Update_TransformationMatrices(
                 m_Bones, m_isLoop, &m_isFinished, fTimeDelta);
         }
-        else {
-            Engine::CAnimation* cur = m_Animations[m_iCurrentAnimIndex];
-            Engine::CAnimation* next = m_Animations[m_iNextAnimIndex];
+        else
+        {
+            CAnimation* cur = m_Animations[m_iCurrentAnimIndex];
+            CAnimation* next = m_Animations[m_iNextAnimIndex];
 
             cur->Advance_Time(m_isLoop, &m_isFinished, fTimeDelta);
             next->Advance_Time(true, nullptr, fTimeDelta);
@@ -212,67 +212,29 @@ _bool CModel::Play_Animation(_float fTimeDelta)
     for (auto& pBone : m_Bones)
         pBone->Update_CombinedTransformationMatrix(m_PreTransformMatrix, m_Bones);
 
+    // ---- 이벤트용: 업데이트 '후' 진행도 샘플(비블렌딩 구간 기준) ----
+    if (!m_inTransition) {
+        m_curAnim01 = m_Animations[m_iCurrentAnimIndex]->Get_Progress01();
+    }
+
     return m_isFinished;
 }
 
-/*
- * BIN/FBX 공통 바운딩박스 계산:
- * - 모든 Mesh의 CPU-side position을 사용
- * - 비어 있으면 작은 기본 extents로 만들어 컬링 방지
- * - 너무 작은 상자는 최소값으로 보정
- */
-//void CModel::ComputeBoundingBox(DirectX::BoundingBox& outBox) const
-//{
-//    using namespace DirectX;
-//
-//    bool any = false;
-//    XMFLOAT3 vMin(FLT_MAX, FLT_MAX, FLT_MAX);
-//    XMFLOAT3 vMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
-//
-//    for (const auto& mesh : m_Meshes)
-//    {
-//        const auto& positions = mesh->GetPositions(); // CMesh가 채워줌 (BIN/FBX 공통)
-//        for (const auto& v : positions)
-//        {
-//            any = true;
-//            if (v.x < vMin.x) vMin.x = v.x; if (v.y < vMin.y) vMin.y = v.y; if (v.z < vMin.z) vMin.z = v.z;
-//            if (v.x > vMax.x) vMax.x = v.x; if (v.y > vMax.y) vMax.y = v.y; if (v.z > vMax.z) vMax.z = v.z;
-//        }
-//    }
-//
-//    if (!any)
-//    {
-//        // 포지션이 하나도 없으면 기본 상자 (작게)로라도 생성
-//        outBox = BoundingBox(XMFLOAT3(0, 0, 0), XMFLOAT3(0.5f, 0.5f, 0.5f));
-//        return;
-//    }
-//
-//    XMFLOAT3 center{
-//        (vMin.x + vMax.x) * 0.5f,
-//        (vMin.y + vMax.y) * 0.5f,
-//        (vMin.z + vMax.z) * 0.5f
-//    };
-//    XMFLOAT3 extents{
-//        (vMax.x - vMin.x) * 0.5f,
-//        (vMax.y - vMin.y) * 0.5f,
-//        (vMax.z - vMin.z) * 0.5f
-//    };
-//
-//    // 너무 작아도 프러스텀에서 사라지지 않게 최소 보정
-//    const float kMin = 0.25f;
-//    if (extents.x < kMin) extents.x = kMin;
-//    if (extents.y < kMin) extents.y = kMin;
-//    if (extents.z < kMin) extents.z = kMin;
-//
-//    outBox = BoundingBox(center, extents);
-//}
+// 클라에서: model->AnimCrossedNormalized(60.f/76.f) 처럼 사용
+bool CModel::AnimCrossedNormalized(float t01) const
+{
+    if (m_iCurrentAnimIndex < 0 || m_iCurrentAnimIndex >= (int)m_Animations.size())
+        return false;
+    // 블렌딩 중엔 보통 트리거를 지연/무시 (원하면 제거)
+    if (m_inTransition) return false;
+
+    return CAnimation::Crossed_Normalized(t01, m_prevAnim01, m_curAnim01);
+}
 
 HRESULT CModel::Render(_uint iMeshIndex)
 {
-    if (FAILED(m_Meshes[iMeshIndex]->Bind_Resources()))
-        return E_FAIL;
-    if (FAILED(m_Meshes[iMeshIndex]->Render()))
-        return E_FAIL;
+    if (FAILED(m_Meshes[iMeshIndex]->Bind_Resources())) return E_FAIL;
+    if (FAILED(m_Meshes[iMeshIndex]->Render()))         return E_FAIL;
     return S_OK;
 }
 
@@ -292,6 +254,8 @@ void CModel::Set_Animation(_uint iIndex, _bool isLoop, float blendDuration, bool
         if (forceRestart) m_Animations[m_iCurrentAnimIndex]->ResetTimeToZero();
         m_inTransition = false;
         m_iNextAnimIndex = -1;
+        // 이벤트 창 리셋
+        m_prevAnim01 = m_curAnim01 = 0.f;
         return;
     }
 
@@ -301,15 +265,18 @@ void CModel::Set_Animation(_uint iIndex, _bool isLoop, float blendDuration, bool
     m_inTransition = true;
 
     if (forceRestart) m_Animations[m_iNextAnimIndex]->ResetTimeToZero();
+    // 전환 시작 시 이벤트 창 리셋
+    m_prevAnim01 = m_curAnim01 = 0.f;
 }
 
 HRESULT CModel::Ready_Meshes()
 {
     m_iNumMeshes = m_pAIScene->mNumMeshes;
-
     for (size_t i = 0; i < m_iNumMeshes; i++)
     {
-        CMesh* pMesh = CMesh::Create(m_pDevice, m_pContext, m_eModelType, m_pAIScene->mMeshes[i], m_Bones, XMLoadFloat4x4(&m_PreTransformMatrix));
+        CMesh* pMesh = CMesh::Create(m_pDevice, m_pContext, m_eModelType,
+            m_pAIScene->mMeshes[i], m_Bones,
+            XMLoadFloat4x4(&m_PreTransformMatrix));
         if (nullptr == pMesh) return E_FAIL;
         m_Meshes.push_back(pMesh);
     }
@@ -319,10 +286,10 @@ HRESULT CModel::Ready_Meshes()
 HRESULT CModel::Ready_Materials(const _char* pModelFilePath)
 {
     m_iNumMaterials = m_pAIScene->mNumMaterials;
-
     for (size_t i = 0; i < m_iNumMaterials; i++)
     {
-        CMeshMaterial* pMeshMaterial = CMeshMaterial::Create(m_pDevice, m_pContext, pModelFilePath, m_pAIScene->mMaterials[i]);
+        CMeshMaterial* pMeshMaterial =
+            CMeshMaterial::Create(m_pDevice, m_pContext, pModelFilePath, m_pAIScene->mMaterials[i]);
         if (nullptr == pMeshMaterial) return E_FAIL;
         m_Materials.push_back(pMeshMaterial);
     }
@@ -428,7 +395,8 @@ HRESULT CModel::Ready_Materials(const _char* pModelFilePath, const vector<Materi
 
     for (size_t i = 0; i < m_iNumMaterials; ++i)
     {
-        CMeshMaterial* pMeshMaterial = CMeshMaterial::Create(m_pDevice, m_pContext, pModelFilePath, binMaterials[i]);
+        CMeshMaterial* pMeshMaterial =
+            CMeshMaterial::Create(m_pDevice, m_pContext, pModelFilePath, binMaterials[i]);
         if (!pMeshMaterial) return E_FAIL;
         m_Materials.push_back(pMeshMaterial);
     }
@@ -465,7 +433,9 @@ HRESULT CModel::Ready_Animations(std::ifstream& ifs)
     return S_OK;
 }
 
-CModel* CModel::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, MODELTYPE eModelType, FILETYPE eFileType, const _char* pModelFilePath, _fmatrix PreTransformMatrix)
+CModel* CModel::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext,
+    MODELTYPE eModelType, FILETYPE eFileType,
+    const _char* pModelFilePath, _fmatrix PreTransformMatrix)
 {
     CModel* pInstance = new CModel(pDevice, pContext);
 

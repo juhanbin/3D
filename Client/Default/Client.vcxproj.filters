@@ -94,6 +94,27 @@
     <Filter Include="02.GameObject\Hero\Player_Speare">
       <UniqueIdentifier>{05066e06-fc36-4390-93d5-37814a85ca27}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02.GameObject\Monster_Skeleton\Weapon\Arrow">
+      <UniqueIdentifier>{40d73d8c-3608-4a21-9aeb-c8f86614cbe2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObject\Mushroom">
+      <UniqueIdentifier>{485fcaba-1f5c-4b0d-9682-7fc3ef4dfb8a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObject\Boss">
+      <UniqueIdentifier>{0b7e4da8-ef7c-4af6-8f3b-6df99ecea9db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObject\Boss\Left">
+      <UniqueIdentifier>{73632511-67ad-4efb-8ee7-a7d120d8ad94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObject\Boss\Right">
+      <UniqueIdentifier>{b8c792df-7c2c-4b99-98c7-6ed89b7cdfd3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObject\Boss\Mask">
+      <UniqueIdentifier>{78e59bdb-2110-4a92-a7e9-71f607de5e14}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObject\Boss\Fire">
+      <UniqueIdentifier>{9138224c-a1c7-46b8-8e5f-5190d05cb24c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h">
@@ -185,6 +206,24 @@
     </ClInclude>
     <ClInclude Include="..\Public\Player_Speare.h">
       <Filter>02.GameObject\Hero\Player_Speare</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Weapon_Skeleton_Arrow.h">
+      <Filter>02.GameObject\Monster_Skeleton\Weapon\Arrow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Mushroom.h">
+      <Filter>02.GameObject\Mushroom</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Boss_Hand_L.h">
+      <Filter>02.GameObject\Boss\Left</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Boss_Hand_R.h">
+      <Filter>02.GameObject\Boss\Right</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Private\Boss_Mask.h">
+      <Filter>02.GameObject\Boss\Mask</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Boss_Fire.h">
+      <Filter>02.GameObject\Boss\Fire</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -278,6 +317,24 @@
     </ClCompile>
     <ClCompile Include="..\Private\Player_Speare.cpp">
       <Filter>02.GameObject\Hero\Player_Speare</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Weapon_Skeleton_Arrow.cpp">
+      <Filter>02.GameObject\Monster_Skeleton\Weapon\Arrow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Mushroom.cpp">
+      <Filter>02.GameObject\Mushroom</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Boss_Hand_L.cpp">
+      <Filter>02.GameObject\Boss\Left</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Boss_Hand_R.cpp">
+      <Filter>02.GameObject\Boss\Right</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Boss_Mask.cpp">
+      <Filter>02.GameObject\Boss\Mask</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Boss_Fire.cpp">
+      <Filter>02.GameObject\Boss\Fire</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

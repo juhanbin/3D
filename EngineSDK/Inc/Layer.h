@@ -19,6 +19,8 @@ public:
 		return S_OK;
 	}
 
+	size_t        Get_ObjectCount() const { return m_GameObjects.size(); }
+
 	void Priority_Update(_float fTimeDelta);
 	void Update(_float fTimeDelta);
 	void Late_Update(_float fTimeDelta);

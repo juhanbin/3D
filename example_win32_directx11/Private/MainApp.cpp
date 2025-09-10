@@ -917,6 +917,7 @@ void CMainApp::Render_ImGuiPanel()
                 case EObjectType::MUSHROOM:          strcpy(o.fbxPath, "../Bin/Resources/Blood_Spear/Model/Mushroom/Mushroom.fbx");                 break;
                 case EObjectType::SMALLMUSHROOM: strcpy(o.fbxPath, "../Bin/Resources/Blood_Spear/Model/Small_Mushroom/Small_Mushroom.fbx");          break;
                 case EObjectType::PARASIT_EYE:   strcpy(o.fbxPath, "../Bin/Resources/Blood_Spear/Model/Eye/Eye.fbx");          break;
+                case EObjectType::MONSTER_ARROW:   strcpy(o.fbxPath, "../Bin/Resources/Blood_Spear/Model/Monster_Arrow/Monster_Arrow.fbx");          break;
                 default: o.fbxPath[0] = 0; break;
                 }
 
@@ -974,10 +975,16 @@ void CMainApp::Render_ImGuiPanel()
                     "[PickSurface_Mesh] obj=%d  hit=(%.3f, %.3f, %.3f)  n=(%.3f, %.3f, %.3f)\n",
                     idx, hit.x, hit.y, hit.z, nrm.x, nrm.y, nrm.z);
             else
+            {
                 std::snprintf(dbg, sizeof(dbg),
                     "[PickSurface_Mesh] ground hit=(%.3f, %.3f, %.3f)\n",
                     hit.x, hit.y, hit.z);
-            OutputDebugStringA(dbg);
+                OutputDebugStringA(dbg);
+            }
+                
+            wchar_t wbuf[128];
+            swprintf(wbuf, 128, L"[PickClick] (%.3f, %.3f, %.3f)\n", hit.x, hit.y, hit.z);
+            OutputDebugStringW(wbuf);
         }
         else {
             m_LastPickValid = false; m_LastPickObj = -1; m_DebugHasHit = false;

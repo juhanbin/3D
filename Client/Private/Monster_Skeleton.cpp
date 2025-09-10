@@ -3,7 +3,8 @@
 #include "PlayerManager.h"
 #include "Body_Monster_Skeleton.h"
 #include "Weapon_Skeleton_Spear.h"
-
+#include "Player_Speare.h"
+#include "Weapon_Skeleton_Bow.h"
 #include <algorithm>
 #include <cmath>
 
@@ -181,7 +182,8 @@ HRESULT CMonster_Skeleton::Render()
 {
 #ifdef _DEBUG
     for (auto& pCollider : m_pColliderCom)
-        pCollider->Render();
+        if(pCollider)
+            pCollider->Render();
     if (m_pNavigationCom) m_pNavigationCom->Render();
 #endif
     return S_OK;
@@ -197,30 +199,30 @@ HRESULT CMonster_Skeleton::Ready_Components()
         TEXT("Com_Navigation"), reinterpret_cast<CComponent**>(&m_pNavigationCom), &NaviDesc)))
         return E_FAIL;
 
-    CBounding_AABB::BOUNDING_AABB_DESC  AABBDesc{};
+    /*CBounding_AABB::BOUNDING_AABB_DESC  AABBDesc{};
     AABBDesc.vExtents = _float3(0.4f, 0.7f, 0.4f);
     AABBDesc.vCenter = _float3(0.f, AABBDesc.vExtents.y, 0.f);
 
     if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Collider_AABB"),
         TEXT("Com_Collider_AABB"), reinterpret_cast<CComponent**>(&m_pColliderCom[ENUM_CLASS(COLLIDER::AABB)]), &AABBDesc)))
-        return E_FAIL;
+        return E_FAIL;*/
 
     CBounding_OBB::BOUNDING_OBB_DESC  OBBDesc{};
-    OBBDesc.vAngles = _float3(XMConvertToRadians(45.0f), XMConvertToRadians(45.0f), XMConvertToRadians(45.0f));
-    OBBDesc.vExtents = _float3(0.6f, 0.6f, 0.6f);
+    OBBDesc.vAngles = _float3(XMConvertToRadians(0.0f), XMConvertToRadians(0.0f), XMConvertToRadians(0.0f));
+    OBBDesc.vExtents = _float3(0.35f, 0.9f, 0.35f);
     OBBDesc.vCenter = _float3(0.f, OBBDesc.vExtents.y, 0.f);
 
     if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Collider_OBB"),
         TEXT("Com_Collider_OBB"), reinterpret_cast<CComponent**>(&m_pColliderCom[ENUM_CLASS(COLLIDER::OBB)]), &OBBDesc)))
         return E_FAIL;
 
-    CBounding_Sphere::BOUNDING_SPHERE_DESC  SphereDesc{};
+    /*CBounding_Sphere::BOUNDING_SPHERE_DESC  SphereDesc{};
     SphereDesc.fRadius = 0.7f;
     SphereDesc.vCenter = _float3(0.f, SphereDesc.fRadius, 0.f);
 
     if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Collider_Sphere"),
         TEXT("Com_Collider_Sphere"), reinterpret_cast<CComponent**>(&m_pColliderCom[ENUM_CLASS(COLLIDER::SPHERE)]), &SphereDesc)))
-        return E_FAIL;
+        return E_FAIL;*/
 
     return S_OK;
 }
@@ -238,23 +240,33 @@ HRESULT CMonster_Skeleton::Ready_PartObjects()
     CPartObject* pBody = Find_PartObject(TEXT("Part_Body_Skeleton"));
     if (!pBody) return E_FAIL;
 
+    // 스피어 소켓(공용)
+    auto* pBodySkel = dynamic_cast<CBody_Monster_Skeleton*>(pBody);
+    auto* socketR = pBodySkel->Get_BoneMatrix("jnt_index_01_SKN_right");
 
-    CWeapon_Skeleton_Spear::WEAPON_DESC WeaponDesc{};
-
-    WeaponDesc.pState = &m_iState;
-    WeaponDesc.pSocketMatrix = dynamic_cast<CBody_Monster_Skeleton*>(pBody)->Get_BoneMatrix("jnt_index_01_SKN_right");
-    WeaponDesc.pParentMatrix = m_pTransformCom->Get_WorldMatrixPtr();
-
+    // ───── Spear ─────
     if (m_eType == EObjectType::SKELETON_SPEAR)
     {
+        CWeapon_Skeleton_Spear::WEAPON_DESC desc{};
+        desc.pState = &m_iState;
+        desc.pSocketMatrix = socketR;
+        desc.pParentMatrix = m_pTransformCom->Get_WorldMatrixPtr();
+
         if (FAILED(__super::Add_PartObject(TEXT("Part_Weapon_Monster_Spear"),
-            ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Weapon_Skeleton_Spear"), &WeaponDesc)))
+            ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Weapon_Skeleton_Spear"), &desc)))
             return E_FAIL;
     }
+    // ───── Bow ─────
     else if (m_eType == EObjectType::SKELETON_BOW)
     {
+        CWeapon_Skeleton_Bow::WEAPON_DESC desc{};
+        desc.pState = &m_iState;
+        desc.pSocketMatrix = socketR;
+        desc.pParentMatrix = m_pTransformCom->Get_WorldMatrixPtr();
+        desc.pAnimModel = pBodySkel->GetModel();  // ★ 바디 모델 포인터 전달 (애니 진행 질의용)
+
         if (FAILED(__super::Add_PartObject(TEXT("Part_Weapon_Monster_Bow"),
-            ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Weapon_Skeleton_Bow"), &WeaponDesc)))
+            ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Weapon_Skeleton_Bow"), &desc)))
             return E_FAIL;
     }
 
@@ -263,16 +275,45 @@ HRESULT CMonster_Skeleton::Ready_PartObjects()
 
 _bool CMonster_Skeleton::Collision_ToPlayer()
 {
-    CContainerObject* pPlayer = dynamic_cast<CContainerObject*>(m_pGameInstance->Find_GameObject(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Layer_Player")));
-    if (nullptr == pPlayer)
-        return false;
+    // 내 콜라이더(여기선 OBB 사용)
+    CCollider* pMyCol = m_pColliderCom[ENUM_CLASS(COLLIDER::OBB)];
+    if (!pMyCol) return false;
 
-    CCollider* pTargetCollider = static_cast<CCollider*>(pPlayer->Get_Component(TEXT("Part_Weapon"), TEXT("Com_Collider")));
-    if (nullptr == pTargetCollider)
-        return false;
+    // Layer_Spear에 있는 스피어들을 인덱스로 순회
+    const _uint level = ENUM_CLASS(LEVEL::GAMEPLAY);
+    const _wstring layer = L"Layer_Spear";
 
-    return m_pColliderCom[ENUM_CLASS(COLLIDER::OBB)]->Intersect(pTargetCollider);
+    for (_uint i = 0; ; ++i)
+    {
+        CGameObject* obj = m_pGameInstance->Find_GameObject(level, layer, i);
+        if (!obj) break; // 더 이상 없음
+
+        auto* spear = dynamic_cast<CPlayer_Speare*>(obj);
+        if (!spear || !spear->Is_Active()) continue;
+
+        // 스피어는 파트가 아니므로 CGameObject::Get_Component(tag)로 직접 가져온다
+        CCollider* pSpearCol = static_cast<CCollider*>(spear->Get_Component(L"Com_Collider"));
+        if (!pSpearCol) continue;
+
+        // (옵션) 가벼운 거리 프리패스
+        // if (!RoughDistanceCheck(spear)) continue;
+
+        if (pMyCol->Intersect(pSpearCol))
+        {
+            // 충돌 시 처리
+            m_bisHit = true;
+            m_iState = MONSTER::HIT;
+
+            // 스피어 회수(관통을 원치 않으면)
+            // spear->ReturnToPool();
+
+            return true;
+        }
+    }
+    return false;
 }
+
+
 
 CMonster_Skeleton* CMonster_Skeleton::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 {

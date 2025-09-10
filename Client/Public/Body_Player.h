@@ -43,7 +43,7 @@ public:
 private:
     HRESULT Ready_Components();
     HRESULT Bind_ShaderResources();
-
+    _bool Collision_ToMushroom();
 private:
     CShader* m_pShaderCom = nullptr;
     CModel* m_pModelCom = nullptr;

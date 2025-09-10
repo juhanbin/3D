@@ -51,8 +51,8 @@ private:
     // 모델 로딩 후 로컬 AABB 계산
     void InitBoundingBoxFromModel()
     {
-        if (m_pModelCom) m_pModelCom->ComputeBoundingBox(m_LocalBox);   // CModel에서 min/max로 채워주기
-        else             m_LocalBox = DirectX::BoundingBox(DirectX::XMFLOAT3(0, 0, 0), DirectX::XMFLOAT3(1, 1, 1));
+        //if (m_pModelCom) m_pModelCom->ComputeBoundingBox(m_LocalBox);   // CModel에서 min/max로 채워주기
+        //else             m_LocalBox = DirectX::BoundingBox(DirectX::XMFLOAT3(0, 0, 0), DirectX::XMFLOAT3(1, 1, 1));
     }
 
 public:

@@ -151,9 +151,13 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\Private\Boss_Mask.h" />
     <ClInclude Include="..\public\BackGround.h" />
     <ClInclude Include="..\Public\Body_Monster_Skeleton.h" />
     <ClInclude Include="..\Public\Body_Player.h" />
+    <ClInclude Include="..\Public\Boss_Fire.h" />
+    <ClInclude Include="..\Public\Boss_Hand_L.h" />
+    <ClInclude Include="..\Public\Boss_Hand_R.h" />
     <ClInclude Include="..\Public\Camera_Free.h" />
     <ClInclude Include="..\Public\Camera_Player.h" />
     <ClInclude Include="..\Public\Client_Defines.h" />
@@ -168,6 +172,7 @@
     <ClInclude Include="..\Public\MainApp.h" />
     <ClInclude Include="..\Public\MapObject.h" />
     <ClInclude Include="..\Public\Monster_Skeleton.h" />
+    <ClInclude Include="..\Public\Mushroom.h" />
     <ClInclude Include="..\Public\Navi_Bridge.h" />
     <ClInclude Include="..\Public\Object_Pool_Manager.h" />
     <ClInclude Include="..\Public\Player.h" />
@@ -175,6 +180,7 @@
     <ClInclude Include="..\Public\Player_Speare.h" />
     <ClInclude Include="..\Public\Terrain.h" />
     <ClInclude Include="..\Public\Weapon.h" />
+    <ClInclude Include="..\Public\Weapon_Skeleton_Arrow.h" />
     <ClInclude Include="..\Public\Weapon_Skeleton_Bow.h" />
     <ClInclude Include="..\Public\Weapon_Skeleton_Spear.h" />
     <ClInclude Include="Client.h" />
@@ -186,6 +192,10 @@
     <ClCompile Include="..\private\BackGround.cpp" />
     <ClCompile Include="..\Private\Body_Monster_Skeleton.cpp" />
     <ClCompile Include="..\Private\Body_Player.cpp" />
+    <ClCompile Include="..\Private\Boss_Fire.cpp" />
+    <ClCompile Include="..\Private\Boss_Hand_L.cpp" />
+    <ClCompile Include="..\Private\Boss_Hand_R.cpp" />
+    <ClCompile Include="..\Private\Boss_Mask.cpp" />
     <ClCompile Include="..\Private\Camera_Free.cpp" />
     <ClCompile Include="..\Private\Camera_Player.cpp" />
     <ClCompile Include="..\Private\Cursor.cpp" />
@@ -199,6 +209,7 @@
     <ClCompile Include="..\Private\MainApp.cpp" />
     <ClCompile Include="..\Private\MapObject.cpp" />
     <ClCompile Include="..\Private\Monster_Skeleton.cpp" />
+    <ClCompile Include="..\Private\Mushroom.cpp" />
     <ClCompile Include="..\Private\Navi_Bridge.cpp" />
     <ClCompile Include="..\Private\Object_Pool_Manager.cpp" />
     <ClCompile Include="..\Private\Player.cpp" />
@@ -206,6 +217,7 @@
     <ClCompile Include="..\Private\Player_Speare.cpp" />
     <ClCompile Include="..\Private\Terrain.cpp" />
     <ClCompile Include="..\Private\Weapon.cpp" />
+    <ClCompile Include="..\Private\Weapon_Skeleton_Arrow.cpp" />
     <ClCompile Include="..\Private\Weapon_Skeleton_Bow.cpp" />
     <ClCompile Include="..\Private\Weapon_Skeleton_Spear.cpp" />
     <ClCompile Include="Client.cpp" />

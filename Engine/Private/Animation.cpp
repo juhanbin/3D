@@ -156,6 +156,43 @@ void CAnimation::EvaluatePose(const std::vector<class CBone*>& Bones,
     }
 }
 
+_float CAnimation::Get_Progress01() const
+{
+    if (m_fDuration <= 0.f) return 0.f;
+    return clamp_compat(m_fCurrentTrackPosition / m_fDuration, 0.f, 1.f);
+}
+
+bool CAnimation::Is_PastNormalized(_float t01) const
+{
+    if (m_fDuration <= 0.f) return false;
+    t01 = clamp_compat(t01, 0.f, 1.f);
+    return (m_fCurrentTrackPosition >= m_fDuration * t01);
+}
+
+bool CAnimation::Is_PastFrame(_uint frameIdx, _uint totalFrames) const
+{
+    if (totalFrames == 0) return false;
+    const _float t01 = clamp_compat(static_cast<_float>(frameIdx) / static_cast<_float>(totalFrames), 0.f, 1.f);
+    return Is_PastNormalized(t01);
+}
+
+// prev01 -> cur01 로 진행할 때 t01 지점을 "통과"했는지
+bool CAnimation::Crossed_Normalized(_float t01, _float prev01, _float cur01)
+{
+    t01 = clamp_compat(t01, 0.f, 1.f);
+    prev01 = clamp_compat(prev01, 0.f, 1.f);
+    cur01 = clamp_compat(cur01, 0.f, 1.f);
+
+    // 루프되면 cur01 < prev01 이 된다.
+    if (cur01 < prev01) {
+        // prev01..1 (이전 루프 끝까지) OR 0..cur01(이번 루프 시작) 중 하나에서 넘어섰는지
+        return (prev01 < t01 && t01 <= 1.f) || (0.f <= t01 && t01 <= cur01);
+    }
+    else {
+        return (prev01 < t01 && t01 <= cur01);
+    }
+}
+
 CAnimation* CAnimation::Create(const aiAnimation* pAIAnimation, const vector<class CBone*>& Bones)
 {
     CAnimation* pInstance = new CAnimation();

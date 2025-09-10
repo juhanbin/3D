@@ -19,17 +19,30 @@ namespace Client
 
 	enum class EObjectType : int
 	{
-		MONSTER = 0,
-		ROCK_AA,
-		HERO,
-		SPEAR,
-		MONSTER_SPEAR,
-		MONSTER_BOW,
-		BRIDGE,
-		CAVE,
-		SKELETON_SPEAR,
-		SKELETON_BOW,
-		END
+        MONSTER = 0,
+        ROCK_AA,
+        HERO,
+        SPEAR,
+        SPEAR_STATIC,
+        MONSTER_SPEAR,
+        MONSTER_BOW,
+        BRIDGE,
+        CAVE,
+        SKELETON_SPEAR,
+        SKELETON_BOW,
+        BOSS_EYE_MID,
+        BOSS_EYE_TOP,
+        BOSS_FIRE,
+        BOSS_HAND_L,
+        BOSS_HAND_R,
+        BOSS_MASK,
+        EYESPAWNER,
+        MONSTER_EYE,
+        MUSHROOM,
+        SMALLMUSHROOM,
+        PARASIT_EYE,
+        MONSTER_ARROW,
+        END
 	};
 
 #pragma pack(push,1)

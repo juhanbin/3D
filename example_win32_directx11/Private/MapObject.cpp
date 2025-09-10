@@ -222,6 +222,11 @@ HRESULT CMapObject::Ready_Components()
         if (FAILED(Add_Component(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Shader_VtxMesh"),
             TEXT("Com_Shader"), (CComponent**)&m_pShaderCom, nullptr))) return E_FAIL;
         break;
+    case EObjectType::MONSTER_ARROW:
+        modelProto = TEXT("Prototype_Component_Model_Monster_Arrow");
+        if (FAILED(Add_Component(ENUM_CLASS(LEVEL::EDIT), TEXT("Prototype_Component_Shader_VtxMesh"),
+            TEXT("Com_Shader"), (CComponent**)&m_pShaderCom, nullptr))) return E_FAIL;
+        break;
     default: return E_FAIL;
     }
 

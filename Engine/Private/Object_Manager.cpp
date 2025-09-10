@@ -146,12 +146,19 @@ void CObject_Manager::Clear(_uint iLevelIndex)
 
 CLayer* CObject_Manager::Find_Layer(_uint iLayerLevelIndex, const _wstring& strLayerTag)
 {
-	auto	iter = m_pLayers[iLayerLevelIndex].find(strLayerTag);
+	/*auto	iter = m_pLayers[iLayerLevelIndex].find(strLayerTag);
 
 	if (iter == m_pLayers[iLayerLevelIndex].end())
 		return nullptr;
 
-	return iter->second;
+	return iter->second;*/
+	if (iLayerLevelIndex >= m_iNumLevels)   // <-- °¡µå
+		return nullptr;
+
+	auto& table = m_pLayers[iLayerLevelIndex];
+	auto it = table.find(strLayerTag);
+	if (it == table.end()) return nullptr;
+	return it->second;
 }
 
 CObject_Manager* CObject_Manager::Create(_uint iNumLevels)

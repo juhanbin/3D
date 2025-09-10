@@ -29,6 +29,27 @@ public:
 	void  EvaluatePose(const std::vector<class CBone*>& Bones, vector<TRS>& outPose, vector<uint8_t>& outHas);
 	_float Get_TicksPerSec() const { return (m_fTickPerSecond > 0.f) ? m_fTickPerSecond : 30.f; }
 
+	template<typename T>
+	static inline T clamp_compat(T v, T lo, T hi) {
+		return (v < lo) ? lo : (v > hi) ? hi : v;
+	}
+
+public:
+	float Get_DurationTicks() const { return m_fDuration; }          // 총 길이(틱)
+	_float Get_CurrentTick()  const { return m_fCurrentTrackPosition; } // 현재 위치(틱)
+
+	// 0~1 진행도(정규화)
+	_float Get_Progress01() const;
+
+	// 현재 위치가 정규화 t(0~1)를 지났는가?
+	bool   Is_PastNormalized(_float t01) const;
+
+	// 총 프레임 수 기준 frameIdx(0~totalFrames) 지났는가?  e.g. Is_PastFrame(60, 75)
+	bool   Is_PastFrame(_uint frameIdx, _uint totalFrames) const;
+
+	// 이전 진행도(prev01)에서 현재 진행도(cur01)로 왔을 때,
+	// 정규화 지점 t01(예: 60/75)을 "통과"했는지(루프 감안) 판정
+	static bool Crossed_Normalized(_float t01, _float prev01, _float cur01);
 
 private:
 

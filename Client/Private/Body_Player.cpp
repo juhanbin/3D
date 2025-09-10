@@ -255,6 +255,21 @@ HRESULT CBody_Player::Bind_ShaderResources()
     return S_OK;
 }
 
+_bool CBody_Player::Collision_ToMushroom()
+{
+    /*CContainerObject* pPlayer = dynamic_cast<CContainerObject*>(m_pGameInstance->Find_GameObject(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Layer_Player")));
+    if (nullptr == pPlayer)
+        return false;
+
+    CCollider* pTargetCollider = static_cast<CCollider*>(pPlayer->Get_Component(TEXT("Layer_Mushroom"), TEXT("Com_Collider")));
+    if (nullptr == pTargetCollider)
+        return false;
+
+    return m_pColliderCom->Intersect(pTargetCollider);*/
+    return S_OK;
+}
+
+
 CBody_Player* CBody_Player::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 {
     CBody_Player* pInstance = new CBody_Player(pDevice, pContext);
