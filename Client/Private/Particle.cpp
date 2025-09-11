@@ -34,7 +34,7 @@ void CParticle::Priority_Update(_float fTimeDelta)
 
 void CParticle::Update(_float fTimeDelta)
 {
-
+    m_pVIBufferCom->Spread(fTimeDelta);
 }
 
 void CParticle::Late_Update(_float fTimeDelta)

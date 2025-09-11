@@ -1,13 +1,13 @@
-#include "VIBuffer_Rect_Instance.h"
+#include "VIBuffer_Point_Instance.h"
 
 #include "GameInstance.h"
 
-CVIBuffer_Rect_Instance::CVIBuffer_Rect_Instance(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
+CVIBuffer_Point_Instance::CVIBuffer_Point_Instance(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	: CVIBuffer_Instance{ pDevice, pContext }
 {
 }
 
-CVIBuffer_Rect_Instance::CVIBuffer_Rect_Instance(const CVIBuffer_Rect_Instance& Prototype)
+CVIBuffer_Point_Instance::CVIBuffer_Point_Instance(const CVIBuffer_Point_Instance& Prototype)
 	: CVIBuffer_Instance{ Prototype }
 	, m_vPivot{ Prototype.m_vPivot }
 	, m_pSpeeds{ Prototype.m_pSpeeds }
@@ -16,23 +16,20 @@ CVIBuffer_Rect_Instance::CVIBuffer_Rect_Instance(const CVIBuffer_Rect_Instance& 
 {
 }
 
-HRESULT CVIBuffer_Rect_Instance::Initialize_Prototype(const INSTANCE_DESC* pDesc)
+HRESULT CVIBuffer_Point_Instance::Initialize_Prototype(const INSTANCE_DESC* pDesc)
 {
-	const RECT_INSTANCE_DESC* pRectDesc = static_cast<const RECT_INSTANCE_DESC*>(pDesc);
+	const POINT_INSTANCE_DESC* pPointDesc = static_cast<const POINT_INSTANCE_DESC*>(pDesc);
 
-	m_vPivot = pRectDesc->vPivot;
-	m_isLoop = pRectDesc->isLoop;
+	m_vPivot = pPointDesc->vPivot;
+	m_isLoop = pPointDesc->isLoop;
 
-	m_iNumIndexPerInstance = 6;
 	m_iInstanceVertexStride = sizeof(VTXINSTANCE_PARTICLE);
-	m_iNumInstance = pRectDesc->iNumInstance;
-	m_iNumVertices = 4;
-	m_iVertexStride = sizeof(VTXPOSTEX);
-	m_iNumIndices = 6;
-	m_iIndexStride = 2;
+	m_iNumInstance = pPointDesc->iNumInstance;
+	m_iNumVertices = 1;
+	m_iVertexStride = sizeof(VTXPOS);
 	m_iNumVertexBuffers = 2;
-	m_eIndexFormat = DXGI_FORMAT_R16_UINT;
-	m_ePrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	m_ePrimitiveType = D3D_PRIMITIVE_TOPOLOGY_POINTLIST;
+
 
 	D3D11_BUFFER_DESC		VBDesc{};
 	VBDesc.ByteWidth = m_iNumVertices * m_iVertexStride;
@@ -42,19 +39,9 @@ HRESULT CVIBuffer_Rect_Instance::Initialize_Prototype(const INSTANCE_DESC* pDesc
 	VBDesc.MiscFlags = 0;
 	VBDesc.StructureByteStride = m_iVertexStride;
 
-	VTXPOSTEX* pVertices = new VTXPOSTEX[m_iNumVertices];
+	VTXPOS* pVertices = new VTXPOS[m_iNumVertices];
 
-	pVertices[0].vPosition = _float3(-0.5f, 0.5f, 0.f);
-	pVertices[0].vTexcoord = _float2(0.f, 0.f);
-
-	pVertices[1].vPosition = _float3(0.5f, 0.5f, 0.f);
-	pVertices[1].vTexcoord = _float2(1.f, 0.f);
-
-	pVertices[2].vPosition = _float3(0.5f, -0.5f, 0.f);
-	pVertices[2].vTexcoord = _float2(1.f, 1.f);
-
-	pVertices[3].vPosition = _float3(-0.5f, -0.5f, 0.f);
-	pVertices[3].vTexcoord = _float2(0.f, 1.f);
+	pVertices[0].vPosition = _float3(0.0f, 0.0f, 0.f);
 
 	D3D11_SUBRESOURCE_DATA	VBInitialData{};
 	VBInitialData.pSysMem = pVertices;
@@ -64,31 +51,31 @@ HRESULT CVIBuffer_Rect_Instance::Initialize_Prototype(const INSTANCE_DESC* pDesc
 
 	Safe_Delete_Array(pVertices);
 
-	D3D11_BUFFER_DESC		IBDesc{};
-	IBDesc.ByteWidth = m_iNumIndices * m_iIndexStride;
-	IBDesc.Usage = D3D11_USAGE_DEFAULT;
-	IBDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	IBDesc.CPUAccessFlags = 0;
-	IBDesc.MiscFlags = 0;
-	IBDesc.StructureByteStride = m_iIndexStride;
+	//D3D11_BUFFER_DESC		IBDesc{};
+	//IBDesc.ByteWidth = m_iNumIndices * m_iIndexStride;
+	//IBDesc.Usage = D3D11_USAGE_DEFAULT;
+	//IBDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	//IBDesc.CPUAccessFlags = 0;
+	//IBDesc.MiscFlags = 0;
+	//IBDesc.StructureByteStride = m_iIndexStride;
 
-	_ushort* pIndices = new _ushort[m_iNumIndices];
+	//_ushort* pIndices = new _ushort[m_iNumIndices];
 
-	pIndices[0] = 0;
-	pIndices[1] = 1;
-	pIndices[2] = 2;
+	//pIndices[0] = 0;
+	//pIndices[1] = 1;
+	//pIndices[2] = 2;
 
-	pIndices[3] = 0;
-	pIndices[4] = 2;
-	pIndices[5] = 3;
+	//pIndices[3] = 0;
+	//pIndices[4] = 2;
+	//pIndices[5] = 3;
 
-	D3D11_SUBRESOURCE_DATA	IBInitialData{};
-	IBInitialData.pSysMem = pIndices;
+	//D3D11_SUBRESOURCE_DATA	IBInitialData{};
+	//IBInitialData.pSysMem = pIndices;
 
-	if (FAILED(m_pDevice->CreateBuffer(&IBDesc, &IBInitialData, &m_pIB)))
-		return E_FAIL;
+	//if (FAILED(m_pDevice->CreateBuffer(&IBDesc, &IBInitialData, &m_pIB)))
+	//	return E_FAIL;
 
-	Safe_Delete_Array(pIndices);
+	// Safe_Delete_Array(pIndices);
 
 
 	/* 복제되는 렉트인스턴스버퍼는 각각 m_pVBInstance독립적으로 가지길 바란다. */
@@ -110,17 +97,17 @@ HRESULT CVIBuffer_Rect_Instance::Initialize_Prototype(const INSTANCE_DESC* pDesc
 	{
 		VTXINSTANCE_PARTICLE* pInstanceVertices = static_cast<VTXINSTANCE_PARTICLE*>(m_pInstanceVertices);
 
-		_float		fScale = m_pGameInstance->Rand(pRectDesc->vSize.x, pRectDesc->vSize.y);
-		_float		fLifeTime = m_pGameInstance->Rand(pRectDesc->vLifeTime.x, pRectDesc->vLifeTime.y);
-		m_pSpeeds[i] = m_pGameInstance->Rand(pRectDesc->vSpeed.x, pRectDesc->vSpeed.y);
+		_float		fScale = m_pGameInstance->Rand(pPointDesc->vSize.x, pPointDesc->vSize.y);
+		_float		fLifeTime = m_pGameInstance->Rand(pPointDesc->vLifeTime.x, pPointDesc->vLifeTime.y);
+		m_pSpeeds[i] = m_pGameInstance->Rand(pPointDesc->vSpeed.x, pPointDesc->vSpeed.y);
 
 		pInstanceVertices[i].vRight = _float4(fScale, 0.f, 0.f, 0.f);
 		pInstanceVertices[i].vUp = _float4(0.f, fScale, 0.f, 0.f);
 		pInstanceVertices[i].vLook = _float4(0.f, 0.f, fScale, 0.f);
 		pInstanceVertices[i].vTranslation = _float4(
-			m_pGameInstance->Rand(pRectDesc->vCenter.x - pRectDesc->vRange.x * 0.5f, pRectDesc->vCenter.x + pRectDesc->vRange.x * 0.5f),
-			m_pGameInstance->Rand(pRectDesc->vCenter.y - pRectDesc->vRange.y * 0.5f, pRectDesc->vCenter.y + pRectDesc->vRange.y * 0.5f),
-			m_pGameInstance->Rand(pRectDesc->vCenter.z - pRectDesc->vRange.z * 0.5f, pRectDesc->vCenter.z + pRectDesc->vRange.z * 0.5f),
+			m_pGameInstance->Rand(pPointDesc->vCenter.x - pPointDesc->vRange.x * 0.5f, pPointDesc->vCenter.x + pPointDesc->vRange.x * 0.5f),
+			m_pGameInstance->Rand(pPointDesc->vCenter.y - pPointDesc->vRange.y * 0.5f, pPointDesc->vCenter.y + pPointDesc->vRange.y * 0.5f),
+			m_pGameInstance->Rand(pPointDesc->vCenter.z - pPointDesc->vRange.z * 0.5f, pPointDesc->vCenter.z + pPointDesc->vRange.z * 0.5f),
 			1.f
 		);
 
@@ -131,7 +118,7 @@ HRESULT CVIBuffer_Rect_Instance::Initialize_Prototype(const INSTANCE_DESC* pDesc
 	return S_OK;
 }
 
-HRESULT CVIBuffer_Rect_Instance::Initialize(void* pArg)
+HRESULT CVIBuffer_Point_Instance::Initialize(void* pArg)
 {
 	if (FAILED(__super::Initialize(pArg)))
 		return E_FAIL;
@@ -140,7 +127,37 @@ HRESULT CVIBuffer_Rect_Instance::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CVIBuffer_Rect_Instance::Spread(_float fTimeDelta)
+HRESULT CVIBuffer_Point_Instance::Bind_Resources()
+{
+	ID3D11Buffer* pVertexBuffers[] = {
+	m_pVB,
+	m_pVBInstance,
+	};
+
+	_uint		iVertexStrides[] = {
+		m_iVertexStride,
+		m_iInstanceVertexStride,
+	};
+
+	_uint		iOffsets[] = {
+		0,
+		0
+	};
+
+	m_pContext->IASetVertexBuffers(0, m_iNumVertexBuffers, pVertexBuffers, iVertexStrides, iOffsets);
+	m_pContext->IASetPrimitiveTopology(m_ePrimitiveType);
+
+	return S_OK;
+}
+
+HRESULT CVIBuffer_Point_Instance::Render()
+{
+	m_pContext->DrawInstanced(1, m_iNumInstance, 0, 0);
+
+	return S_OK;
+}
+
+void CVIBuffer_Point_Instance::Spread(_float fTimeDelta)
 {
 	D3D11_MAPPED_SUBRESOURCE	SubResource{};
 
@@ -173,36 +190,36 @@ void CVIBuffer_Rect_Instance::Spread(_float fTimeDelta)
 	m_pContext->Unmap(m_pVBInstance, 0);
 }
 
-void CVIBuffer_Rect_Instance::Drop(_float fTimeDelta)
+void CVIBuffer_Point_Instance::Drop(_float fTimeDelta)
 {
 }
 
-CVIBuffer_Rect_Instance* CVIBuffer_Rect_Instance::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, const INSTANCE_DESC* pDesc)
+CVIBuffer_Point_Instance* CVIBuffer_Point_Instance::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, const INSTANCE_DESC* pDesc)
 {
-	CVIBuffer_Rect_Instance* pInstance = new CVIBuffer_Rect_Instance(pDevice, pContext);
+	CVIBuffer_Point_Instance* pInstance = new CVIBuffer_Point_Instance(pDevice, pContext);
 
 	if (FAILED(pInstance->Initialize_Prototype(pDesc)))
 	{
-		MSG_BOX(TEXT("Failed to Created : CVIBuffer_Rect_Instance"));
+		MSG_BOX(TEXT("Failed to Created : CVIBuffer_Point_Instance"));
 		Safe_Release(pInstance);
 	}
 	return pInstance;
 }
 
-CComponent* CVIBuffer_Rect_Instance::Clone(void* pArg)
+CComponent* CVIBuffer_Point_Instance::Clone(void* pArg)
 {
-	CVIBuffer_Rect_Instance* pInstance = new CVIBuffer_Rect_Instance(*this);
+	CVIBuffer_Point_Instance* pInstance = new CVIBuffer_Point_Instance(*this);
 
 	if (FAILED(pInstance->Initialize(pArg)))
 	{
-		MSG_BOX(TEXT("Failed to Cloned : CVIBuffer_Rect_Instance"));
+		MSG_BOX(TEXT("Failed to Cloned : CVIBuffer_Point_Instance"));
 		Safe_Release(pInstance);
 	}
 
 	return pInstance;
 }
 
-void CVIBuffer_Rect_Instance::Free()
+void CVIBuffer_Point_Instance::Free()
 {
 	__super::Free();
 

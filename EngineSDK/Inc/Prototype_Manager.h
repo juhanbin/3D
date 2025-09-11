@@ -1,6 +1,7 @@
 #pragma once
 
 /* 원형으로 추가될 클래스 타입을 확인할 수 있도록 모든 종류의 원형 클래스 헤더를 인클루드 해놓는다. */
+#include "VIBuffer_Point_Instance.h"
 #include "VIBuffer_Rect_Instance.h"
 #include "VIBuffer_Terrain.h"
 #include "VIBuffer_Rect.h"

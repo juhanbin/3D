@@ -28,6 +28,10 @@ public:
 	void Spread(_float fTimeDelta);
 	void Drop(_float fTimeDelta);
 
+private:
+	_float3					m_vPivot = {};
+	_float* m_pSpeeds = {};
+	_bool					m_isLoop = {};
 
 public:
 	static CVIBuffer_Rect_Instance* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, const INSTANCE_DESC* pDesc);
