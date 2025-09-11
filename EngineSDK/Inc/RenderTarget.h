@@ -18,7 +18,7 @@ public:
 public:
 	HRESULT Initialize(_uint iSizeX, _uint iSizeY, DXGI_FORMAT ePixelFormat, const _float4& vClearColor);
 	HRESULT Bind_ShaderResource(class CShader* pShader, const _char* pConstantName);	void Clear();
-
+	HRESULT Copy_Resource(ID3D11Texture2D* pSourTexture);
 
 #ifdef _DEBUG
 public:
