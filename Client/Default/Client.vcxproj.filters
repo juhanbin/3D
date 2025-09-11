@@ -401,6 +401,9 @@
     <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxInstance_Particle.hlsl">
       <Filter>96.ShaderFiles</Filter>
     </FxCompile>
+    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxInstance_PointParticle.hlsl">
+      <Filter>96.ShaderFiles</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Bin\ShaderFiles\Engine_Shader_Defines.hlsli">
