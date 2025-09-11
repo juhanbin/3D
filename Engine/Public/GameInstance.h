@@ -52,6 +52,11 @@ public:
 #pragma region RENDERER
 public:
 	HRESULT Add_RenderGroup(RENDERGROUP eRenderGroup, class CGameObject* pRenderObject);
+
+#ifdef _DEBUG
+public:
+	HRESULT Add_DebugComponent(class CComponent* pComponent);
+#endif
 #pragma endregion
 	//
 #pragma region TIMER_MANAGER
@@ -89,7 +94,7 @@ public:
 #pragma region LIGHT_MANAGER
 	const LIGHT_DESC* Get_LightDesc(_uint iIndex) const;
 	HRESULT Add_Light(const LIGHT_DESC& LightDesc);
-
+	HRESULT Render_Lights(class CShader* pShader, class CVIBuffer_Rect* pVIBuffer);
 #pragma endregion
 
 #pragma region EVENT_BUS
@@ -100,9 +105,24 @@ public:
 	CEventBus* Get_EventBus() const { return m_pEventBus; }
 #pragma endregion
 
+#pragma region TARGET_MANAGER
+	HRESULT Add_RenderTarget(const _wstring& strTargetTag, _uint iSizeX, _uint iSizeY, DXGI_FORMAT ePixelFormat, const _float4& vClearColor);
+	HRESULT Add_MRT(const _wstring& strMRTTag, const _wstring& strTargetTag);
+	HRESULT Begin_MRT(const _wstring& strMRTTag);
+	HRESULT End_MRT();
+	HRESULT Bind_RT_ShaderResource(const _wstring& strTargetTag, class CShader* pShader, const _char* pConstantName);
+
+#ifdef _DEBUG
+	HRESULT Ready_RT_Debug(const _wstring& strTargetTag, _float fX, _float fY, _float fSizeX, _float fSizeY);
+	HRESULT Render_RT_Debug(class CShader* pShader, class CVIBuffer_Rect* pVIBuffer);
+#endif
+#pragma endregion
+
+
 	ID3D11RasterizerState* Get_RS_CullNone() const { return m_pRS_CullNone; }
 private:
 	ID3D11RasterizerState* m_pRS_CullNone = nullptr;
+
 public:
 	CGraphic_Device* GetGraphicDevice();
 
@@ -118,7 +138,7 @@ private:
 	class CPipeLine* m_pPipeLine = { nullptr };
 	class CLight_Manager* m_pLight_Manager = { nullptr };
 	class CEventBus* m_pEventBus = { nullptr };
-
+	class CTarget_Manager* m_pTarget_Manager = { nullptr };
 public:
 	void Release_Engine();
 	virtual void Free() override;

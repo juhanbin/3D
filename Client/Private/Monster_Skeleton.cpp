@@ -175,17 +175,27 @@ void CMonster_Skeleton::Late_Update(_float fTimeDelta)
     if (FAILED(m_pGameInstance->Add_RenderGroup(RENDERGROUP::NONBLEND, this)))
         return;
 
+#ifdef _DEBUG
+    for (auto& pCollider : m_pColliderCom)
+    {
+        if (FAILED(m_pGameInstance->Add_DebugComponent(pCollider)))
+            return;
+    }
+    if (m_pNavigationCom)
+        m_pGameInstance->Add_DebugComponent(m_pNavigationCom);
+#endif
+
     __super::Late_Update(fTimeDelta);
 }
 
 HRESULT CMonster_Skeleton::Render()
 {
-#ifdef _DEBUG
-    for (auto& pCollider : m_pColliderCom)
-        if(pCollider)
-            pCollider->Render();
-    if (m_pNavigationCom) m_pNavigationCom->Render();
-#endif
+//#ifdef _DEBUG
+//    for (auto& pCollider : m_pColliderCom)
+//        if(pCollider)
+//            pCollider->Render();
+//    if (m_pNavigationCom) m_pNavigationCom->Render();
+//#endif
     return S_OK;
 }
 

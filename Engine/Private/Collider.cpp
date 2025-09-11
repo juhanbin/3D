@@ -1,24 +1,22 @@
 #include "Collider.h"
-
-
-
 #include "GameInstance.h"
 
 CCollider::CCollider(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
-	: CComponent { pDevice, pContext }
+	: CComponent{ pDevice, pContext }
 {
+
 
 }
 
 CCollider::CCollider(const CCollider& Prototype)
 	: CComponent{ Prototype }
-	, m_eType { Prototype.m_eType }
+	, m_eType{ Prototype.m_eType }
 #ifdef _DEBUG
-	, m_pBatch { Prototype.m_pBatch }
-	, m_pEffect { Prototype.m_pEffect } 
+	, m_pBatch{ Prototype.m_pBatch }
+	, m_pEffect{ Prototype.m_pEffect }
 #endif
-	, m_pInputLayout { Prototype.m_pInputLayout}
-	, m_isColl { Prototype.m_isColl}
+	, m_pInputLayout{ Prototype.m_pInputLayout }
+	, m_isColl{ Prototype.m_isColl }
 {
 	Safe_AddRef(m_pInputLayout);
 }
@@ -41,7 +39,7 @@ HRESULT CCollider::Initialize_Prototype(COLLIDER eType)
 	if (FAILED(m_pDevice->CreateInputLayout(VertexPositionColor::InputElements, VertexPositionColor::InputElementCount,
 		pShaderByteCode, iShaderByteCodeLength, &m_pInputLayout)))
 		return E_FAIL;
-	
+
 #endif
 
 	return S_OK;
@@ -62,7 +60,7 @@ HRESULT CCollider::Initialize(void* pArg)
 	case COLLIDER::SPHERE:
 		m_pBounding = CBounding_Sphere::Create(m_pDevice, m_pContext, pDesc);
 		break;
-	}	
+	}
 
 	return S_OK;
 }
@@ -81,12 +79,14 @@ _bool CCollider::Intersect(CCollider* pTarget)
 
 HRESULT CCollider::Render()
 {
+	m_pContext->GSSetShader(nullptr, nullptr, 0);
+
 	m_pEffect->SetWorld(XMMatrixIdentity());
 	m_pEffect->SetView(m_pGameInstance->Get_Transform_Matrix(D3DTS::VIEW));
 	m_pEffect->SetProjection(m_pGameInstance->Get_Transform_Matrix(D3DTS::PROJ));
 
 	m_pContext->IASetInputLayout(m_pInputLayout);
-	m_pEffect->Apply(m_pContext);	
+	m_pEffect->Apply(m_pContext);
 
 	m_pBatch->Begin();
 

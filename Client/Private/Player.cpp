@@ -214,15 +214,19 @@ void CPlayer::Late_Update(_float fTimeDelta)
     if (FAILED(m_pGameInstance->Add_RenderGroup(RENDERGROUP::NONBLEND, this)))
         return;
 
+#ifdef _DEBUG
+    m_pGameInstance->Add_DebugComponent(m_pColliderCom);
+    m_pGameInstance->Add_DebugComponent(m_pNavigationCom);
+#endif
     __super::Late_Update(fTimeDelta);
 }
 
 HRESULT CPlayer::Render()
 {
-#ifdef _DEBUG
-    m_pColliderCom->Render();
-    if (m_pNavigationCom) m_pNavigationCom->Render();
-#endif
+//#ifdef _DEBUG
+//    m_pColliderCom->Render();
+//    if (m_pNavigationCom) m_pNavigationCom->Render();
+//#endif
     return S_OK;
 }
 

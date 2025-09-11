@@ -42,6 +42,13 @@ void CTerrain::Late_Update(_float fTimeDelta)
 {
     if (FAILED(m_pGameInstance->Add_RenderGroup(RENDERGROUP::NONBLEND, this)))
         return;
+
+#ifdef _DEBUG
+    if (FAILED(m_pGameInstance->Add_DebugComponent(m_pNavigationCom)))
+        return;
+
+
+#endif
 }
 
 HRESULT CTerrain::Render()
@@ -55,10 +62,7 @@ HRESULT CTerrain::Render()
 
     m_pVIBufferCom->Render();
 
-#ifdef _DEBUG
-    m_pNavigationCom->Render();
 
-#endif
 
     return S_OK;
 }

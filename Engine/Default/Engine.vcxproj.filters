@@ -157,6 +157,12 @@
     <Filter Include="01.Utility\03.Component\VIBuffer\Instance\Rect">
       <UniqueIdentifier>{f158b3df-068e-409a-8faf-16179f85355d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01.Utility\06.RenderTargets">
+      <UniqueIdentifier>{b7ccc3b6-e980-4121-be9d-8a0cb3d831b3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Utility\06.RenderTargets\Manager">
+      <UniqueIdentifier>{04326202-243d-4eb4-8e5c-3814ac441a4c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Private\Timer.cpp">
@@ -299,6 +305,12 @@
     </ClCompile>
     <ClCompile Include="..\Private\VIBuffer_Point_Instance.cpp">
       <Filter>01.Utility\03.Component\VIBuffer\Instance\Point</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Target_Manager.cpp">
+      <Filter>01.Utility\06.RenderTargets\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\RenderTarget.cpp">
+      <Filter>01.Utility\06.RenderTargets</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -463,6 +475,12 @@
     </ClInclude>
     <ClInclude Include="..\Public\VIBuffer_Point_Instance.h">
       <Filter>01.Utility\03.Component\VIBuffer\Instance\Point</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\Target_Manager.h">
+      <Filter>01.Utility\06.RenderTargets\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\RenderTarget.h">
+      <Filter>01.Utility\06.RenderTargets</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

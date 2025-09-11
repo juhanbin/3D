@@ -168,7 +168,7 @@ HRESULT CLoader::Loading_For_GamePlay_Level()
 
 	/* Prototype_Component_Texture_Mask_Terrain */
 	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Texture_Mask_Terrain"),
-		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Terrain/Mask.bmp"), 1))))
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Terrain/TerrainMask.dds"), 1))))
 		return E_FAIL;
 
 	/* Prototype_Component_Texture_Brush */

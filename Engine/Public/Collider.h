@@ -23,21 +23,21 @@ public:
 	_bool Intersect(CCollider* pTarget);
 
 #ifdef _DEBUG
-	HRESULT Render();
+	virtual HRESULT Render() override;
 
 #endif
 
 
 private:
 	COLLIDER				m_eType = { COLLIDER::END };
-	class CBounding*		m_pBounding = { nullptr };
+	class CBounding* m_pBounding = { nullptr };
 	_bool					m_isColl = { false };
 
 #ifdef _DEBUG
 private:
-	PrimitiveBatch<VertexPositionColor>*		m_pBatch = { nullptr };
-	BasicEffect*								m_pEffect = { nullptr };
-	ID3D11InputLayout*							m_pInputLayout = { nullptr };
+	PrimitiveBatch<VertexPositionColor>* m_pBatch = { nullptr };
+	BasicEffect* m_pEffect = { nullptr };
+	ID3D11InputLayout* m_pInputLayout = { nullptr };
 
 #endif
 

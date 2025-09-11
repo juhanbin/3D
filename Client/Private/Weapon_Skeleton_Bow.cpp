@@ -98,14 +98,14 @@ HRESULT CWeapon_Skeleton_Bow::Bind_ShaderResources()
     if (FAILED(m_pShaderCom->Bind_Matrix("g_ViewMatrix", m_pGameInstance->Get_Transform_Float4x4(D3DTS::VIEW)))) return E_FAIL;
     if (FAILED(m_pShaderCom->Bind_Matrix("g_ProjMatrix", m_pGameInstance->Get_Transform_Float4x4(D3DTS::PROJ)))) return E_FAIL;
 
-    const LIGHT_DESC* L = m_pGameInstance->Get_LightDesc(0);
+    /*const LIGHT_DESC* L = m_pGameInstance->Get_LightDesc(0);
     if (!L) return E_FAIL;
 
     m_pShaderCom->Bind_RawValue("g_vLightDir", &L->vDirection, sizeof(_float4));
     m_pShaderCom->Bind_RawValue("g_vLightDiffuse", &L->vDiffuse, sizeof(_float4));
     m_pShaderCom->Bind_RawValue("g_vLightAmbient", &L->vAmbient, sizeof(_float4));
     m_pShaderCom->Bind_RawValue("g_vLightSpecular", &L->vSpecular, sizeof(_float4));
-    m_pShaderCom->Bind_RawValue("g_vCamPosition", m_pGameInstance->Get_CamPosition(), sizeof(_float4));
+    m_pShaderCom->Bind_RawValue("g_vCamPosition", m_pGameInstance->Get_CamPosition(), sizeof(_float4));*/
     return S_OK;
 }
 

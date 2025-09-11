@@ -78,6 +78,15 @@ void CMushroom::Update(_float dt)
 void CMushroom::Late_Update(_float)
 {
     m_pGameInstance->Add_RenderGroup(RENDERGROUP::NONBLEND, this);
+
+    if (m_eState == STATE::ALIVE) {
+        if (m_pCollider_Block)
+            m_pGameInstance->Add_DebugComponent(m_pCollider_Block);
+    }
+    else {
+        if (m_pCollider_Trigger)
+            m_pGameInstance->Add_DebugComponent(m_pCollider_Trigger);
+    }
 }
 
 HRESULT CMushroom::Render()
@@ -98,15 +107,15 @@ HRESULT CMushroom::Render()
         m_pModelCom->Render(i);
     }
 
-#ifdef _DEBUG
-    // ★ 상태별로 필요한 콜라이더만 렌더
-    if (m_eState == STATE::ALIVE) {
-        if (m_pCollider_Block)   m_pCollider_Block->Render();
-    }
-    else {
-        if (m_pCollider_Trigger) m_pCollider_Trigger->Render();
-    }
-#endif
+//#ifdef _DEBUG
+//    // ★ 상태별로 필요한 콜라이더만 렌더
+//    if (m_eState == STATE::ALIVE) {
+//        if (m_pCollider_Block)   m_pCollider_Block->Render();
+//    }
+//    else {
+//        if (m_pCollider_Trigger) m_pCollider_Trigger->Render();
+//    }
+//#endif
     return S_OK;
 }
 
@@ -149,13 +158,13 @@ HRESULT CMushroom::Bind_ShaderResources()
     if (FAILED(m_pShaderCom->Bind_Matrix("g_ViewMatrix", m_pGameInstance->Get_Transform_Float4x4(D3DTS::VIEW)))) return E_FAIL;
     if (FAILED(m_pShaderCom->Bind_Matrix("g_ProjMatrix", m_pGameInstance->Get_Transform_Float4x4(D3DTS::PROJ)))) return E_FAIL;
 
-    const LIGHT_DESC* L = m_pGameInstance->Get_LightDesc(0);
+   /* const LIGHT_DESC* L = m_pGameInstance->Get_LightDesc(0);
     if (!L) return E_FAIL;
     m_pShaderCom->Bind_RawValue("g_vLightDir", &L->vDirection, sizeof(_float4));
     m_pShaderCom->Bind_RawValue("g_vLightDiffuse", &L->vDiffuse, sizeof(_float4));
     m_pShaderCom->Bind_RawValue("g_vLightAmbient", &L->vAmbient, sizeof(_float4));
     m_pShaderCom->Bind_RawValue("g_vLightSpecular", &L->vSpecular, sizeof(_float4));
-    m_pShaderCom->Bind_RawValue("g_vCamPosition", m_pGameInstance->Get_CamPosition(), sizeof(_float4));
+    m_pShaderCom->Bind_RawValue("g_vCamPosition", m_pGameInstance->Get_CamPosition(), sizeof(_float4));*/
     return S_OK;
 }
 

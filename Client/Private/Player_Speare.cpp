@@ -54,6 +54,10 @@ void CPlayer_Speare::Late_Update(_float dt)
     if (!Is_Active()) return;
 
     m_pGameInstance->Add_RenderGroup(RENDERGROUP::NONBLEND, this);
+
+#ifdef _DEBUG
+    m_pGameInstance->Add_DebugComponent(m_pColliderCom);
+#endif
 }
 
 HRESULT CPlayer_Speare::Render()
@@ -74,9 +78,7 @@ HRESULT CPlayer_Speare::Render()
         m_pShaderCom->Begin(0);
         m_pModelCom->Render(i);
     }
-#ifdef _DEBUG
-    m_pColliderCom->Render();
-#endif
+
     return S_OK;
 }
 
@@ -216,13 +218,13 @@ HRESULT CPlayer_Speare::Bind_ShaderResources()
     if (FAILED(m_pShaderCom->Bind_Matrix("g_ViewMatrix", m_pGameInstance->Get_Transform_Float4x4(D3DTS::VIEW)))) return E_FAIL;
     if (FAILED(m_pShaderCom->Bind_Matrix("g_ProjMatrix", m_pGameInstance->Get_Transform_Float4x4(D3DTS::PROJ)))) return E_FAIL;
 
-    const LIGHT_DESC* L = m_pGameInstance->Get_LightDesc(0);
+    /*const LIGHT_DESC* L = m_pGameInstance->Get_LightDesc(0);
     if (!L) return E_FAIL;
     m_pShaderCom->Bind_RawValue("g_vLightDir", &L->vDirection, sizeof(_float4));
     m_pShaderCom->Bind_RawValue("g_vLightDiffuse", &L->vDiffuse, sizeof(_float4));
     m_pShaderCom->Bind_RawValue("g_vLightAmbient", &L->vAmbient, sizeof(_float4));
     m_pShaderCom->Bind_RawValue("g_vLightSpecular", &L->vSpecular, sizeof(_float4));
-    m_pShaderCom->Bind_RawValue("g_vCamPosition", m_pGameInstance->Get_CamPosition(), sizeof(_float4));
+    m_pShaderCom->Bind_RawValue("g_vCamPosition", m_pGameInstance->Get_CamPosition(), sizeof(_float4));*/
     return S_OK;
 }
 

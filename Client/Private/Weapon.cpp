@@ -96,6 +96,10 @@ void CWeapon::Late_Update(_float fTimeDelta)
 {
     if (FAILED(m_pGameInstance->Add_RenderGroup(RENDERGROUP::NONBLEND, this)))
         return;
+
+#ifdef _DEBUG
+    m_pGameInstance->Add_DebugComponent(m_pColliderCom);
+#endif
 }
 
 HRESULT CWeapon::Render()
@@ -128,9 +132,7 @@ HRESULT CWeapon::Render()
         m_pModelCom->Render(i);
     }
 
-#ifdef _DEBUG
-    m_pColliderCom->Render();
-#endif
+
 
     return S_OK;
 }
@@ -171,7 +173,7 @@ HRESULT CWeapon::Bind_ShaderResources()
     if (FAILED(m_pShaderCom->Bind_Matrix("g_ProjMatrix", m_pGameInstance->Get_Transform_Float4x4(D3DTS::PROJ))))
         return E_FAIL;    
 
-    const LIGHT_DESC*       pLightDesc = m_pGameInstance->Get_LightDesc(0);
+    /*const LIGHT_DESC*       pLightDesc = m_pGameInstance->Get_LightDesc(0);
     if (nullptr == pLightDesc)
         return E_FAIL;
 
@@ -184,7 +186,7 @@ HRESULT CWeapon::Bind_ShaderResources()
     if (FAILED(m_pShaderCom->Bind_RawValue("g_vLightSpecular", &pLightDesc->vSpecular, sizeof(_float4))))
         return E_FAIL;
     if (FAILED(m_pShaderCom->Bind_RawValue("g_vCamPosition", m_pGameInstance->Get_CamPosition(), sizeof(_float4))))
-        return E_FAIL;
+        return E_FAIL;*/
 
     return S_OK;
 }
