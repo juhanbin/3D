@@ -68,13 +68,13 @@ HRESULT CRenderer::Initialize()
     XMStoreFloat4x4(&m_ViewMatrix, XMMatrixIdentity());
     XMStoreFloat4x4(&m_ProjMatrix, XMMatrixOrthographicLH(ViewportDesc.Width, ViewportDesc.Height, 0.f, 1.f));
 #ifdef _DEBUG
-    if (FAILED(m_pGameInstance->Ready_RT_Debug(TEXT("Target_Diffuse"), 150.0f, 150.0f, 300.f, 300.f)))
+    if (FAILED(m_pGameInstance->Ready_RT_Debug(TEXT("Target_Diffuse"), 100.0f, 100.0f, 200.f, 200.f)))
         return E_FAIL;
-    if (FAILED(m_pGameInstance->Ready_RT_Debug(TEXT("Target_Normal"), 150.0f, 450.0f, 300.f, 300.f)))
+    if (FAILED(m_pGameInstance->Ready_RT_Debug(TEXT("Target_Normal"), 100.0f, 300.0f, 200.f, 200.f)))
         return E_FAIL;
-    if (FAILED(m_pGameInstance->Ready_RT_Debug(TEXT("Target_Shade"), 450.0f, 150.0f, 300.f, 300.f)))
+    if (FAILED(m_pGameInstance->Ready_RT_Debug(TEXT("Target_Shade"), 300.0f, 100.0f, 200.f, 200.f)))
         return E_FAIL;
-    if (FAILED(m_pGameInstance->Ready_RT_Debug(TEXT("Target_Specular"), 450.0f, 450.0f, 300.f, 300.f)))
+    if (FAILED(m_pGameInstance->Ready_RT_Debug(TEXT("Target_Specular"), 300.0f, 300.0f, 200.f, 200.f)))
         return E_FAIL;
 #endif
 
@@ -389,10 +389,11 @@ void CRenderer::Free()
 {
     __super::Free();
 
+#ifdef _DEBUG
     for (auto& pDebugComponent : m_DebugComponent)
         Safe_Release(pDebugComponent);
     m_DebugComponent.clear();
-
+#endif
     for (size_t i = 0; i < ENUM_CLASS(RENDERGROUP::END); i++)
     {
         for (auto& pRenderObject : m_RenderObjects[i])

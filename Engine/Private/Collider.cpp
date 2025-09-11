@@ -14,11 +14,13 @@ CCollider::CCollider(const CCollider& Prototype)
 #ifdef _DEBUG
 	, m_pBatch{ Prototype.m_pBatch }
 	, m_pEffect{ Prototype.m_pEffect }
-#endif
 	, m_pInputLayout{ Prototype.m_pInputLayout }
+#endif
 	, m_isColl{ Prototype.m_isColl }
 {
+#ifdef _DEBUG
 	Safe_AddRef(m_pInputLayout);
+#endif
 }
 
 HRESULT CCollider::Initialize_Prototype(COLLIDER eType)
@@ -130,11 +132,14 @@ void CCollider::Free()
 {
 	__super::Free();
 
+#ifdef _DEBUG
 	if (false == m_isCloned)
 	{
 		Safe_Delete(m_pEffect);
 		Safe_Delete(m_pBatch);
 	}
 	Safe_Release(m_pInputLayout);
+#endif
+	
 	Safe_Release(m_pBounding);
 }

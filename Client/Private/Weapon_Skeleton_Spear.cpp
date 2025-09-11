@@ -68,7 +68,9 @@ void CWeapon_Skeleton_Spear::Late_Update(_float fTimeDelta)
     if (FAILED(m_pGameInstance->Add_RenderGroup(RENDERGROUP::NONBLEND, this)))
         return;
 
+#ifdef _DEBUG
     m_pGameInstance->Add_DebugComponent(m_pColliderCom);
+#endif
 }
 
 HRESULT CWeapon_Skeleton_Spear::Render()

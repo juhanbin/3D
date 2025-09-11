@@ -79,6 +79,7 @@ void CMushroom::Late_Update(_float)
 {
     m_pGameInstance->Add_RenderGroup(RENDERGROUP::NONBLEND, this);
 
+#ifdef _DEBUG
     if (m_eState == STATE::ALIVE) {
         if (m_pCollider_Block)
             m_pGameInstance->Add_DebugComponent(m_pCollider_Block);
@@ -87,6 +88,8 @@ void CMushroom::Late_Update(_float)
         if (m_pCollider_Trigger)
             m_pGameInstance->Add_DebugComponent(m_pCollider_Trigger);
     }
+#endif
+
 }
 
 HRESULT CMushroom::Render()
