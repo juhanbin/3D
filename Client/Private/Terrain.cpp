@@ -81,9 +81,15 @@ HRESULT CTerrain::Ready_Components()
         TEXT("Com_Texture_Mask"), reinterpret_cast<CComponent**>(&m_pTextureCom[TEXTURE_MASK]), nullptr)))
         return E_FAIL;
 
+    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Texture_Brush"),
+        TEXT("Com_Texture_Brush"), reinterpret_cast<CComponent**>(&m_pTextureCom[TEXTURE_BRUSH]), nullptr)))
+        return E_FAIL;
+
     if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Navigation"),
         TEXT("Com_Navigation"), reinterpret_cast<CComponent**>(&m_pNavigationCom), nullptr)))
         return E_FAIL;
+
+
 
 
 
@@ -109,20 +115,7 @@ HRESULT CTerrain::Bind_ShaderResources()
         return E_FAIL;
     if (FAILED(m_pTextureCom[TEXTURE_MASK]->Bind_Shader_Resource(m_pShaderCom, "g_MaskTexture", 0)))
         return E_FAIL;
-
-    const LIGHT_DESC* pLightDesc = m_pGameInstance->Get_LightDesc(0);
-    if (nullptr == pLightDesc)
-        return E_FAIL;
-
-    if (FAILED(m_pShaderCom->Bind_RawValue("g_vLightDir", &pLightDesc->vDirection, sizeof(_float4))))
-        return E_FAIL;
-    if (FAILED(m_pShaderCom->Bind_RawValue("g_vLightDiffuse", &pLightDesc->vDiffuse, sizeof(_float4))))
-        return E_FAIL;
-    if (FAILED(m_pShaderCom->Bind_RawValue("g_vLightAmbient", &pLightDesc->vAmbient, sizeof(_float4))))
-        return E_FAIL;
-    if (FAILED(m_pShaderCom->Bind_RawValue("g_vLightSpecular", &pLightDesc->vSpecular, sizeof(_float4))))
-        return E_FAIL;
-    if (FAILED(m_pShaderCom->Bind_RawValue("g_vCamPosition", m_pGameInstance->Get_CamPosition(), sizeof(_float4))))
+    if (FAILED(m_pTextureCom[TEXTURE_BRUSH]->Bind_Shader_Resource(m_pShaderCom, "g_BrushTexture", 0)))
         return E_FAIL;
 
     return S_OK;
