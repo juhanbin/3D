@@ -43,11 +43,11 @@ HRESULT CLevel_GamePlay::Initialize()
 		return E_FAIL;
 
 	/* 현재 레벨을 구성해주기 위한 객체들을 생성한다. */
-	/*if (FAILED(Ready_Layer_Camera(TEXT("Layer_Camera"))))
-		return E_FAIL;*/
-
-	if (FAILED(Ready_Layer_Camera_Player(TEXT("Layer_Camera"))))
+	if (FAILED(Ready_Layer_Camera(TEXT("Layer_Camera"))))
 		return E_FAIL;
+
+	/*if (FAILED(Ready_Layer_Camera_Player(TEXT("Layer_Camera"))))
+		return E_FAIL;*/
 
 	if (FAILED(Ready_Layer_BackGround(TEXT("Layer_BackGround"))))
 		return E_FAIL;
@@ -491,6 +491,10 @@ HRESULT CLevel_GamePlay::Ready_Layer_Effect(const _wstring& strLayerTag)
 {
 	if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::GAMEPLAY), strLayerTag,
 		ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Particle"))))
+		return E_FAIL;
+
+	if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::GAMEPLAY), strLayerTag,
+		ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Snow"))))
 		return E_FAIL;
 
 	return S_OK;

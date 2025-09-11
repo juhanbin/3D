@@ -127,6 +127,9 @@
     <Filter Include="02.GameObject\Effect\Particle">
       <UniqueIdentifier>{c79f4afe-0f41-433d-bf76-f84b80287354}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02.GameObject\Snow">
+      <UniqueIdentifier>{195cc651-5ad2-4911-8fde-215cee3cfa6c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h">
@@ -242,6 +245,9 @@
     </ClInclude>
     <ClInclude Include="..\Public\Particle.h">
       <Filter>02.GameObject\Effect\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Snow.h">
+      <Filter>02.GameObject\Snow</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -359,6 +365,9 @@
     </ClCompile>
     <ClCompile Include="..\Private\Particle.cpp">
       <Filter>02.GameObject\Effect\Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Snow.cpp">
+      <Filter>02.GameObject\Snow</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

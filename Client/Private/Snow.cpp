@@ -1,22 +1,22 @@
-#include "Particle.h"
+#include "Snow.h"
 #include "GameInstance.h"
 
-CParticle::CParticle(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
+CSnow::CSnow(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
     : CGameObject{ pDevice, pContext }
 {
 }
 
-CParticle::CParticle(const CParticle& Prototype)
+CSnow::CSnow(const CSnow& Prototype)
     : CGameObject{ Prototype }
 {
 }
 
-HRESULT CParticle::Initialize_Prototype()
+HRESULT CSnow::Initialize_Prototype()
 {
     return S_OK;
 }
 
-HRESULT CParticle::Initialize(void* pArg)
+HRESULT CSnow::Initialize(void* pArg)
 {
     if (FAILED(__super::Initialize(pArg)))
         return E_FAIL;
@@ -27,28 +27,30 @@ HRESULT CParticle::Initialize(void* pArg)
     return S_OK;
 }
 
-void CParticle::Priority_Update(_float fTimeDelta)
+void CSnow::Priority_Update(_float fTimeDelta)
 {
     int a = 10;
 }
 
-void CParticle::Update(_float fTimeDelta)
+void CSnow::Update(_float fTimeDelta)
 {
-    m_pVIBufferCom->Spread(fTimeDelta);
+    /*  m_pTransformCom->Set_State(STATE::POSITION, XMLoadFloat4(m_pGameInstance->Get_CamPosition()));*/
+
+    m_pVIBufferCom->Drop(fTimeDelta);
 }
 
-void CParticle::Late_Update(_float fTimeDelta)
+void CSnow::Late_Update(_float fTimeDelta)
 {
     if (FAILED(m_pGameInstance->Add_RenderGroup(RENDERGROUP::NONBLEND, this)))
         return;
 }
 
-HRESULT CParticle::Render()
+HRESULT CSnow::Render()
 {
     if (FAILED(Bind_ShaderResources()))
         return E_FAIL;
 
-    m_pShaderCom->Begin(1);
+    m_pShaderCom->Begin(0);
 
     m_pVIBufferCom->Bind_Resources();
 
@@ -57,13 +59,13 @@ HRESULT CParticle::Render()
     return S_OK;
 }
 
-HRESULT CParticle::Ready_Components()
+HRESULT CSnow::Ready_Components()
 {
-    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Shader_VtxInstance_Particle"),
+    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Shader_VtxInstance_PointParticle"),
         TEXT("Com_Shader"), reinterpret_cast<CComponent**>(&m_pShaderCom), nullptr)))
         return E_FAIL;
 
-    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Particle_Explosion"),
+    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Particle_Snow"),
         TEXT("Com_VIBuffer"), reinterpret_cast<CComponent**>(&m_pVIBufferCom), nullptr)))
         return E_FAIL;
 
@@ -74,7 +76,7 @@ HRESULT CParticle::Ready_Components()
     return S_OK;
 }
 
-HRESULT CParticle::Bind_ShaderResources()
+HRESULT CSnow::Bind_ShaderResources()
 {
     if (FAILED(m_pTransformCom->Bind_Shader_Resource(m_pShaderCom, "g_WorldMatrix")))
         return E_FAIL;
@@ -85,39 +87,42 @@ HRESULT CParticle::Bind_ShaderResources()
     if (FAILED(m_pShaderCom->Bind_Matrix("g_ProjMatrix", m_pGameInstance->Get_Transform_Float4x4(D3DTS::PROJ))))
         return E_FAIL;
 
+    if (FAILED(m_pShaderCom->Bind_RawValue("g_vCamPosition", m_pGameInstance->Get_CamPosition(), sizeof(_float4))))
+        return E_FAIL;
+
     if (FAILED(m_pTextureCom->Bind_Shader_Resource(m_pShaderCom, "g_DiffuseTexture", 0)))
         return E_FAIL;
 
     return S_OK;
 }
 
-CParticle* CParticle::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
+CSnow* CSnow::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 {
-    CParticle* pInstance = new CParticle(pDevice, pContext);
+    CSnow* pInstance = new CSnow(pDevice, pContext);
 
     if (FAILED(pInstance->Initialize_Prototype()))
     {
-        MSG_BOX(TEXT("Failed to Created : CParticle"));
+        MSG_BOX(TEXT("Failed to Created : CSnow"));
         Safe_Release(pInstance);
     }
 
     return pInstance;
 }
 
-CGameObject* CParticle::Clone(void* pArg)
+CGameObject* CSnow::Clone(void* pArg)
 {
-    CParticle* pInstance = new CParticle(*this);
+    CSnow* pInstance = new CSnow(*this);
 
     if (FAILED(pInstance->Initialize(pArg)))
     {
-        MSG_BOX(TEXT("Failed to Created : CParticle"));
+        MSG_BOX(TEXT("Failed to Created : CSnow"));
         Safe_Release(pInstance);
     }
 
     return pInstance;
 }
 
-void CParticle::Free()
+void CSnow::Free()
 {
     __super::Free();
 

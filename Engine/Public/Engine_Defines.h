@@ -21,6 +21,7 @@
 #include "DirectXTK/PrimitiveBatch.h"
 #include "DirectXTK/VertexTypes.h"
 #include "DirectXTK/Effects.h"
+#include "DirectXTK/ScreenGrab.h"
 
 #include "assimp/scene.h"
 #include "assimp/postprocess.h"

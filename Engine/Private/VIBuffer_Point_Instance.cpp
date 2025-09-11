@@ -145,6 +145,7 @@ HRESULT CVIBuffer_Point_Instance::Bind_Resources()
 	};
 
 	m_pContext->IASetVertexBuffers(0, m_iNumVertexBuffers, pVertexBuffers, iVertexStrides, iOffsets);
+	//m_pContext->IASetIndexBuffer(nullptr, DXGI_FORMAT_UNKNOWN, 0);
 	m_pContext->IASetPrimitiveTopology(m_ePrimitiveType);
 
 	return S_OK;
@@ -192,6 +193,35 @@ void CVIBuffer_Point_Instance::Spread(_float fTimeDelta)
 
 void CVIBuffer_Point_Instance::Drop(_float fTimeDelta)
 {
+	D3D11_MAPPED_SUBRESOURCE	SubResource{};
+
+	VTXINSTANCE_PARTICLE* pInstanceVertices = static_cast<VTXINSTANCE_PARTICLE*>(m_pInstanceVertices);
+
+	/*m_pVB->Lock(0, 0, (void**)&pVertex, 0);*/
+
+	m_pContext->Map(m_pVBInstance, 0, D3D11_MAP_WRITE_NO_OVERWRITE, 0, &SubResource);
+
+	VTXINSTANCE_PARTICLE* pVertices = static_cast<VTXINSTANCE_PARTICLE*>(SubResource.pData);
+
+
+	for (size_t i = 0; i < m_iNumInstance; i++)
+	{
+		_vector	vMoveDir = XMVectorSet(0.f, -1.f, 0.f, 0.f);
+
+		XMStoreFloat4(&pVertices[i].vTranslation, XMLoadFloat4(&pVertices[i].vTranslation) + vMoveDir * m_pSpeeds[i] * fTimeDelta);
+		pVertices[i].vLifeTime.x += fTimeDelta;
+
+		if (true == m_isLoop)
+		{
+			if (pVertices[i].vLifeTime.x >= pVertices[i].vLifeTime.y)
+			{
+				pVertices[i].vLifeTime.x = 0.f;
+				pVertices[i].vTranslation = pInstanceVertices[i].vTranslation;
+			}
+		}
+	}
+
+	m_pContext->Unmap(m_pVBInstance, 0);
 }
 
 CVIBuffer_Point_Instance* CVIBuffer_Point_Instance::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, const INSTANCE_DESC* pDesc)

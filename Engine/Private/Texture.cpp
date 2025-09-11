@@ -2,14 +2,14 @@
 #include "Shader.h"
 
 CTexture::CTexture(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
-    : CComponent { pDevice, pContext }
+    : CComponent{ pDevice, pContext }
 {
 }
 
 CTexture::CTexture(const CTexture& Prototype)
     : CComponent{ Prototype }
-    , m_iNumTextures { Prototype.m_iNumTextures}
-    , m_SRVs { Prototype.m_SRVs}
+    , m_iNumTextures{ Prototype.m_iNumTextures }
+    , m_SRVs{ Prototype.m_SRVs }
 {
     for (auto& pSRV : m_SRVs)
         Safe_AddRef(pSRV);
@@ -17,15 +17,25 @@ CTexture::CTexture(const CTexture& Prototype)
 
 HRESULT CTexture::Initialize_Prototype(const _tchar* pTextureFilePath, _uint iNumTextures)
 {
-    //개수 멤버변수에 저장
     m_iNumTextures = iNumTextures;
 
+    ///* D:\ */
+    //_tchar          szDrive[MAX_PATH] = {};
+
+    ///* Burger\153\Framework\Engine\PrivateBurger\153\Framework\Engine\Private\ */
+    //_tchar          szDir[MAX_PATH] = {};
+
+    ///* Texture */
+    //_tchar          szFileName[MAX_PATH] = {};
+
+    /* .cpp */
     _tchar          szExt[MAX_PATH] = {};
 
-    //경로에서 확장자 추출
+
+    /* D:\Burger\153\Framework\Engine\PrivateBurger\153\Framework\Engine\Private\Texture%d.png*/
     _wsplitpath_s(pTextureFilePath, nullptr, 0, nullptr, 0, nullptr, 0, szExt, MAX_PATH);
 
-    for (size_t i = 0; i < iNumTextures; i++)    
+    for (size_t i = 0; i < iNumTextures; i++)
     {
         _tchar       szFullPath[MAX_PATH] = {};
 
@@ -67,7 +77,12 @@ HRESULT CTexture::Bind_Shader_Resource(CShader* pShader, const _char* pConstantN
     if (iTextureIndex >= m_iNumTextures)
         return E_FAIL;
 
-    return pShader->Bind_SRV(pConstantName, m_SRVs[iTextureIndex]);    
+    return pShader->Bind_SRV(pConstantName, m_SRVs[iTextureIndex]);
+}
+
+HRESULT CTexture::Bind_Shader_Resources(CShader* pShader, const _char* pConstantName)
+{
+    return pShader->Bind_SRVs(pConstantName, &m_SRVs.front(), m_iNumTextures);
 }
 
 CTexture* CTexture::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, const _tchar* pTextureFilePath, _uint iNumTextures)

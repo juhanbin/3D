@@ -34,12 +34,13 @@ void CTerrain::Priority_Update(_float fTimeDelta)
 
 void CTerrain::Update(_float fTimeDelta)
 {
+    m_pNavigationCom->Update(m_pTransformCom->Get_WorldMatrix());
 
 }
 
 void CTerrain::Late_Update(_float fTimeDelta)
 {
-    if (FAILED(m_pGameInstance->Add_RenderGroup(RENDERGROUP::PRIORITY, this)))
+    if (FAILED(m_pGameInstance->Add_RenderGroup(RENDERGROUP::NONBLEND, this)))
         return;
 }
 
@@ -53,6 +54,11 @@ HRESULT CTerrain::Render()
     m_pVIBufferCom->Bind_Resources();
 
     m_pVIBufferCom->Render();
+
+#ifdef _DEBUG
+    m_pNavigationCom->Render();
+
+#endif
 
     return S_OK;
 }
@@ -68,8 +74,20 @@ HRESULT CTerrain::Ready_Components()
         return E_FAIL;
 
     if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Texture_Terrain"),
-        TEXT("Com_Texture"), reinterpret_cast<CComponent**>(&m_pTextureCom), nullptr)))
+        TEXT("Com_Texture"), reinterpret_cast<CComponent**>(&m_pTextureCom[TEXTURE_DIFFUSE]), nullptr)))
         return E_FAIL;
+
+    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Texture_Mask_Terrain"),
+        TEXT("Com_Texture_Mask"), reinterpret_cast<CComponent**>(&m_pTextureCom[TEXTURE_MASK]), nullptr)))
+        return E_FAIL;
+
+    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Navigation"),
+        TEXT("Com_Navigation"), reinterpret_cast<CComponent**>(&m_pNavigationCom), nullptr)))
+        return E_FAIL;
+
+
+
+
 
 
 
@@ -87,7 +105,9 @@ HRESULT CTerrain::Bind_ShaderResources()
     if (FAILED(m_pShaderCom->Bind_Matrix("g_ProjMatrix", m_pGameInstance->Get_Transform_Float4x4(D3DTS::PROJ))))
         return E_FAIL;
 
-    if (FAILED(m_pTextureCom->Bind_Shader_Resource(m_pShaderCom, "g_DiffuseTexture", 0)))
+    if (FAILED(m_pTextureCom[TEXTURE_DIFFUSE]->Bind_Shader_Resources(m_pShaderCom, "g_DiffuseTexture")))
+        return E_FAIL;
+    if (FAILED(m_pTextureCom[TEXTURE_MASK]->Bind_Shader_Resource(m_pShaderCom, "g_MaskTexture", 0)))
         return E_FAIL;
 
     const LIGHT_DESC* pLightDesc = m_pGameInstance->Get_LightDesc(0);
@@ -138,7 +158,11 @@ void CTerrain::Free()
 {
     __super::Free();
 
+    Safe_Release(m_pNavigationCom);
     Safe_Release(m_pVIBufferCom);
-    Safe_Release(m_pTextureCom);
+
+    for (auto& pTexture : m_pTextureCom)
+        Safe_Release(pTexture);
+
     Safe_Release(m_pShaderCom);
 }

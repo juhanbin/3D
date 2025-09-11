@@ -58,6 +58,53 @@ HRESULT CMainApp::Render()
 
 HRESULT CMainApp::Ready_Gara()
 {
+	//ID3D11Texture2D* pTexture2D = { nullptr };
+	//
+	//D3D11_TEXTURE2D_DESC	TextureDesc;
+	//ZeroMemory(&TextureDesc, sizeof(D3D11_TEXTURE2D_DESC));
+	//
+	///* 깊이 버퍼의 픽셀은 백버퍼의 픽셀과 갯수가 동일해야만 깊이 텍스트가 가능해진다. */
+	///* 픽셀의 수가 다르면 아에 렌더링을 못함. */
+	//TextureDesc.Width = 256;
+	//TextureDesc.Height = 256;
+	//TextureDesc.MipLevels = 1;
+	//TextureDesc.ArraySize = 1;
+	//TextureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	//
+	//TextureDesc.SampleDesc.Quality = 0;
+	//TextureDesc.SampleDesc.Count = 1;
+	//
+	//
+	//TextureDesc.Usage = D3D11_USAGE_STAGING/* 정적 */;
+	///* 추후에 어떤 용도로 바인딩 될 수 있는 View타입의 텍스쳐를 만들기위한 Texture2D입니까? */
+	//TextureDesc.BindFlags = 0;
+	//TextureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE | D3D11_CPU_ACCESS_READ;
+	//TextureDesc.MiscFlags = 0;
+	//
+	//_uint* pPixels = new _uint[256 * 256];
+	//
+	//for (size_t i = 0; i < 256; i++)
+	//{
+	//	for (size_t j = 0; j < 256; j++)
+	//	{
+	//		_uint		iIndex = i * 256 + j;
+	//
+	//		/* a , b, g, r */
+	//		pPixels[iIndex] = 0xff0000ff;
+	//
+	//	}
+	//
+	//}
+	//
+	//D3D11_SUBRESOURCE_DATA			InitialDesc{};
+	//InitialDesc.pSysMem = pPixels;
+	//InitialDesc.SysMemPitch = sizeof(_uint) * 256;
+	//
+	//if (FAILED(m_pDevice->CreateTexture2D(&TextureDesc, &InitialDesc, &pTexture2D)))
+	//	return E_FAIL;
+	//
+	//SaveDDSTextureToFile(m_pContext, pTexture2D, TEXT("../Bin/Test.dds"));
+
 	_ulong		dwByte = {};
 	HANDLE		hFile = CreateFile(TEXT("../Bin/DataFiles/Navigation.dat"), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
 

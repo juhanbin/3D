@@ -32,6 +32,7 @@
 
 #include "Parasit_Eye.h"
 #include "Particle.h"
+#include "Snow.h"
 //#include "Effect.h"
 //#include "Sky.h"
 
@@ -163,6 +164,11 @@ HRESULT CLoader::Loading_For_GamePlay_Level()
 	/* Prototype_Component_Texture_Terrain */
 	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Texture_Terrain"),
 		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Terrain/Tile%d.dds"), 2))))
+		return E_FAIL;
+
+	/* Prototype_Component_Texture_Mask_Terrain */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Texture_Mask_Terrain"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Terrain/Mask.bmp"), 1))))
 		return E_FAIL;
 
 	/* Prototype_Component_Texture_Snow */
@@ -374,6 +380,21 @@ HRESULT CLoader::Loading_For_GamePlay_Level()
 		CVIBuffer_Rect_Instance::Create(m_pDevice, m_pContext, &ExploDesc))))
 		return E_FAIL;
 
+	/* Prototype_Component_Particle_Snow */
+	CVIBuffer_Point_Instance::POINT_INSTANCE_DESC		SnowDesc{};
+	SnowDesc.iNumInstance = 3000;
+	SnowDesc.vCenter = _float3(64.f, 20.f, 64.f);
+	SnowDesc.vRange = _float3(128.f, 1.f, 128.f);
+	SnowDesc.vSize = _float2(0.1f, 0.2f);
+	SnowDesc.vLifeTime = _float2(5.0f, 10.f);
+	SnowDesc.vPivot = _float3(0.f, 0.f, 0.f);
+	SnowDesc.vSpeed = _float2(1.5f, 3.f);
+	SnowDesc.isLoop = true;
+
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Particle_Snow"),
+		CVIBuffer_Point_Instance::Create(m_pDevice, m_pContext, &SnowDesc))))
+		return E_FAIL;
+
 	lstrcpy(m_szLoadingText, TEXT("네비게이션을 로딩중입니다."));
 	/* Prototype_Component_Navigation */
 	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Navigation"),
@@ -420,6 +441,11 @@ HRESULT CLoader::Loading_For_GamePlay_Level()
 	/* Prototype_Component_Shader_VtxInstance_Particle */
 	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Shader_VtxInstance_Particle"),
 		CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxInstance_Particle.hlsl"), VTXPARTICLE::Elements, VTXPARTICLE::iNumElements))))
+		return E_FAIL;
+
+	/* Prototype_Component_Shader_VtxInstance_PointParticle*/
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Shader_VtxInstance_PointParticle"),
+		CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxInstance_PointParticle.hlsl"), VTXPOINTPARTICLE::Elements, VTXPOINTPARTICLE::iNumElements))))
 		return E_FAIL;
 
 	lstrcpy(m_szLoadingText, TEXT("게임오브젝트를 로딩중입니다."));
@@ -527,6 +553,11 @@ HRESULT CLoader::Loading_For_GamePlay_Level()
 	///* Prototype_GameObject_Particle */
 	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Particle"),
 		CParticle::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	///* Prototype_GameObject_Snow */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Snow"),
+		CSnow::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
 	lstrcpy(m_szLoadingText, TEXT("로딩이 완료되었습니다."));

@@ -29,31 +29,31 @@ HRESULT CCamera_Free::Initialize(void* pArg)
 
 void CCamera_Free::Priority_Update(_float fTimeDelta)
 {
-    /*if (m_pGameInstance->KeyDown(DIK_UP)) {
-        OutputDebugStringA("Space DOWN!\n");
-    }
-    if (m_pGameInstance->KeyUp(DIK_LEFT)) {
-        OutputDebugStringA("Space UP!\n");
-    }
-    if (m_pGameInstance->KeyPressing(DIK_RIGHT)) {
-        OutputDebugStringA("Space PRESSING...\n");
-    }*/
+    //if (m_pGameInstance->KeyDown(DIK_UP)) {
+    //    //OutputDebugStringA("Space DOWN!\n");
+    //}
+    //if (m_pGameInstance->KeyUp(DIK_LEFT)) {
+    //    //OutputDebugStringA("Space UP!\n");
+    //}
+    //if (m_pGameInstance->KeyPressing(DIK_RIGHT)) {
+    //    //OutputDebugStringA("Space PRESSING...\n");
+    //}
 
-    if (m_pGameInstance->Get_DIKeyState(DIK_UP) & 0x80)
+    if (m_pGameInstance->Get_DIKeyState(DIK_W) & 0x80)
     {
-        m_pTransformCom->Go_Straight(fTimeDelta);
+        m_pTransformCom->Go_Straight(fTimeDelta *2);
     }
-    if (m_pGameInstance->Get_DIKeyState(DIK_DOWN) & 0x80)
+    if (m_pGameInstance->Get_DIKeyState(DIK_S) & 0x80)
     {
-        m_pTransformCom->Go_Backward(fTimeDelta);
+        m_pTransformCom->Go_Backward(fTimeDelta *2);
     }
-    if (m_pGameInstance->Get_DIKeyState(DIK_LEFT) & 0x80)
+    if (m_pGameInstance->Get_DIKeyState(DIK_A) & 0x80)
     {
-        m_pTransformCom->Go_Left(fTimeDelta);
+        m_pTransformCom->Go_Left(fTimeDelta*2);
     }
-    if (m_pGameInstance->Get_DIKeyState(DIK_RIGHT) & 0x80)
+    if (m_pGameInstance->Get_DIKeyState(DIK_D) & 0x80)
     {
-        m_pTransformCom->Go_Right(fTimeDelta);
+        m_pTransformCom->Go_Right(fTimeDelta*2);
     }
 
     _int    iMouseMove = {};

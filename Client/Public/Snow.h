@@ -6,20 +6,17 @@
 NS_BEGIN(Engine)
 class CShader;
 class CTexture;
-class CNavigation;
-class CVIBuffer_Terrain;
+class CVIBuffer_Point_Instance;
 NS_END
 
 NS_BEGIN(Client)
 
-class CTerrain final : public CGameObject
+class CSnow final : public CGameObject
 {
-public:
-	enum TEXTURE { TEXTURE_DIFFUSE, TEXTURE_MASK, TEXTURE_END };
 private:
-	CTerrain(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
-	CTerrain(const CTerrain& Prototype);
-	virtual ~CTerrain() = default;
+	CSnow(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
+	CSnow(const CSnow& Prototype);
+	virtual ~CSnow() = default;
 
 public:
 	virtual HRESULT Initialize_Prototype();
@@ -31,16 +28,15 @@ public:
 
 private:
 	CShader* m_pShaderCom = { nullptr };
-	CTexture* m_pTextureCom[TEXTURE_END] = { nullptr };
-	CNavigation* m_pNavigationCom = { nullptr };
-	CVIBuffer_Terrain* m_pVIBufferCom = { nullptr };
+	CTexture* m_pTextureCom = { nullptr };
+	CVIBuffer_Point_Instance* m_pVIBufferCom = { nullptr };
 
 private:
 	HRESULT Ready_Components();
 	HRESULT Bind_ShaderResources();
 
 public:
-	static CTerrain* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
+	static CSnow* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	virtual CGameObject* Clone(void* pArg) override;
 	virtual void Free() override;
 };
