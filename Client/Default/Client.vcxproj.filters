@@ -121,11 +121,11 @@
     <Filter Include="96.ShaderFiles">
       <UniqueIdentifier>{18fd865d-3a11-4b7d-9529-43bc7c06dfd8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="01.Levels\Effect">
-      <UniqueIdentifier>{ed8c28bc-737d-4ede-ad85-c68177594826}</UniqueIdentifier>
+    <Filter Include="02.GameObject\Effect">
+      <UniqueIdentifier>{48e2010f-cae1-45af-8809-0555599143a5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="01.Levels\Effect\Particle">
-      <UniqueIdentifier>{d3a951cc-7a0d-4d71-8ca0-ab8711809bac}</UniqueIdentifier>
+    <Filter Include="02.GameObject\Effect\Particle">
+      <UniqueIdentifier>{c79f4afe-0f41-433d-bf76-f84b80287354}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -241,7 +241,7 @@
       <Filter>02.GameObject\Parasit_Eye</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Particle.h">
-      <Filter>01.Levels\Effect\Particle</Filter>
+      <Filter>02.GameObject\Effect\Particle</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -358,7 +358,7 @@
       <Filter>02.GameObject\Parasit_Eye</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Particle.cpp">
-      <Filter>01.Levels\Effect\Particle</Filter>
+      <Filter>02.GameObject\Effect\Particle</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

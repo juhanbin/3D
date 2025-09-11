@@ -86,11 +86,11 @@ HRESULT CMapObject::Render()
             return E_FAIL;
         }
 
-        if (FAILED(m_pModelCom->Bind_Materials_Bin(m_pShaderCom, "g_NormalTexture", i, 1, 0))) // 1: NORMAL
-        {
-            OutputDebugStringA("n머티리얼 바인딩 실패!\n");
-            return E_FAIL;
-        }
+        //if (FAILED(m_pModelCom->Bind_Materials_Bin(m_pShaderCom, "g_NormalTexture", i, 1, 0))) // 1: NORMAL
+        //{
+        //    OutputDebugStringA("n머티리얼 바인딩 실패!\n");
+        //    return E_FAIL;
+        //}
 
         m_pShaderCom->Begin(0);
         m_pModelCom->Render(i);

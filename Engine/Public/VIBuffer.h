@@ -21,8 +21,8 @@ public:
 	virtual HRESULT Render();
 
 protected:
-	ID3D11Buffer*	m_pVB = { nullptr };
-	ID3D11Buffer*	m_pIB = { nullptr };
+	ID3D11Buffer* m_pVB = { nullptr };
+	ID3D11Buffer* m_pIB = { nullptr };
 
 	_uint					m_iNumVertices = {};
 	_uint					m_iVertexStride = {};

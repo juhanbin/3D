@@ -35,8 +35,10 @@ bld/
 [Ll]ogs/
 
 # Build results on 'Bin' directories
-# Bin 폴더 내의 .hlsl, .cso 파일만 예외적으로 git에 포함 (아래 두 줄 추가!)
-**/[Bb]in/*
+# Bin 전체 무시
+**/[Bb]in/**
+
+# Bin 내부의 모든 하위 폴더까지 .hlsl, .cso만 추적
 !**/[Bb]in/**/*.hlsl
 !**/[Bb]in/**/*.cso
 

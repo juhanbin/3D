@@ -362,7 +362,7 @@ HRESULT CLoader::Loading_For_GamePlay_Level()
 	/* Prototype_Component_Particle_Explosion */
 	CVIBuffer_Rect_Instance::RECT_INSTANCE_DESC		ExploDesc{};
 	ExploDesc.iNumInstance = 300;
-	ExploDesc.vCenter = _float3(9.6f, 2.5f, 20.f);
+	ExploDesc.vCenter = _float3(-9.6f, 2.5f, 20.f);
 	ExploDesc.vRange = _float3(2.f, 2.f, 2.f);
 	ExploDesc.vSize = _float2(0.1f, 0.3f);
 	ExploDesc.vLifeTime = _float2(0.5f, 1.f);
@@ -403,11 +403,6 @@ HRESULT CLoader::Loading_For_GamePlay_Level()
 	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Shader_VtxMesh"),
 		CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxMesh.hlsl"), VTXMESH::Elements, VTXMESH::iNumElements))))
 		return E_FAIL;
-
-	///* Prototype_Component_Shader_VtxMesh_simple */
-	//if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Shader_VtxMesh_Simple"),
-	//	CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxMesh_Simple.hlsl"), VTXMESH::Elements, VTXMESH::iNumElements))))
-	//	return E_FAIL;
 
 	/* Prototype_Component_Shader_VtxAnimMesh */
 	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Shader_VtxAnimMesh"),

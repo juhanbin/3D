@@ -69,7 +69,7 @@ HRESULT CWeapon_Skeleton_Bow::Render()
     for (_uint i = 0; i < n; ++i)
     {
         m_pModelCom->Bind_Materials_Bin(m_pShaderCom, "g_DiffuseTexture", i, ENUM_CLASS(TextureType::DIFFUSE), 0);
-        m_pModelCom->Bind_Materials_Bin(m_pShaderCom, "g_NormalTexture", i, 1, 0);
+        //m_pModelCom->Bind_Materials_Bin(m_pShaderCom, "g_NormalTexture", i, 1, 0);
         m_pShaderCom->Begin(0);
         m_pModelCom->Render(i);
     }
