@@ -916,7 +916,7 @@ void CMainApp::Render_ImGuiPanel()
                 case EObjectType::MONSTER_EYE:        strcpy(o.fbxPath, "../Bin/Resources/Blood_Spear/Model/Eye/Eye.fbx"); break;
                 case EObjectType::MUSHROOM:          strcpy(o.fbxPath, "../Bin/Resources/Blood_Spear/Model/Mushroom/Mushroom.fbx");                 break;
                 case EObjectType::SMALLMUSHROOM: strcpy(o.fbxPath, "../Bin/Resources/Blood_Spear/Model/Small_Mushroom/Small_Mushroom.fbx");          break;
-                case EObjectType::PARASIT_EYE:   strcpy(o.fbxPath, "../Bin/Resources/Blood_Spear/Model/Eye/Eye.fbx");          break;
+                case EObjectType::PARASIT_EYE:   strcpy(o.fbxPath, "../Bin/Resources/Blood_Spear/Model/Parasit_Eye/Parasit_Eye.fbx");          break;
                 case EObjectType::MONSTER_ARROW:   strcpy(o.fbxPath, "../Bin/Resources/Blood_Spear/Model/Monster_Arrow/Monster_Arrow.fbx");          break;
                 default: o.fbxPath[0] = 0; break;
                 }

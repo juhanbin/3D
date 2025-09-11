@@ -142,6 +142,21 @@
     <Filter Include="01.Utility\03.Component\Collider\Bounding\Sphere">
       <UniqueIdentifier>{807e670f-e01b-4dd7-a999-57370d8eaf3f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="95.ShaderFiles">
+      <UniqueIdentifier>{48ebfc52-ce88-49e0-81ab-c404c9452b5a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Utility\03.Component\VIBuffer\Instance">
+      <UniqueIdentifier>{a8848c7a-6889-440f-b605-0c62a4cd95cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Utility\03.Component\VIBuffer\Instance\Mesh">
+      <UniqueIdentifier>{e2b32a98-60d7-44ee-95b0-9c291a135835}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Utility\03.Component\VIBuffer\Instance\Point">
+      <UniqueIdentifier>{1112e5c9-b2c3-43d3-ab95-6739962b9a59}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Utility\03.Component\VIBuffer\Instance\Rect">
+      <UniqueIdentifier>{f158b3df-068e-409a-8faf-16179f85355d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Private\Timer.cpp">
@@ -275,6 +290,12 @@
     </ClCompile>
     <ClCompile Include="..\Private\Collider.cpp">
       <Filter>01.Utility\03.Component\Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\VIBuffer_Instance.cpp">
+      <Filter>01.Utility\03.Component\VIBuffer\Instance</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\VIBuffer_Rect_Instance.cpp">
+      <Filter>01.Utility\03.Component\VIBuffer\Instance\Rect</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -430,6 +451,12 @@
     </ClInclude>
     <ClInclude Include="..\Public\Bounding.h">
       <Filter>01.Utility\03.Component\Collider\Bounding</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\VIBuffer_Instance.h">
+      <Filter>01.Utility\03.Component\VIBuffer\Instance</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\VIBuffer_Rect_Instance.h">
+      <Filter>01.Utility\03.Component\VIBuffer\Instance\Rect</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

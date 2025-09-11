@@ -1,26 +1,25 @@
-#include "Boss_Hand_L.h"
+#include "Parasit_Eye.h"
 #include "GameInstance.h"
 
 // === 추가 include (발사/조준에 필요) ===
 #include "PlayerManager.h"
 #include "Boss_Fire.h"
 #include "Object_Pool_Manager.h"
-#include "Boss_Fire.h"
 
 using namespace Client;
 using namespace DirectX;
 
-CBoss_Hand_L::CBoss_Hand_L(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
+CParasit_Eye::CParasit_Eye(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
     : CGameObject{ pDevice, pContext } {
 }
 
-CBoss_Hand_L::CBoss_Hand_L(const CBoss_Hand_L& Prototype)
+CParasit_Eye::CParasit_Eye(const CParasit_Eye& Prototype)
     : CGameObject{ Prototype } {
 }
 
-HRESULT CBoss_Hand_L::Initialize_Prototype() { return S_OK; }
+HRESULT CParasit_Eye::Initialize_Prototype() { return S_OK; }
 
-HRESULT CBoss_Hand_L::Initialize(void* pArg)
+HRESULT CParasit_Eye::Initialize(void* pArg)
 {
     GAMEOBJECT_DESC Desc{};
     Desc.fSpeedPerSec = 0.f;
@@ -29,7 +28,7 @@ HRESULT CBoss_Hand_L::Initialize(void* pArg)
 
     if (pArg)
     {
-        auto* pDesc = static_cast<Boss_Hand_L_DESC*>(pArg);
+        auto* pDesc = static_cast<Parasit_Eye_Desc*>(pArg);
         m_eType = pDesc->type;
 
         const XMMATRIX S = XMMatrixScaling(pDesc->vScale.x, pDesc->vScale.y, pDesc->vScale.z);
@@ -49,7 +48,7 @@ HRESULT CBoss_Hand_L::Initialize(void* pArg)
     if (FAILED(Ready_Components())) return E_FAIL;
 
     // 적절한 애니메이션 슬롯으로 재생
-    m_pModelCom->Set_Animation(10, true);
+    /*m_pModelCom->Set_Animation(10, true);*/
 
     // 발사 타이머 초기화
     m_fireTimer = 0.f;
@@ -57,22 +56,22 @@ HRESULT CBoss_Hand_L::Initialize(void* pArg)
     return S_OK;
 }
 
-void CBoss_Hand_L::Priority_Update(_float) {}
+void CParasit_Eye::Priority_Update(_float) {}
 
-void CBoss_Hand_L::Update(_float dt)
+void CParasit_Eye::Update(_float dt)
 {
     // 애니메이션 진행
-    if (m_pModelCom) m_pModelCom->Play_Animation(dt);
+    /*if (m_pModelCom) m_pModelCom->Play_Animation(dt);*/
 
     TickFire(dt);
 }
 
-void CBoss_Hand_L::Late_Update(_float)
+void CParasit_Eye::Late_Update(_float)
 {
     m_pGameInstance->Add_RenderGroup(RENDERGROUP::NONBLEND, this);
 }
 
-HRESULT CBoss_Hand_L::Render()
+HRESULT CParasit_Eye::Render()
 {
     if (FAILED(Bind_ShaderResources())) return E_FAIL;
 
@@ -83,8 +82,8 @@ HRESULT CBoss_Hand_L::Render()
             m_pShaderCom, "g_DiffuseTexture", i, ENUM_CLASS(TextureType::DIFFUSE), 0)))
             return E_FAIL;
 
-        if (FAILED(m_pModelCom->Bind_BoneMatrices(m_pShaderCom, "g_BoneMatrices", i)))
-            return E_FAIL;
+        /*if (FAILED(m_pModelCom->Bind_BoneMatrices(m_pShaderCom, "g_BoneMatrices", i)))
+            return E_FAIL;*/
 
         m_pShaderCom->Begin(0);
         m_pModelCom->Render(i);
@@ -99,15 +98,15 @@ HRESULT CBoss_Hand_L::Render()
 
 // ==================== 컴포넌트/셰이더 ====================
 
-HRESULT CBoss_Hand_L::Ready_Components()
+HRESULT CParasit_Eye::Ready_Components()
 {
     if (FAILED(CGameObject::Add_Component(
-        ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Shader_VtxAnimMesh"),
+        ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Shader_VtxMesh"),
         TEXT("Com_Shader"), reinterpret_cast<CComponent**>(&m_pShaderCom), nullptr)))
         return E_FAIL;
 
     if (FAILED(CGameObject::Add_Component(
-        ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Model_Boss_hand_L"),
+        ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Model_Eye"),
         TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom), nullptr)))
         return E_FAIL;
 
@@ -116,7 +115,7 @@ HRESULT CBoss_Hand_L::Ready_Components()
     return S_OK;
 }
 
-HRESULT CBoss_Hand_L::Bind_ShaderResources()
+HRESULT CParasit_Eye::Bind_ShaderResources()
 {
     if (FAILED(m_pTransformCom->Bind_Shader_Resource(m_pShaderCom, "g_WorldMatrix"))) return E_FAIL;
     if (FAILED(m_pShaderCom->Bind_Matrix("g_ViewMatrix", m_pGameInstance->Get_Transform_Float4x4(D3DTS::VIEW)))) return E_FAIL;
@@ -134,14 +133,14 @@ HRESULT CBoss_Hand_L::Bind_ShaderResources()
 
 // ==================== 활 스타일 멤버 유틸 ====================
 
-_float4x4 CBoss_Hand_L::GetWorld() const
+_float4x4 CParasit_Eye::GetWorld() const
 {
     _float4x4 W{};
     XMStoreFloat4x4(&W, m_pTransformCom->Get_WorldMatrix());
     return W;
 }
 
-_float3 CBoss_Hand_L::GetMuzzleWorldPos() const
+_float3 CParasit_Eye::GetMuzzleWorldPos() const
 {
     const _float4x4 W = GetWorld();
 
@@ -156,7 +155,7 @@ _float3 CBoss_Hand_L::GetMuzzleWorldPos() const
     return out;
 }
 
-_float3 CBoss_Hand_L::AimDirToPlayer() const
+_float3 CParasit_Eye::AimDirToPlayer() const
 {
     const _float3 muzzle = GetMuzzleWorldPos();
 
@@ -178,7 +177,7 @@ _float3 CBoss_Hand_L::AimDirToPlayer() const
     return out;
 }
 
-void CBoss_Hand_L::FireOnce()
+void CParasit_Eye::FireOnce()
 {
     auto* pool = CObject_Pool_Manager::GetInstance();
     if (!pool) return;
@@ -187,7 +186,7 @@ void CBoss_Hand_L::FireOnce()
     auto* fire = dynamic_cast<CBoss_Fire*>(obj);
     if (!fire)
     {
-        OutputDebugStringW(L"Boss_Hand_L Acquire Layer_Boss_Fire 실패 \n");
+        OutputDebugStringW(L"[Boss_Hand_L] Acquire Layer_Boss_Fire 실패 또는 타입 불일치\n");
         if (obj) obj->Set_Active(false);
         return;
     }
@@ -210,7 +209,7 @@ void CBoss_Hand_L::FireOnce()
 #endif
 }
 
-void CBoss_Hand_L::TickFire(_float dt)
+void CParasit_Eye::TickFire(_float dt)
 {
     m_fireTimer += dt;
     if (m_fireTimer >= m_fireCooldown)
@@ -222,21 +221,21 @@ void CBoss_Hand_L::TickFire(_float dt)
 
 // ==================== 생성/해제 ====================
 
-CBoss_Hand_L* CBoss_Hand_L::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
+CParasit_Eye* CParasit_Eye::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 {
-    auto* p = new CBoss_Hand_L(pDevice, pContext);
-    if (FAILED(p->Initialize_Prototype())) { MSG_BOX(TEXT("Failed to Created : CBoss_Hand_L")); Safe_Release(p); }
+    auto* p = new CParasit_Eye(pDevice, pContext);
+    if (FAILED(p->Initialize_Prototype())) { MSG_BOX(TEXT("Failed to Created : CParasit_Eye")); Safe_Release(p); }
     return p;
 }
 
-CGameObject* CBoss_Hand_L::Clone(void* pArg)
+CGameObject* CParasit_Eye::Clone(void* pArg)
 {
-    auto* p = new CBoss_Hand_L(*this);
-    if (FAILED(p->Initialize(pArg))) { MSG_BOX(TEXT("Failed to Clone : CBoss_Hand_L")); Safe_Release(p); }
+    auto* p = new CParasit_Eye(*this);
+    if (FAILED(p->Initialize(pArg))) { MSG_BOX(TEXT("Failed to Clone : CParasit_Eye")); Safe_Release(p); }
     return p;
 }
 
-void CBoss_Hand_L::Free()
+void CParasit_Eye::Free()
 {
     __super::Free();
     Safe_Release(m_pCollider);

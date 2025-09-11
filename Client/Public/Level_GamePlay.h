@@ -35,6 +35,7 @@ private:
 	HRESULT Ready_Layer_Boss_Hand_L(const _wstring& strLayerTag);
 	HRESULT Ready_Layer_Boss_Hand_R(const _wstring& strLayerTag);
 	HRESULT Ready_Layer_Boss_Mask(const _wstring& strLayerTag);
+	HRESULT Ready_Layer_Eye(const _wstring& strLayerTag);
 	HRESULT Ready_Layer_MapObjects(const _wstring& strLayerTag);
 	HRESULT Ready_Layer_Effect(const _wstring& strLayerTag);
 

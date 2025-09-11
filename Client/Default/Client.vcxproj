@@ -175,6 +175,8 @@
     <ClInclude Include="..\Public\Mushroom.h" />
     <ClInclude Include="..\Public\Navi_Bridge.h" />
     <ClInclude Include="..\Public\Object_Pool_Manager.h" />
+    <ClInclude Include="..\Public\Parasit_Eye.h" />
+    <ClInclude Include="..\Public\Particle.h" />
     <ClInclude Include="..\Public\Player.h" />
     <ClInclude Include="..\Public\PlayerManager.h" />
     <ClInclude Include="..\Public\Player_Speare.h" />
@@ -212,6 +214,8 @@
     <ClCompile Include="..\Private\Mushroom.cpp" />
     <ClCompile Include="..\Private\Navi_Bridge.cpp" />
     <ClCompile Include="..\Private\Object_Pool_Manager.cpp" />
+    <ClCompile Include="..\Private\Parasit_Eye.cpp" />
+    <ClCompile Include="..\Private\Particle.cpp" />
     <ClCompile Include="..\Private\Player.cpp" />
     <ClCompile Include="..\Private\PlayerManager.cpp" />
     <ClCompile Include="..\Private\Player_Speare.cpp" />
@@ -228,6 +232,21 @@
   <ItemGroup>
     <Image Include="Client.ico" />
     <Image Include="small.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\Bin\ShaderFiles\Engine_Shader_Cell.hlsl" />
+    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxAnimMesh.hlsl" />
+    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxAnimMesh_ani.hlsl" />
+    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxInstance_Particle.hlsl" />
+    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxMesh.hlsl" />
+    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxNorTex.hlsl" />
+    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxPosTex.hlsl" />
+    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxPosTex_BG.hlsl" />
+    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxPosTex_Fade.hlsl" />
+    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxPosTex_Logo.hlsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Bin\ShaderFiles\Engine_Shader_Defines.hlsli" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -13,6 +13,7 @@
 #include "Boss_Hand_L.h"
 #include "Boss_Hand_R.h"
 #include "Boss_Mask.h"
+#include "Parasit_Eye.h"
 #include <functional>
 
 // 공용 MapObject 구조체는 헤더에 정의
@@ -69,6 +70,8 @@ HRESULT CLevel_GamePlay::Initialize()
 		return E_FAIL;
 
 	if (FAILED(Ready_Layer_Boss_Mask(TEXT("Ready_Layer_Boss_Mask"))))
+		return E_FAIL;
+	if (FAILED(Ready_Layer_Eye(TEXT("Ready_Layer_Eye"))))
 		return E_FAIL;
 	
 	if (FAILED(Ready_Layer_MapObjects(TEXT("Layer_MapObject"))))
@@ -421,6 +424,29 @@ HRESULT CLevel_GamePlay::Ready_Layer_Boss_Mask(const _wstring& strLayerTag)
 	return S_OK;
 }
 
+HRESULT CLevel_GamePlay::Ready_Layer_Eye(const _wstring& strLayerTag)
+{
+	for (auto& obj : m_SceneObjects)
+	{
+		if ((EObjectType)obj.type == EObjectType::MONSTER_EYE)
+		{
+			CParasit_Eye::Parasit_Eye_Desc desc{};
+			desc.type = static_cast<EObjectType>(obj.type);
+			desc.vScale = _float3(obj.size[0], obj.size[1], obj.size[2]);
+			desc.vRot = _float3(obj.rot[0], obj.rot[1], obj.rot[2]);
+			desc.vPos = _float3(obj.pos[0], obj.pos[1], obj.pos[2]);
+
+			if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(
+				ENUM_CLASS(LEVEL::GAMEPLAY), strLayerTag,
+				ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Eye"), &desc)))
+			{
+				OutputDebugStringW(L"[SCENE] Boss_Mask Add 실패!\n");
+			}
+		}
+	}
+	return S_OK;
+}
+
 HRESULT CLevel_GamePlay::Ready_Layer_MapObjects(const _wstring& strLayerTag)
 {
 	for (auto& obj : m_SceneObjects)
@@ -463,6 +489,9 @@ HRESULT CLevel_GamePlay::Ready_Layer_MapObjects(const _wstring& strLayerTag)
 
 HRESULT CLevel_GamePlay::Ready_Layer_Effect(const _wstring& strLayerTag)
 {
+	if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::GAMEPLAY), strLayerTag,
+		ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Particle"))))
+		return E_FAIL;
 
 	return S_OK;
 }

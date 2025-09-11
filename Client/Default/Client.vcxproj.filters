@@ -115,6 +115,18 @@
     <Filter Include="02.GameObject\Boss\Fire">
       <UniqueIdentifier>{9138224c-a1c7-46b8-8e5f-5190d05cb24c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02.GameObject\Parasit_Eye">
+      <UniqueIdentifier>{ad5b41c9-c42d-45c0-b3a5-b1730cb9f5a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="96.ShaderFiles">
+      <UniqueIdentifier>{18fd865d-3a11-4b7d-9529-43bc7c06dfd8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Levels\Effect">
+      <UniqueIdentifier>{ed8c28bc-737d-4ede-ad85-c68177594826}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Levels\Effect\Particle">
+      <UniqueIdentifier>{d3a951cc-7a0d-4d71-8ca0-ab8711809bac}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h">
@@ -224,6 +236,12 @@
     </ClInclude>
     <ClInclude Include="..\Public\Boss_Fire.h">
       <Filter>02.GameObject\Boss\Fire</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Parasit_Eye.h">
+      <Filter>02.GameObject\Parasit_Eye</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Particle.h">
+      <Filter>01.Levels\Effect\Particle</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -336,5 +354,48 @@
     <ClCompile Include="..\Private\Boss_Fire.cpp">
       <Filter>02.GameObject\Boss\Fire</Filter>
     </ClCompile>
+    <ClCompile Include="..\Private\Parasit_Eye.cpp">
+      <Filter>02.GameObject\Parasit_Eye</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Particle.cpp">
+      <Filter>01.Levels\Effect\Particle</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxMesh.hlsl">
+      <Filter>96.ShaderFiles</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxNorTex.hlsl">
+      <Filter>96.ShaderFiles</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxPosTex.hlsl">
+      <Filter>96.ShaderFiles</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxPosTex_BG.hlsl">
+      <Filter>96.ShaderFiles</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxPosTex_Fade.hlsl">
+      <Filter>96.ShaderFiles</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxPosTex_Logo.hlsl">
+      <Filter>96.ShaderFiles</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Bin\ShaderFiles\Engine_Shader_Cell.hlsl">
+      <Filter>96.ShaderFiles</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxAnimMesh.hlsl">
+      <Filter>96.ShaderFiles</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxAnimMesh_ani.hlsl">
+      <Filter>96.ShaderFiles</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxInstance_Particle.hlsl">
+      <Filter>96.ShaderFiles</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Bin\ShaderFiles\Engine_Shader_Defines.hlsli">
+      <Filter>96.ShaderFiles</Filter>
+    </None>
   </ItemGroup>
 </Project>

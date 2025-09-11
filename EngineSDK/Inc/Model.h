@@ -35,12 +35,12 @@ public:
         _uint iMeshIndex, int texType, _uint iIndex);
     HRESULT Bind_BoneMatrices(class CShader* pShader, const _char* pConstantName, _uint iMeshIndex);
 
-    // ---------- 애니메이션 진행/이벤트 질의 (클라에서 사용) ----------
+
 public:
     // 현재 재생 중 애니의 정규화 진행도(0~1) ? 블렌딩 중에는 마지막 업데이트한 값 유지
     float GetAnimProgress01() const { return m_curAnim01; }
 
-    // 지난 틱에서 이번 틱 사이에 t01(0~1) 지점을 "통과"했는가? (루프/되감김 고려)
+    // 지난 틱에서 이번 틱 사이에 t01(0~1) 지점을 "통과"했는가?
     bool  AnimCrossedNormalized(float t01) const;
 
     // 애니 전환/리셋 시 이벤트 창 초기화
