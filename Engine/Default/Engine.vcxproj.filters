@@ -166,6 +166,9 @@
     <Filter Include="01.Utility\08. Shadow">
       <UniqueIdentifier>{7ff6a694-ab2a-40ca-b534-c364dcb08f26}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01.Utility\03.Component\VIBuffer\Cube">
+      <UniqueIdentifier>{a6c00668-e76c-47a9-869f-3a7f3dc0d908}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Private\Timer.cpp">
@@ -317,6 +320,9 @@
     </ClCompile>
     <ClCompile Include="..\Private\Shadow.cpp">
       <Filter>01.Utility\08. Shadow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\VIBuffer_Cube.cpp">
+      <Filter>01.Utility\03.Component\VIBuffer\Cube</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -490,6 +496,9 @@
     </ClInclude>
     <ClInclude Include="..\Public\Shadow.h">
       <Filter>01.Utility\08. Shadow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\VIBuffer_Cube.h">
+      <Filter>01.Utility\03.Component\VIBuffer\Cube</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

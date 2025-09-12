@@ -313,8 +313,12 @@ HRESULT CLevel_GamePlay::Ready_Layer_BackGround(const _wstring& strLayerTag)
 		return E_FAIL;
 
 	if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::GAMEPLAY), strLayerTag,
-		ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Bridge"))))
+		ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Sky"))))
 		return E_FAIL;
+
+	/*if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::GAMEPLAY), strLayerTag,
+		ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Bridge"))))
+		return E_FAIL;*/
 
 	return S_OK;
 }

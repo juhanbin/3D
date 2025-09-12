@@ -160,6 +160,18 @@ namespace Engine
 		};
 	}VTXPOSTEX;
 
+	typedef struct tagVertexCube
+	{
+		XMFLOAT3		vPosition;
+		XMFLOAT3		vTexcoord;
+
+		static const unsigned int	iNumElements = { 2 };
+		static constexpr D3D11_INPUT_ELEMENT_DESC	Elements[iNumElements] = {
+			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		};
+	}VTXCUBE;
+
 	typedef struct tagVertexPointParticle
 	{
 		static const unsigned int	iNumElements = { 6 };

@@ -133,6 +133,9 @@
     <Filter Include="02.GameObject\Effect\Sprite">
       <UniqueIdentifier>{f08f7107-971b-4941-96ea-6325b36d73b8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02.GameObject\Sky">
+      <UniqueIdentifier>{de173bc8-c64a-43c9-bf1b-aeee516741b1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h">
@@ -254,6 +257,9 @@
     </ClInclude>
     <ClInclude Include="..\Public\Explosion.h">
       <Filter>02.GameObject\Effect\Sprite</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Sky.h">
+      <Filter>02.GameObject\Sky</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -377,6 +383,9 @@
     </ClCompile>
     <ClCompile Include="..\Private\Explosion.cpp">
       <Filter>02.GameObject\Effect\Sprite</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Sky.cpp">
+      <Filter>02.GameObject\Sky</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
