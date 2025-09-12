@@ -1177,12 +1177,25 @@ bool CMainApp::LoadScene(const char* filename)
 {
     std::ifstream ifs(filename, std::ios::binary);
     if (!ifs) return false;
-    size_t count = 0; ifs.read((char*)&count, sizeof(count)); if (!ifs) return false;
+
+    uint32_t count32 = 0;
+    ifs.read(reinterpret_cast<char*>(&count32), sizeof(count32));
+    if (!ifs) return false;
+
+    const size_t count = static_cast<size_t>(count32);
+
     m_Objects.clear();
-    for (size_t i = 0; i < count; ++i) { MapObject obj{}; ifs.read((char*)&obj, sizeof(MapObject)); m_Objects.push_back(obj); }
+    m_Objects.resize(count);
+
+    for (size_t i = 0; i < count; ++i) {
+        ifs.read(reinterpret_cast<char*>(&m_Objects[i]), sizeof(MapObject));
+        if (!ifs) return false;
+    }
+
     m_Selected = -1;
     return true;
 }
+
 
 void CMainApp::PushUndo()
 {
