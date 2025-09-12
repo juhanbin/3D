@@ -28,6 +28,7 @@ public:
 	virtual void Update(_float fTimeDelta);
 	virtual void Late_Update(_float fTimeDelta);
 	virtual HRESULT Render();
+	virtual HRESULT Render_Shadow() { return S_OK; }
 
 	virtual void    Set_Active(bool b) { m_bActive = b; }
 	virtual void    Reuse_Begin(void* /*pArg*/) {}

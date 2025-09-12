@@ -46,6 +46,12 @@ namespace Engine
 		float    fTrackPosition;          // 4
 	} KEYFRAME;
 
+	typedef struct tagShadowLightDesc
+	{
+		XMFLOAT4		vEye, vAt;
+		float			fFovy, fNear, fFar;
+	}SHADOW_LIGHT_DESC;
+
 	typedef struct tagVertexMesh
 	{
 		XMFLOAT3		vPosition;

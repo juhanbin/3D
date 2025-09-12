@@ -223,10 +223,6 @@ void CPlayer::Late_Update(_float fTimeDelta)
 
 HRESULT CPlayer::Render()
 {
-//#ifdef _DEBUG
-//    m_pColliderCom->Render();
-//    if (m_pNavigationCom) m_pNavigationCom->Render();
-//#endif
     return S_OK;
 }
 

@@ -55,7 +55,7 @@ void CRenderTarget::Clear()
 
 HRESULT CRenderTarget::Copy_Resource(ID3D11Texture2D* pSourTexture)
 {
-	m_pContext->CopyResource(m_pTexture2D, pSourTexture);
+	m_pContext->CopyResource(pSourTexture, m_pTexture2D);
 
 	return S_OK;
 }

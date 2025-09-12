@@ -246,6 +246,18 @@ HRESULT CLevel_GamePlay::Ready_Lights()
 	if (FAILED(m_pGameInstance->Add_Light(LightDesc)))
 		return E_FAIL;
 
+
+	SHADOW_LIGHT_DESC			ShadowLightDesc{};
+
+	ShadowLightDesc.vEye = _float4(-30.f, 30.f, -30.f, 1.f);
+	ShadowLightDesc.vAt = _float4(0.f, 0.f, 0.f, 1.f);
+	ShadowLightDesc.fFovy = XMConvertToRadians(120.f);
+	ShadowLightDesc.fNear = 0.1f;
+	ShadowLightDesc.fFar = 1000.f;
+
+	if (FAILED(m_pGameInstance->Ready_ShadowLight(ShadowLightDesc)))
+		return E_FAIL;
+
 	return S_OK;
 }
 
@@ -517,6 +529,14 @@ HRESULT CLevel_GamePlay::Ready_Layer_Effect(const _wstring& strLayerTag)
 	if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::GAMEPLAY), strLayerTag,
 		ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Snow"))))
 		return E_FAIL;
+
+	for (size_t i = 0; i < 50; i++)
+	{
+		if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::GAMEPLAY), strLayerTag,
+			ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Effect_Explosion"))))
+			return E_FAIL;
+
+	}
 
 	return S_OK;
 }

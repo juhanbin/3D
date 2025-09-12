@@ -118,6 +118,10 @@ public:
 #endif
 #pragma endregion
 
+#pragma region SHADOW
+	const _float4x4* Get_ShadowLight_Transform_Float4x4(D3DTS eTransformState) const;
+	HRESULT Ready_ShadowLight(SHADOW_LIGHT_DESC LightDesc);
+#pragma endregion
 
 	ID3D11RasterizerState* Get_RS_CullNone() const { return m_pRS_CullNone; }
 private:
@@ -125,6 +129,7 @@ private:
 
 public:
 	CGraphic_Device* GetGraphicDevice();
+
 
 private:
 	class CGraphic_Device* m_pGraphic_Device = { nullptr };
@@ -139,6 +144,8 @@ private:
 	class CLight_Manager* m_pLight_Manager = { nullptr };
 	class CEventBus* m_pEventBus = { nullptr };
 	class CTarget_Manager* m_pTarget_Manager = { nullptr };
+	class CShadow* m_pShadow = { nullptr };
+
 public:
 	void Release_Engine();
 	virtual void Free() override;

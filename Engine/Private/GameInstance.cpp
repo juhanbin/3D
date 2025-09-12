@@ -12,6 +12,7 @@
 #include "EventBus.h"
 #include "Picking.h"
 #include "Target_Manager.h"
+#include "Shadow.h"
 
 IMPLEMENT_SINGLETON(CGameInstance)
 
@@ -36,6 +37,10 @@ HRESULT CGameInstance::Initialize_Engine(const ENGINE_DESC& EngineDesc, ID3D11De
 	Safe_AddRef(m_pPicking);
 	if (FAILED(m_pPicking->Initialize(EngineDesc.hWnd, EngineDesc.iWinSizeX, EngineDesc.iWinSizeY,
 		*ppDevice, *ppContext)))
+		return E_FAIL;
+
+	m_pShadow = CShadow::Create(EngineDesc.iWinSizeX, EngineDesc.iWinSizeY);
+	if (nullptr == m_pShadow)
 		return E_FAIL;
 
 	m_pLevel_Manager = CLevel_Manager::Create();
@@ -428,6 +433,16 @@ HRESULT CGameInstance::Render_RT_Debug(CShader* pShader, CVIBuffer_Rect* pVIBuff
 
 #endif 
 
+const _float4x4* CGameInstance::Get_ShadowLight_Transform_Float4x4(D3DTS eTransformState) const
+{
+	return m_pShadow->Get_Transform_Float4x4(eTransformState);
+}
+
+HRESULT CGameInstance::Ready_ShadowLight(SHADOW_LIGHT_DESC LightDesc)
+{
+	return m_pShadow->Ready_ShadowLight(LightDesc);
+}
+
 #pragma endregion
 //
 //void CGameInstance::Transform_Picking_ToLocalSpace(CTransform* pTransformCom)
@@ -446,6 +461,7 @@ void CGameInstance::Release_Engine()
 {
 	Release();
 
+	Safe_Release(m_pShadow);
 	Safe_Release(m_pPicking);
 	Safe_Release(m_pTarget_Manager);
 	Safe_Release(m_pLight_Manager);

@@ -206,14 +206,14 @@ HRESULT CMesh::Ready_Vertices_For_NonAnim(const aiMesh* pAIMesh, _fmatrix PreTra
         memcpy(&pVertices[i].vPosition, &pAIMesh->mVertices[i], sizeof(_float3));
         XMStoreFloat3(&pVertices[i].vPosition, XMVector3TransformCoord(XMLoadFloat3(&pVertices[i].vPosition), PreTransformMatrix));
 
-        // ★ CPU 포지션 보관(이미 PreTransform 적용된 로컬좌표)
-        m_vecPositions.push_back(pVertices[i].vPosition);
-
         memcpy(&pVertices[i].vNormal, &pAIMesh->mNormals[i], sizeof(_float3));
         XMStoreFloat3(&pVertices[i].vNormal, XMVector3TransformNormal(XMLoadFloat3(&pVertices[i].vNormal), PreTransformMatrix));
 
         memcpy(&pVertices[i].vTangent, &pAIMesh->mTangents[i], sizeof(_float3));
+        XMStoreFloat3(&pVertices[i].vTangent, XMVector3TransformNormal(XMLoadFloat3(&pVertices[i].vTangent), PreTransformMatrix));
+
         memcpy(&pVertices[i].vBinormal, &pAIMesh->mBitangents[i], sizeof(_float3));
+        XMStoreFloat3(&pVertices[i].vBinormal, XMVector3TransformNormal(XMLoadFloat3(&pVertices[i].vBinormal), PreTransformMatrix));
 
         memcpy(&pVertices[i].vTexcoord, &pAIMesh->mTextureCoords[0][i], sizeof(_float2));
     }

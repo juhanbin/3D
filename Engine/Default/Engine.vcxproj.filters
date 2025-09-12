@@ -163,6 +163,9 @@
     <Filter Include="01.Utility\06.RenderTargets\Manager">
       <UniqueIdentifier>{04326202-243d-4eb4-8e5c-3814ac441a4c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01.Utility\08. Shadow">
+      <UniqueIdentifier>{7ff6a694-ab2a-40ca-b534-c364dcb08f26}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Private\Timer.cpp">
@@ -311,6 +314,9 @@
     </ClCompile>
     <ClCompile Include="..\Private\RenderTarget.cpp">
       <Filter>01.Utility\06.RenderTargets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Shadow.cpp">
+      <Filter>01.Utility\08. Shadow</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -481,6 +487,9 @@
     </ClInclude>
     <ClInclude Include="..\Public\RenderTarget.h">
       <Filter>01.Utility\06.RenderTargets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Shadow.h">
+      <Filter>01.Utility\08. Shadow</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -130,6 +130,9 @@
     <Filter Include="02.GameObject\Snow">
       <UniqueIdentifier>{195cc651-5ad2-4911-8fde-215cee3cfa6c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02.GameObject\Effect\Sprite">
+      <UniqueIdentifier>{f08f7107-971b-4941-96ea-6325b36d73b8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h">
@@ -248,6 +251,9 @@
     </ClInclude>
     <ClInclude Include="..\Public\Snow.h">
       <Filter>02.GameObject\Snow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Explosion.h">
+      <Filter>02.GameObject\Effect\Sprite</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -368,6 +374,9 @@
     </ClCompile>
     <ClCompile Include="..\Private\Snow.cpp">
       <Filter>02.GameObject\Snow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Explosion.cpp">
+      <Filter>02.GameObject\Effect\Sprite</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

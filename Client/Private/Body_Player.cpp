@@ -185,6 +185,36 @@ HRESULT CBody_Player::Render()
     return S_OK;
 }
 
+HRESULT CBody_Player::Render_Shadow()
+{
+    if (FAILED(m_pShaderCom->Bind_Matrix("g_WorldMatrix", &m_CombinedWorldMatrix)))
+        return E_FAIL;
+
+
+
+    /* 그림자를 표현하고하는 특수한 광원을 정의하고 그 광원이 바라본 장면응로서 플레이어를 그려준다. */
+    //if (FAILED(m_pShaderCom->Bind_Matrix("g_ViewMatrix", m_pGameInstance->Get_Transform_Float4x4(D3DTS::VIEW))))
+    //    return E_FAIL;
+
+    //if (FAILED(m_pShaderCom->Bind_Matrix("g_ProjMatrix", m_pGameInstance->Get_Transform_Float4x4(D3DTS::PROJ))))
+    //    return E_FAIL;
+
+    _uint           iNumMeshes = m_pModelCom->Get_NumMeshes();
+
+    for (size_t i = 0; i < iNumMeshes; i++)
+    {
+        if (FAILED(m_pModelCom->Bind_BoneMatrices(m_pShaderCom, "g_BoneMatrices", i)))
+            return E_FAIL;
+
+        m_pShaderCom->Begin(1);
+
+        m_pModelCom->Render(i);
+    }
+
+
+    return S_OK;
+}
+
 void CBody_Player::SetClipSmart(int animIndex, bool loop, _float blendDur, bool forceRestart)
 {
 

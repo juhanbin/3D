@@ -30,7 +30,7 @@ HRESULT CRenderer::Initialize()
         return E_FAIL;
 
     /* For.Target_Depth */
-    if (FAILED(m_pGameInstance->Add_RenderTarget(TEXT("Target_Depth"), ViewportDesc.Width, ViewportDesc.Height, DXGI_FORMAT_R32G32B32A32_FLOAT, _float4(0.f, 0.f, 0.f, 1.f))))
+    if (FAILED(m_pGameInstance->Add_RenderTarget(TEXT("Target_Depth"), ViewportDesc.Width, ViewportDesc.Height, DXGI_FORMAT_R32G32B32A32_FLOAT, _float4(0.f, 0.f, 0.f, 0.f))))
         return E_FAIL;
 
     /* For.Target_Shade */
@@ -39,6 +39,10 @@ HRESULT CRenderer::Initialize()
 
     /* For.Target_Specular */
     if (FAILED(m_pGameInstance->Add_RenderTarget(TEXT("Target_Specular"), ViewportDesc.Width, ViewportDesc.Height, DXGI_FORMAT_R16G16B16A16_UNORM, _float4(0.f, 0.f, 0.f, 0.f))))
+        return E_FAIL;
+
+    /* For.Target_LightDepth */
+    if (FAILED(m_pGameInstance->Add_RenderTarget(TEXT("Target_LightDepth"), ViewportDesc.Width, ViewportDesc.Height, DXGI_FORMAT_R32G32B32A32_FLOAT, _float4(0.f, 0.f, 0.f, 0.f))))
         return E_FAIL;
 
     /* For.MRT_GameObjects : 게임 오브젝트들의 정보를 저장받기위한 타겟들 */
@@ -55,6 +59,9 @@ HRESULT CRenderer::Initialize()
     if (FAILED(m_pGameInstance->Add_MRT(TEXT("MRT_LightAcc"), TEXT("Target_Specular"))))
         return E_FAIL;
 
+    /* For.MRT_Shadow : 광원기준으로 보여지는 장면을 그려준다.  */
+    if (FAILED(m_pGameInstance->Add_MRT(TEXT("MRT_Shadow"), TEXT("Target_LightDepth"))))
+        return E_FAIL;
 
     m_pVIBuffer = CVIBuffer_Rect::Create(m_pDevice, m_pContext);
     if (nullptr == m_pVIBuffer)
@@ -67,6 +74,7 @@ HRESULT CRenderer::Initialize()
     XMStoreFloat4x4(&m_WorldMatrix, XMMatrixScaling(ViewportDesc.Width, ViewportDesc.Height, 1.f));
     XMStoreFloat4x4(&m_ViewMatrix, XMMatrixIdentity());
     XMStoreFloat4x4(&m_ProjMatrix, XMMatrixOrthographicLH(ViewportDesc.Width, ViewportDesc.Height, 0.f, 1.f));
+
 #ifdef _DEBUG
     if (FAILED(m_pGameInstance->Ready_RT_Debug(TEXT("Target_Diffuse"), 100.0f, 100.0f, 200.f, 200.f)))
         return E_FAIL;
@@ -75,6 +83,8 @@ HRESULT CRenderer::Initialize()
     if (FAILED(m_pGameInstance->Ready_RT_Debug(TEXT("Target_Shade"), 300.0f, 100.0f, 200.f, 200.f)))
         return E_FAIL;
     if (FAILED(m_pGameInstance->Ready_RT_Debug(TEXT("Target_Specular"), 300.0f, 300.0f, 200.f, 200.f)))
+        return E_FAIL;
+    if (FAILED(m_pGameInstance->Ready_RT_Debug(TEXT("Target_LightDepth"), ViewportDesc.Width - 150.0f, 150.0f, 300.f, 300.f)))
         return E_FAIL;
 #endif
 
@@ -148,6 +158,28 @@ HRESULT CRenderer::Render_Priority()
     }
 
     m_RenderObjects[ENUM_CLASS(RENDERGROUP::PRIORITY)].clear();
+
+    return S_OK;
+}
+
+HRESULT CRenderer::Render_Shadow()
+{
+    /* LightDepth */
+    if (FAILED(m_pGameInstance->Begin_MRT(TEXT("MRT_Shadow"))))
+        return E_FAIL;
+
+    for (auto& pRenderObject : m_RenderObjects[ENUM_CLASS(RENDERGROUP::SHADOW)])
+    {
+        if (nullptr != pRenderObject)
+            pRenderObject->Render();
+
+        Safe_Release(pRenderObject);
+    }
+
+    m_RenderObjects[ENUM_CLASS(RENDERGROUP::SHADOW)].clear();
+
+    if (FAILED(m_pGameInstance->End_MRT()))
+        return E_FAIL;
 
     return S_OK;
 }
