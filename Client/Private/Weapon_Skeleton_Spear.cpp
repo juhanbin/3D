@@ -82,17 +82,8 @@ HRESULT CWeapon_Skeleton_Spear::Render()
 
     for (size_t i = 0; i < iNumMeshes; i++)
     {
-        if (FAILED(m_pModelCom->Bind_Materials_Bin(m_pShaderCom, "g_DiffuseTexture", i, ENUM_CLASS(TextureType::DIFFUSE), 0))) // 0: DIFFUSE
-        {
-            //OutputDebugStringA("Spear_머티리얼 바인딩 실패!\n");
-            return E_FAIL;
-        }
-
-        //if (FAILED(m_pModelCom->Bind_Materials_Bin(m_pShaderCom, "g_NormalTexture", i, 1, 0))) // 1: NORMAL
-        //{
-        //    OutputDebugStringA("n머티리얼 바인딩 실패!\n");
-        //    return E_FAIL;
-        //}
+        m_pModelCom->Bind_Materials_Bin(m_pShaderCom, "g_DiffuseTexture", i, 0, 0);
+        m_pModelCom->Bind_Materials_Bin(m_pShaderCom, "g_NormalTexture", i, 1, 0);
 
         m_pShaderCom->Begin(0);
 

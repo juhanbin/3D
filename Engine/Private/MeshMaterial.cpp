@@ -121,8 +121,11 @@ HRESULT CMeshMaterial::Bind_Resources(CShader* pShader, const _char* pConstantNa
 
 HRESULT CMeshMaterial::Bind_Resources_Bin(CShader* pShader, const _char* pConstantName, int texType, _uint iIndex)
 {
-	if (texType < 0 || texType >= AI_TEXTURE_TYPE_MAX)
+	/*if (texType < 0 || texType >= AI_TEXTURE_TYPE_MAX)
 		return E_FAIL;
+
+	if (iIndex >= m_SRVs[texType].size())
+		return E_FAIL;*/
 
 	if (iIndex >= m_SRVs[texType].size())
 		return E_FAIL;

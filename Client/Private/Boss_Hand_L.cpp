@@ -83,9 +83,10 @@ HRESULT CBoss_Hand_L::Render()
     const _uint n = m_pModelCom->Get_NumMeshes();
     for (_uint i = 0; i < n; ++i)
     {
-        if (FAILED(m_pModelCom->Bind_Materials_Bin(
+        /*if (FAILED(m_pModelCom->Bind_Materials_Bin(
             m_pShaderCom, "g_DiffuseTexture", i, ENUM_CLASS(TextureType::DIFFUSE), 0)))
-            return E_FAIL;
+            return E_FAIL;*/
+        m_pModelCom->Bind_Materials_Bin(m_pShaderCom, "g_DiffuseTexture", i, 0, 0);
 
         if (FAILED(m_pModelCom->Bind_BoneMatrices(m_pShaderCom, "g_BoneMatrices", i)))
             return E_FAIL;
