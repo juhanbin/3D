@@ -462,7 +462,14 @@ void CMainApp::ExportModelToBin_Anim(const MapObject& obj, const char* binPath)
     const aiScene* scene = importer.ReadFile(
         obj.fbxPath,
         aiProcess_ConvertToLeftHanded |
-        aiProcessPreset_TargetRealtime_Fast
+        aiProcess_Triangulate |
+        aiProcess_GenSmoothNormals |     // 노멀 생성/보정
+        aiProcess_CalcTangentSpace |     // 탄젠트/비탄젠트 생성 (노말맵 필수)
+        aiProcess_JoinIdenticalVertices |
+        aiProcess_ImproveCacheLocality |
+        aiProcess_LimitBoneWeights |
+        aiProcess_SortByPType
+        // 필요시: aiProcess_FlipUVs
     );
     if (!scene) {
         printf("FBX 로드 실패: %s\n", importer.GetErrorString());
@@ -475,7 +482,7 @@ void CMainApp::ExportModelToBin_Anim(const MapObject& obj, const char* binPath)
         return;
     }
 
-    // 1) 본(스켈레톤) 저장
+    // 1) 본(스켈레톤)
     m_Bones.clear();
     GatherBones(scene->mRootNode, -1);
 
@@ -483,7 +490,7 @@ void CMainApp::ExportModelToBin_Anim(const MapObject& obj, const char* binPath)
     fwrite(&boneCount, sizeof(uint32_t), 1, fp);
     if (boneCount) fwrite(m_Bones.data(), sizeof(BoneInfoBin), boneCount, fp);
 
-    // 2) 메시 저장
+    // 2) 메시
     const uint32_t numMeshes = scene->mNumMeshes;
     fwrite(&numMeshes, sizeof(uint32_t), 1, fp);
 
@@ -501,7 +508,7 @@ void CMainApp::ExportModelToBin_Anim(const MapObject& obj, const char* binPath)
 
         // MeshInfo
         MeshInfoBin info{};
-        std::memset(info.Name, 0, sizeof(MeshInfoBin));
+        std::memset(&info, 0, sizeof(info));               // ★ 구조체 전체 초기화 (버그 수정)
         std::strncpy(info.Name, mesh->mName.C_Str(), sizeof(info.Name) - 1);
         info.MaterialIndex = mesh->mMaterialIndex;
         info.NumVertices = mesh->mNumVertices;
@@ -520,18 +527,28 @@ void CMainApp::ExportModelToBin_Anim(const MapObject& obj, const char* binPath)
 
             out.vPosition = XMFLOAT3(mesh->mVertices[v].x, mesh->mVertices[v].y, mesh->mVertices[v].z);
 
-            out.vNormal = hasNormal
+            XMFLOAT3 N = hasNormal
                 ? XMFLOAT3(mesh->mNormals[v].x, mesh->mNormals[v].y, mesh->mNormals[v].z)
                 : XMFLOAT3(0, 0, 0);
 
-            if (hasTB) {
-                out.vTangent = XMFLOAT3(mesh->mTangents[v].x, mesh->mTangents[v].y, mesh->mTangents[v].z);
-                out.vBinormal = XMFLOAT3(mesh->mBitangents[v].x, mesh->mBitangents[v].y, mesh->mBitangents[v].z);
+            XMFLOAT3 T = hasTB
+                ? XMFLOAT3(mesh->mTangents[v].x, mesh->mTangents[v].y, mesh->mTangents[v].z)
+                : XMFLOAT3(0, 0, 0);
+
+            XMFLOAT3 B = hasTB
+                ? XMFLOAT3(mesh->mBitangents[v].x, mesh->mBitangents[v].y, mesh->mBitangents[v].z)
+                : XMFLOAT3(0, 0, 0);
+
+            if (hasNormal && hasTB) {
+                OrthonormalizeTBN(N, T, B);  // ★ 정규화 & 직교화
             }
-            else {
-                out.vTangent = XMFLOAT3(0, 0, 0);
-                out.vBinormal = XMFLOAT3(0, 0, 0);
+            else if (hasNormal) {
+                N = XMNorm(N);
             }
+
+            out.vNormal = N;
+            out.vTangent = T;
+            out.vBinormal = B;
 
             out.vTexcoord = hasUV0
                 ? XMFLOAT2(mesh->mTextureCoords[0][v].x, mesh->mTextureCoords[0][v].y)
@@ -541,7 +558,7 @@ void CMainApp::ExportModelToBin_Anim(const MapObject& obj, const char* binPath)
             out.vBlendWeight = XMFLOAT4(0, 0, 0, 0);
         }
 
-        // 인덱스 배열
+        // 인덱스
         std::vector<uint32_t> indices(info.NumIndices);
         {
             uint32_t w = 0;
@@ -553,11 +570,11 @@ void CMainApp::ExportModelToBin_Anim(const MapObject& obj, const char* binPath)
             }
         }
 
-        // per-mesh bone 슬롯 및 정점 가중치
+        // per-mesh bone 슬롯 & 정점 가중치
         std::vector<MeshBoneRaw> meshBones;
         meshBones.reserve(mesh->mNumBones);
 
-        // 정점별 (본,가중치) 임시 리스트
+        // 정점별 (본,가중치) 리스트
         std::vector<std::vector<std::pair<uint16_t, float>>> vw(info.NumVertices);
 
         for (uint32_t b = 0; b < mesh->mNumBones; ++b)
@@ -565,7 +582,7 @@ void CMainApp::ExportModelToBin_Anim(const MapObject& obj, const char* binPath)
             aiBone* aiB = mesh->mBones[b];
 
             MeshBoneRaw raw{};
-            std::memset(raw.Name, 0, sizeof(raw.Name));
+            std::memset(&raw, 0, sizeof(raw));
             std::strncpy(raw.Name, aiB->mName.C_Str(), sizeof(raw.Name) - 1);
 
             const aiMatrix4x4& M = aiB->mOffsetMatrix;
@@ -577,7 +594,7 @@ void CMainApp::ExportModelToBin_Anim(const MapObject& obj, const char* binPath)
             };
             std::memcpy(raw.Offset, mat, sizeof(mat));
 
-            raw.GlobalIndex = FindGlobalBoneIndex(raw.Name); // 없으면 -1
+            raw.GlobalIndex = FindGlobalBoneIndex(raw.Name);
             meshBones.push_back(raw);
 
             for (uint32_t w = 0; w < aiB->mNumWeights; ++w) {
@@ -588,36 +605,32 @@ void CMainApp::ExportModelToBin_Anim(const MapObject& obj, const char* binPath)
             }
         }
 
-        // 정점별 Top-4 가중치
+        // 정점별 Top-4 + 정규화
         for (uint32_t v = 0; v < info.NumVertices; ++v)
         {
             auto& list = vw[v];
             if (list.empty()) continue;
 
-            // 같은 본 합치기(선택)
-            {
-                std::sort(list.begin(), list.end(),
-                    [](auto& L, auto& R) { return L.first < R.first; });
-                std::vector<std::pair<uint16_t, float>> merged;
-                for (auto& e : list) {
-                    if (!merged.empty() && merged.back().first == e.first)
-                        merged.back().second += e.second;
-                    else
-                        merged.push_back(e);
-                }
-                list.swap(merged);
+            // 같은 본 합치기
+            std::sort(list.begin(), list.end(), [](auto& L, auto& R) { return L.first < R.first; });
+            std::vector<std::pair<uint16_t, float>> merged;
+            merged.reserve(list.size());
+            for (auto& e : list) {
+                if (!merged.empty() && merged.back().first == e.first)
+                    merged.back().second += e.second;
+                else
+                    merged.push_back(e);
             }
+            list.swap(merged);
 
-            // 가중치 내림차순
-            std::sort(list.begin(), list.end(),
-                [](auto& L, auto& R) { return L.second > R.second; });
+            // 내림차순
+            std::sort(list.begin(), list.end(), [](auto& L, auto& R) { return L.second > R.second; });
 
             const size_t n = std::min<size_t>(4, list.size());
-            float sum = 0.f;
-            for (size_t k = 0; k < n; ++k) sum += list[k].second;
+            float sum = 0.f; for (size_t k = 0; k < n; ++k) sum += list[k].second;
             if (sum <= 0.f) continue;
-
             const float inv = 1.f / sum;
+
             auto& out = verts[v];
             XMUINT4  bi = { 0,0,0,0 };
             XMFLOAT4 bw = { 0,0,0,0 };
@@ -639,7 +652,7 @@ void CMainApp::ExportModelToBin_Anim(const MapObject& obj, const char* binPath)
         if (boneSlotCount) fwrite(meshBones.data(), sizeof(MeshBoneRaw), boneSlotCount, fp);
     }
 
-    // 3) 머티리얼
+    // 3) 머티리얼 (NORMALS 실패 시 HEIGHT도 시도)
     uint32_t numMaterials = scene->mNumMaterials;
     fwrite(&numMaterials, sizeof(uint32_t), 1, fp);
 
@@ -647,7 +660,7 @@ void CMainApp::ExportModelToBin_Anim(const MapObject& obj, const char* binPath)
     for (uint32_t i = 0; i < numMaterials; ++i) {
         aiMaterial* material = scene->mMaterials[i];
         MaterialInfoBin2& matInfo = matInfos[i];
-        std::memset(&matInfo, 0, sizeof(MaterialInfoBin2));
+        std::memset(&matInfo, 0, sizeof(matInfo));
         matInfo.numTextures = 0;
 
         aiString path;
@@ -657,7 +670,8 @@ void CMainApp::ExportModelToBin_Anim(const MapObject& obj, const char* binPath)
             matInfo.textures[matInfo.numTextures].path[259] = 0;
             matInfo.numTextures++;
         }
-        if (material->GetTexture(aiTextureType_NORMALS, 0, &path) == AI_SUCCESS) {
+        if (material->GetTexture(aiTextureType_NORMALS, 0, &path) == AI_SUCCESS ||
+            material->GetTexture(aiTextureType_HEIGHT, 0, &path) == AI_SUCCESS) { // ← 보강
             matInfo.textures[matInfo.numTextures].type = (int)TextureType::NORMAL;
             std::strncpy(matInfo.textures[matInfo.numTextures].path, path.C_Str(), 259);
             matInfo.textures[matInfo.numTextures].path[259] = 0;
@@ -666,7 +680,7 @@ void CMainApp::ExportModelToBin_Anim(const MapObject& obj, const char* binPath)
     }
     if (numMaterials) fwrite(matInfos.data(), sizeof(MaterialInfoBin2), numMaterials, fp);
 
-    // 4) 애니메이션
+    // 4) 애니메이션 (원본 동일)
     uint32_t animCount = scene->mNumAnimations;
     fwrite(&animCount, sizeof(animCount), 1, fp);
 
@@ -674,6 +688,7 @@ void CMainApp::ExportModelToBin_Anim(const MapObject& obj, const char* binPath)
         aiAnimation* anim = scene->mAnimations[a];
 
         AnimInfoBin ainfo{};
+        std::memset(&ainfo, 0, sizeof(ainfo));
         std::strncpy(ainfo.name, anim->mName.C_Str(), 63);
         ainfo.name[63] = 0;
         ainfo.duration = (float)anim->mDuration;
@@ -692,7 +707,6 @@ void CMainApp::ExportModelToBin_Anim(const MapObject& obj, const char* binPath)
             uint32_t nRot = chan->mNumRotationKeys;
             uint32_t nPos = chan->mNumPositionKeys;
 
-            // 최대 키 수를 채널의 keyframeCount로 기록
             uint32_t max12 = (nScale > nRot) ? nScale : nRot;
             cinfo.keyframeCount = (max12 > nPos) ? max12 : nPos;
 
@@ -727,6 +741,7 @@ void CMainApp::ExportModelToBin_Anim(const MapObject& obj, const char* binPath)
     fclose(fp);
     printf("BIN(애니) 저장 완료: %s\n", binPath);
 }
+
 
 void CMainApp::ExportModelToBin_NonAnim(const MapObject& obj, const char* binPath)
 {

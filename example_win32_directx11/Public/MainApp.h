@@ -160,7 +160,10 @@ private:
 
     std::vector<_float3> m_NavVerts;          
     std::vector<NavCell> m_NavCells;          
-    std::vector<_float3> m_NavWorking;        
+    std::vector<_float3> m_NavWorking;    
+
+    private:
+        LEVEL m_EditLevel = LEVEL::EDIT;
 
     bool    Nav_TryPickPoint(const DirectX::XMVECTOR& ro, const DirectX::XMVECTOR& rd, _float3& out);
     _float3 Nav_SnapAndRegister(const _float3& p);
@@ -172,6 +175,30 @@ private:
     void    Nav_UndoCell();
     void    Nav_RenderOverlay();
 
+    static inline XMFLOAT3 XMNorm(const XMFLOAT3& v) {
+        XMVECTOR t = XMVector3Normalize(XMLoadFloat3(&v));
+        XMFLOAT3 o; XMStoreFloat3(&o, t); return o;
+    }
+
+    static inline void OrthonormalizeTBN(XMFLOAT3& N, XMFLOAT3& T, XMFLOAT3& B)
+    {
+        // N, T, B in: arbitrary
+        XMVECTOR n = XMVector3Normalize(XMLoadFloat3(&N));
+        XMVECTOR t = XMVector3Normalize(XMLoadFloat3(&T));
+
+        // Gram?Schmidt: T ? N
+        t = XMVector3Normalize(t - XMVector3Dot(t, n) * n);
+
+        // B는 cross(N,T)에 맞추되, 원래 B와의 부호(우좌수) 유지
+        XMVECTOR b_from_cross = XMVector3Cross(n, t);
+        XMVECTOR b_src = XMVector3Normalize(XMLoadFloat3(&B));
+        float handed = (XMVectorGetX(XMVector3Dot(b_from_cross, b_src)) < 0.0f) ? -1.0f : +1.0f;
+        XMVECTOR b = XMVectorScale(b_from_cross, handed);
+
+        XMStoreFloat3(&N, n);
+        XMStoreFloat3(&T, t);
+        XMStoreFloat3(&B, XMVector3Normalize(b));
+    }
 public:
     static CMainApp* Create();
     virtual void Free() override;
