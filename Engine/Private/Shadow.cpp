@@ -6,7 +6,7 @@ CShadow::CShadow()
 
 const _float4x4* CShadow::Get_Transform_Float4x4(D3DTS eTransformState) const
 {
-	return nullptr;
+	return &m_Matrices[ENUM_CLASS(eTransformState)];
 }
 
 HRESULT CShadow::Initialize(_uint iWinSizeX, _uint iWinSizeY)

@@ -34,11 +34,16 @@ private:
 
 	ID3D11BlendState* m_pAlphaBlendState = nullptr;
 	ID3D11DepthStencilState* m_pUIDepthStencilState = nullptr;
+
+
 private:
 	class CShader* m_pShader = { nullptr };
 	class CVIBuffer_Rect* m_pVIBuffer = { nullptr };
 
 	_float4x4		m_WorldMatrix{}, m_ViewMatrix{}, m_ProjMatrix{};
+	ID3D11DepthStencilView* m_pShadowDSV = { nullptr };
+
+	_float									m_fViewportWidth{}, m_fViewportHeight{};
 
 #ifdef _DEBUG
 private:
@@ -56,6 +61,11 @@ private:
 	HRESULT Render_Blend();
 	HRESULT Render_UI();
 	HRESULT Render_Fade();
+
+
+private:
+	HRESULT Ready_Shadow_Depth_Stencil_View();
+	HRESULT SetUp_Viewport(_float fWidth, _float fHeight);
 
 #ifdef _DEBUG
 	HRESULT Render_Debug();
