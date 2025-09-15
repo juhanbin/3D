@@ -40,14 +40,14 @@ HRESULT CBoss_Hand_R::Initialize(void* pArg)
         m_pTransformCom->Set_State(Engine::STATE::POSITION, XMLoadFloat4((XMFLOAT4*)&W.m[3]));
     }
 
-    D3D11_RASTERIZER_DESC rasterDesc = {};
-    /*rasterDesc.FillMode = D3D11_FILL_SOLID;*/
-    rasterDesc.CullMode = D3D11_CULL_NONE;
-    rasterDesc.FrontCounterClockwise = FALSE;
+    //D3D11_RASTERIZER_DESC rasterDesc = {};
+    ///*rasterDesc.FillMode = D3D11_FILL_SOLID;*/
+    //rasterDesc.CullMode = D3D11_CULL_NONE;
+    //rasterDesc.FrontCounterClockwise = FALSE;
 
-    ID3D11RasterizerState* pRasterState = nullptr;
-    m_pDevice->CreateRasterizerState(&rasterDesc, &pRasterState);
-    m_pContext->RSSetState(pRasterState);
+    //ID3D11RasterizerState* pRasterState = nullptr;
+    //m_pDevice->CreateRasterizerState(&rasterDesc, &pRasterState);
+    //m_pContext->RSSetState(pRasterState);
 
     //RSDesc.FrontCounterClockwise = FALSE;
     //m_pDevice->CreateRasterizerState(&RSDesc)
