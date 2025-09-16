@@ -13,6 +13,7 @@
 #include "Picking.h"
 #include "Target_Manager.h"
 #include "Shadow.h"
+#include "Frustum.h"
 
 IMPLEMENT_SINGLETON(CGameInstance)
 
@@ -41,6 +42,10 @@ HRESULT CGameInstance::Initialize_Engine(const ENGINE_DESC& EngineDesc, ID3D11De
 
 	m_pShadow = CShadow::Create(EngineDesc.iWinSizeX, EngineDesc.iWinSizeY);
 	if (nullptr == m_pShadow)
+		return E_FAIL;
+
+	m_pFrustum = CFrustum::Create();
+	if (nullptr == m_pFrustum)
 		return E_FAIL;
 
 	m_pLevel_Manager = CLevel_Manager::Create();
@@ -91,6 +96,7 @@ void CGameInstance::Update_Engine(_float fTimeDelta)
 
 	
 	m_pPipeLine->Update();
+	m_pFrustum->Update();
 
 	m_pPicking->Tick();
 
@@ -399,9 +405,9 @@ HRESULT CGameInstance::Add_MRT(const _wstring& strMRTTag, const _wstring& strTar
 	return m_pTarget_Manager->Add_MRT(strMRTTag, strTargetTag);
 }
 
-HRESULT CGameInstance::Begin_MRT(const _wstring& strMRTTag, ID3D11DepthStencilView* pDSV)
+HRESULT CGameInstance::Begin_MRT(const _wstring& strMRTTag, ID3D11DepthStencilView* pDSV, _bool isClear)
 {
-	return m_pTarget_Manager->Begin_MRT(strMRTTag, pDSV);
+	return m_pTarget_Manager->Begin_MRT(strMRTTag, pDSV, isClear);
 }
 
 HRESULT CGameInstance::End_MRT()
@@ -443,6 +449,11 @@ HRESULT CGameInstance::Ready_ShadowLight(SHADOW_LIGHT_DESC LightDesc)
 	return m_pShadow->Ready_ShadowLight(LightDesc);
 }
 
+_bool CGameInstance::isIn_WorldSpace(_fvector vWorldPos)
+{
+	return m_pFrustum->isIn_WorldSpace(vWorldPos);
+}
+
 #pragma endregion
 //
 //void CGameInstance::Transform_Picking_ToLocalSpace(CTransform* pTransformCom)
@@ -461,6 +472,7 @@ void CGameInstance::Release_Engine()
 {
 	Release();
 
+	Safe_Release(m_pFrustum);
 	Safe_Release(m_pShadow);
 	Safe_Release(m_pPicking);
 	Safe_Release(m_pTarget_Manager);

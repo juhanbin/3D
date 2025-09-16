@@ -172,6 +172,9 @@
     <Filter Include="01.Utility\08.Shadow">
       <UniqueIdentifier>{377424c4-9cdb-4e32-97de-fdc0a6cb3ce4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01.Utility\Frustum">
+      <UniqueIdentifier>{e8321f55-4051-45f6-9236-c67dd3849016}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Private\Timer.cpp">
@@ -276,12 +279,6 @@
     <ClCompile Include="..\Private\VIBuffer_Cube.cpp">
       <Filter>01.Utility\03.Component\VIBuffer\Cube</Filter>
     </ClCompile>
-    <ClCompile Include="..\private\Font_Manager.cpp">
-      <Filter>01.Utility\05.Fonts\Manager</Filter>
-    </ClCompile>
-    <ClCompile Include="..\private\CustomFont.cpp">
-      <Filter>01.Utility\05.Fonts</Filter>
-    </ClCompile>
     <ClCompile Include="..\private\Navigation.cpp">
       <Filter>01.Utility\03.Component\Navigation</Filter>
     </ClCompile>
@@ -329,6 +326,10 @@
     </ClCompile>
     <ClCompile Include="..\private\Shadow.cpp">
       <Filter>01.Utility\08.Shadow</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\EventBus.cpp" />
+    <ClCompile Include="..\Private\Frustum.cpp">
+      <Filter>01.Utility\Frustum</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -452,12 +453,6 @@
     <ClInclude Include="..\Public\VIBuffer_Cube.h">
       <Filter>01.Utility\03.Component\VIBuffer\Cube</Filter>
     </ClInclude>
-    <ClInclude Include="..\public\Font_Manager.h">
-      <Filter>01.Utility\05.Fonts\Manager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\public\CustomFont.h">
-      <Filter>01.Utility\05.Fonts</Filter>
-    </ClInclude>
     <ClInclude Include="..\public\Navigation.h">
       <Filter>01.Utility\03.Component\Navigation</Filter>
     </ClInclude>
@@ -506,18 +501,10 @@
     <ClInclude Include="..\public\Shadow.h">
       <Filter>01.Utility\08.Shadow</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\Bin\ShaderFiles\Engine_Shader_Defines.hlsli">
-      <Filter>95.ShaderFiles</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="..\Bin\ShaderFiles\Engine_Shader_Cell.hlsl">
-      <Filter>95.ShaderFiles</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Bin\ShaderFiles\Engine_Shader_Deferred.hlsl">
-      <Filter>95.ShaderFiles</Filter>
-    </FxCompile>
+    <ClInclude Include="..\Public\BinType.h" />
+    <ClInclude Include="..\Public\EventBus.h" />
+    <ClInclude Include="..\Public\Frustum.h">
+      <Filter>01.Utility\Frustum</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

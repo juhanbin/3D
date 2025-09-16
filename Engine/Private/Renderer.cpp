@@ -48,6 +48,14 @@ HRESULT CRenderer::Initialize()
     if (FAILED(m_pGameInstance->Add_RenderTarget(TEXT("Target_LightDepth"), g_iMaxWidth, g_iMaxHeight, DXGI_FORMAT_R32G32B32A32_FLOAT, _float4(1.0f, 1.0f, 1.0f, 1.0f))))
         return E_FAIL;
 
+    /* For.Target_BackBuffer */
+    if (FAILED(m_pGameInstance->Add_RenderTarget(TEXT("Target_BackBuffer"), ViewportDesc.Width, ViewportDesc.Height, DXGI_FORMAT_R8G8B8A8_UNORM, _float4(0.0f, 0.0f, 0.0f, 0.0f))))
+        return E_FAIL;
+
+    /* For.Target_BlurX */
+    if (FAILED(m_pGameInstance->Add_RenderTarget(TEXT("Target_BlurX"), ViewportDesc.Width, ViewportDesc.Height, DXGI_FORMAT_R8G8B8A8_UNORM, _float4(0.0f, 0.0f, 0.0f, 0.0f))))
+        return E_FAIL;
+
     /* For.MRT_GameObjects : 게임 오브젝트들의 정보를 저장받기위한 타겟들 */
     if (FAILED(m_pGameInstance->Add_MRT(TEXT("MRT_GameObjects"), TEXT("Target_Diffuse"))))
         return E_FAIL;
@@ -64,6 +72,14 @@ HRESULT CRenderer::Initialize()
 
     /* For.MRT_Shadow : 광원기준으로 보여지는 장면을 그려준다.  */
     if (FAILED(m_pGameInstance->Add_MRT(TEXT("MRT_Shadow"), TEXT("Target_LightDepth"))))
+        return E_FAIL;
+
+    /* For.MRT_BackBuffer : 원래 백버퍼에 그렸어야할 최종 장면을 그려놓는 타겟  */
+    if (FAILED(m_pGameInstance->Add_MRT(TEXT("MRT_BackBuffer"), TEXT("Target_BackBuffer"))))
+        return E_FAIL;
+
+    /* For.MRT_Blur : 원래 백버퍼에 그렸어야할 최종 장면을 그려놓는 타겟  */
+    if (FAILED(m_pGameInstance->Add_MRT(TEXT("MRT_Blur"), TEXT("Target_BlurX"))))
         return E_FAIL;
 
 
@@ -129,6 +145,9 @@ HRESULT CRenderer::Draw()
     if (FAILED(Render_Combined()))
         return E_FAIL;
 
+    if (FAILED(Render_Blur()))
+        return E_FAIL;
+
     if (FAILED(Render_NonLight()))
         return E_FAIL;
 
@@ -160,6 +179,9 @@ HRESULT CRenderer::Add_DebugComponent(CComponent* pComponent)
 
 HRESULT CRenderer::Render_Priority()
 {
+    if (FAILED(m_pGameInstance->Begin_MRT(TEXT("MRT_BackBuffer"))))
+        return E_FAIL;
+
     for (auto& pRenderObject : m_RenderObjects[ENUM_CLASS(RENDERGROUP::PRIORITY)])
     {
         if (nullptr != pRenderObject)
@@ -169,6 +191,9 @@ HRESULT CRenderer::Render_Priority()
     }
 
     m_RenderObjects[ENUM_CLASS(RENDERGROUP::PRIORITY)].clear();
+
+    if (FAILED(m_pGameInstance->End_MRT()))
+        return E_FAIL;
 
     return S_OK;
 }
@@ -264,6 +289,10 @@ HRESULT CRenderer::Render_Lights()
 
 HRESULT CRenderer::Render_Combined()
 {
+    /* 백버퍼 */
+    if (FAILED(m_pGameInstance->Begin_MRT(TEXT("MRT_BackBuffer"), nullptr, false)))
+        return E_FAIL;
+
     if (FAILED(m_pShader->Bind_Matrix("g_WorldMatrix", &m_WorldMatrix)))
         return E_FAIL;
     if (FAILED(m_pShader->Bind_Matrix("g_ViewMatrix", &m_ViewMatrix)))
@@ -296,9 +325,55 @@ HRESULT CRenderer::Render_Combined()
     if (FAILED(m_pGameInstance->Bind_RT_ShaderResource(TEXT("Target_LightDepth"), m_pShader, "g_LightDepthTexture")))
         return E_FAIL;
 
-
-
     m_pShader->Begin(3);
+
+    m_pVIBuffer->Bind_Resources();
+    m_pVIBuffer->Render();
+
+    if (FAILED(m_pGameInstance->End_MRT()))
+        return E_FAIL;
+
+    return S_OK;
+}
+
+HRESULT CRenderer::Render_Blur()
+{
+    if (FAILED(m_pGameInstance->Begin_MRT(TEXT("MRT_Blur"))))
+        return E_FAIL;
+
+    if (FAILED(m_pShader->Bind_Matrix("g_WorldMatrix", &m_WorldMatrix)))
+        return E_FAIL;
+    if (FAILED(m_pShader->Bind_Matrix("g_ViewMatrix", &m_ViewMatrix)))
+        return E_FAIL;
+    if (FAILED(m_pShader->Bind_Matrix("g_ProjMatrix", &m_ProjMatrix)))
+        return E_FAIL;
+
+    if (FAILED(m_pGameInstance->Bind_RT_ShaderResource(TEXT("Target_BackBuffer"), m_pShader, "g_BackBufferTexture")))
+        return E_FAIL;
+
+    //블러 꺼놓음
+    //m_pShader->Begin(4);
+
+    m_pVIBuffer->Bind_Resources();
+    m_pVIBuffer->Render();
+
+    if (FAILED(m_pGameInstance->End_MRT()))
+        return E_FAIL;
+
+
+    if (FAILED(m_pShader->Bind_Matrix("g_WorldMatrix", &m_WorldMatrix)))
+        return E_FAIL;
+    if (FAILED(m_pShader->Bind_Matrix("g_ViewMatrix", &m_ViewMatrix)))
+        return E_FAIL;
+    if (FAILED(m_pShader->Bind_Matrix("g_ProjMatrix", &m_ProjMatrix)))
+        return E_FAIL;
+
+
+    if (FAILED(m_pGameInstance->Bind_RT_ShaderResource(TEXT("Target_BlurX"), m_pShader, "g_BlurXTexture")))
+        return E_FAIL;
+
+    //블러 꺼놓음
+    //m_pShader->Begin(5);
 
     m_pVIBuffer->Bind_Resources();
     m_pVIBuffer->Render();
@@ -513,11 +588,10 @@ void CRenderer::Free()
 {
     __super::Free();
 
-#ifdef _DEBUG
     for (auto& pDebugComponent : m_DebugComponent)
         Safe_Release(pDebugComponent);
     m_DebugComponent.clear();
-#endif
+
     for (size_t i = 0; i < ENUM_CLASS(RENDERGROUP::END); i++)
     {
         for (auto& pRenderObject : m_RenderObjects[i])
@@ -525,6 +599,8 @@ void CRenderer::Free()
 
         m_RenderObjects[i].clear();
     }
+
+    Safe_Release(m_pShadowDSV);
 
     Safe_Release(m_pShader);
     Safe_Release(m_pVIBuffer);

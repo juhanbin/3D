@@ -108,7 +108,7 @@ public:
 #pragma region TARGET_MANAGER
 	HRESULT Add_RenderTarget(const _wstring& strTargetTag, _uint iSizeX, _uint iSizeY, DXGI_FORMAT ePixelFormat, const _float4& vClearColor);
 	HRESULT Add_MRT(const _wstring& strMRTTag, const _wstring& strTargetTag);
-	HRESULT Begin_MRT(const _wstring& strMRTTag, ID3D11DepthStencilView* pDSV = nullptr);
+	HRESULT Begin_MRT(const _wstring& strMRTTag, ID3D11DepthStencilView* pDSV = nullptr, _bool isClear = true);
 	HRESULT End_MRT();
 	HRESULT Bind_RT_ShaderResource(const _wstring& strTargetTag, class CShader* pShader, const _char* pConstantName);
 	HRESULT Copy_RT_Resource(const _wstring& strTargetTag, ID3D11Texture2D* pSourTexture);
@@ -121,6 +121,10 @@ public:
 #pragma region SHADOW
 	const _float4x4* Get_ShadowLight_Transform_Float4x4(D3DTS eTransformState) const;
 	HRESULT Ready_ShadowLight(SHADOW_LIGHT_DESC LightDesc);
+#pragma endregion
+
+#pragma region FRUSTUM
+	_bool isIn_WorldSpace(_fvector vWorldPos);
 #pragma endregion
 
 	ID3D11RasterizerState* Get_RS_CullNone() const { return m_pRS_CullNone; }
@@ -145,6 +149,7 @@ private:
 	class CEventBus* m_pEventBus = { nullptr };
 	class CTarget_Manager* m_pTarget_Manager = { nullptr };
 	class CShadow* m_pShadow = { nullptr };
+	class CFrustum* m_pFrustum = { nullptr };
 
 public:
 	void Release_Engine();
