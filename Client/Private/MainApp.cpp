@@ -40,6 +40,11 @@ HRESULT CMainApp::Initialize()
 void CMainApp::Update(_float fTimeDelta)
 {
 	m_pGameInstance->Update_Engine(fTimeDelta);
+
+#ifdef _DEBUG
+	m_fTimeAcc += fTimeDelta;
+
+#endif
 }
 
 HRESULT CMainApp::Render()
@@ -49,6 +54,18 @@ HRESULT CMainApp::Render()
 	m_pGameInstance->Render_Begin(&vClearColor);
 
 	m_pGameInstance->Draw();
+
+#ifdef _DEBUG
+	++m_iRenderCount;
+
+	if (m_fTimeAcc >= 1.f)
+	{
+		wsprintf(m_szFPS, TEXT("FPS:%d"), m_iRenderCount);
+		m_fTimeAcc = 0.f;
+		m_iRenderCount = 0;
+	}
+	m_pGameInstance->DrawText(TEXT("Font_153"), m_szFPS, _float2(100.f, 0.f), XMVectorSet(1.f, 0.f, 0.f, 1.f));
+#endif
 
 	m_pGameInstance->Render_End();
 
@@ -143,6 +160,8 @@ HRESULT CMainApp::Ready_Prototype_ForStatic()
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};*/
+	if (FAILED(m_pGameInstance->Add_Font(TEXT("Font_153"), TEXT("../Bin/Resources/Fonts/153ex.SpriteFont"))))
+		return E_FAIL;
 
 	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_Component_Shader_VtxPosTex"),
 		CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxPosTex.hlsl"), VTXPOSTEX::Elements, VTXPOSTEX::iNumElements))))

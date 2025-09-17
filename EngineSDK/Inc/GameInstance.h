@@ -105,6 +105,11 @@ public:
 	CEventBus* Get_EventBus() const { return m_pEventBus; }
 #pragma endregion
 
+#pragma region FONT_MANAGER
+	HRESULT Add_Font(const _wstring& strFontTag, const _tchar* pFontFilePath);
+	void DrawText(const _wstring& strFontTag, const _tchar* pText, const _float2& vPosition, _fvector vColor = XMVectorSet(1.f, 1.f, 1.f, 1.f), _float fRadian = 0.f, const _float2& vOrigin = _float2(0.f, 0.f), const _float2& vScale = _float2(1.f, 1.f));
+#pragma endregion
+
 #pragma region TARGET_MANAGER
 	HRESULT Add_RenderTarget(const _wstring& strTargetTag, _uint iSizeX, _uint iSizeY, DXGI_FORMAT ePixelFormat, const _float4& vClearColor);
 	HRESULT Add_MRT(const _wstring& strMRTTag, const _wstring& strTargetTag);
@@ -124,7 +129,9 @@ public:
 #pragma endregion
 
 #pragma region FRUSTUM
-	_bool isIn_WorldSpace(_fvector vWorldPos);
+	void Transform_Frustum_ToLocalSpace(_fmatrix WorldMatrix);
+	_bool isIn_Frustum_WorldSpace(_fvector vWorldPos, _float fRange = 0.f);
+	_bool isIn_Frustum_LocalSpace(_fvector vLocalPos, _float fRange = 0.f);
 #pragma endregion
 
 	ID3D11RasterizerState* Get_RS_CullNone() const { return m_pRS_CullNone; }
@@ -147,6 +154,7 @@ private:
 	class CPipeLine* m_pPipeLine = { nullptr };
 	class CLight_Manager* m_pLight_Manager = { nullptr };
 	class CEventBus* m_pEventBus = { nullptr };
+	class CFont_Manager* m_pFont_Manager = { nullptr };
 	class CTarget_Manager* m_pTarget_Manager = { nullptr };
 	class CShadow* m_pShadow = { nullptr };
 	class CFrustum* m_pFrustum = { nullptr };

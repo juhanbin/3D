@@ -172,8 +172,11 @@
     <Filter Include="01.Utility\08.Shadow">
       <UniqueIdentifier>{377424c4-9cdb-4e32-97de-fdc0a6cb3ce4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="01.Utility\Frustum">
+    <Filter Include="01.Utility\09.Frustum">
       <UniqueIdentifier>{e8321f55-4051-45f6-9236-c67dd3849016}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Utility\03.Component\VIBuffer\Terrain\QuadTree">
+      <UniqueIdentifier>{776be234-463c-4dd6-b42a-9547e6af6b10}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -329,7 +332,16 @@
     </ClCompile>
     <ClCompile Include="..\Private\EventBus.cpp" />
     <ClCompile Include="..\Private\Frustum.cpp">
-      <Filter>01.Utility\Frustum</Filter>
+      <Filter>01.Utility\09.Frustum</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\QuadTree.cpp">
+      <Filter>01.Utility\03.Component\VIBuffer\Terrain\QuadTree</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\CustomFont.cpp">
+      <Filter>01.Utility\05.Fonts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Font_Manager.cpp">
+      <Filter>01.Utility\05.Fonts\Manager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -504,7 +516,16 @@
     <ClInclude Include="..\Public\BinType.h" />
     <ClInclude Include="..\Public\EventBus.h" />
     <ClInclude Include="..\Public\Frustum.h">
-      <Filter>01.Utility\Frustum</Filter>
+      <Filter>01.Utility\09.Frustum</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\QuadTree.h">
+      <Filter>01.Utility\03.Component\VIBuffer\Terrain\QuadTree</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\CustomFont.h">
+      <Filter>01.Utility\05.Fonts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Font_Manager.h">
+      <Filter>01.Utility\05.Fonts\Manager</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

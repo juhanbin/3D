@@ -31,6 +31,7 @@ protected:
 	_uint					m_iNumVertexBuffers = {};
 	DXGI_FORMAT				m_eIndexFormat = {};
 	D3D_PRIMITIVE_TOPOLOGY	m_ePrimitiveType = {};
+	_float3* m_pVertexPositions = { nullptr };
 
 
 public:

@@ -9,6 +9,7 @@
 #include "Timer_Manager.h"
 #include "PipeLine.h"
 #include "Light_Manager.h"
+#include "Font_Manager.h"
 #include "EventBus.h"
 #include "Picking.h"
 #include "Target_Manager.h"
@@ -42,6 +43,10 @@ HRESULT CGameInstance::Initialize_Engine(const ENGINE_DESC& EngineDesc, ID3D11De
 
 	m_pShadow = CShadow::Create(EngineDesc.iWinSizeX, EngineDesc.iWinSizeY);
 	if (nullptr == m_pShadow)
+		return E_FAIL;
+
+	m_pFont_Manager = CFont_Manager::Create(*ppDevice, *ppContext);
+	if (nullptr == m_pFont_Manager)
 		return E_FAIL;
 
 	m_pFrustum = CFrustum::Create();
@@ -386,6 +391,20 @@ HRESULT CGameInstance::Clear_Event_Level(_uint iLevelID)
 	return m_pEventBus->Clear_Level(iLevelID);
 }
 
+#pragma region FONT_MANAGER
+
+HRESULT CGameInstance::Add_Font(const _wstring& strFontTag, const _tchar* pFontFilePath)
+{
+	return m_pFont_Manager->Add_Font(strFontTag, pFontFilePath);
+}
+
+void CGameInstance::DrawText(const _wstring& strFontTag, const _tchar* pText, const _float2& vPosition, _fvector vColor, _float fRadian, const _float2& vOrigin, const _float2& vScale)
+{
+	m_pFont_Manager->DrawText(strFontTag, pText, vPosition, vColor, fRadian, vOrigin, vScale);
+}
+
+#pragma endregion
+
 CGraphic_Device* CGameInstance::GetGraphicDevice()
 {
 	return m_pGraphic_Device;
@@ -449,9 +468,18 @@ HRESULT CGameInstance::Ready_ShadowLight(SHADOW_LIGHT_DESC LightDesc)
 	return m_pShadow->Ready_ShadowLight(LightDesc);
 }
 
-_bool CGameInstance::isIn_WorldSpace(_fvector vWorldPos)
+void CGameInstance::Transform_Frustum_ToLocalSpace(_fmatrix WorldMatrix)
 {
-	return m_pFrustum->isIn_WorldSpace(vWorldPos);
+	m_pFrustum->Transform_ToLocalSpace(WorldMatrix);
+}
+_bool CGameInstance::isIn_Frustum_WorldSpace(_fvector vWorldPos, _float fRange)
+{
+	return m_pFrustum->isIn_WorldSpace(vWorldPos, fRange);
+}
+
+_bool CGameInstance::isIn_Frustum_LocalSpace(_fvector vLocalPos, _float fRange)
+{
+	return m_pFrustum->isIn_LocalSpace(vLocalPos, fRange);
 }
 
 #pragma endregion

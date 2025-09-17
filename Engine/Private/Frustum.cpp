@@ -27,27 +27,53 @@ void CFrustum::Update()
 	_matrix		ViewMatrixInverse = m_pGameInstance->Get_Transform_Matrix_Inverse(D3DTS::VIEW);
 	_matrix		ProjMatrixInverse = m_pGameInstance->Get_Transform_Matrix_Inverse(D3DTS::PROJ);
 
-	_float4		vWorldPoints[8];
+
 
 	for (size_t i = 0; i < 8; i++)
 	{
-		XMStoreFloat4(&vWorldPoints[i], XMVector3TransformCoord(XMLoadFloat4(&m_vPoints[i]), ProjMatrixInverse));
-		XMStoreFloat4(&vWorldPoints[i], XMVector3TransformCoord(XMLoadFloat4(&vWorldPoints[i]), ViewMatrixInverse));
+		XMStoreFloat4(&m_vWorldPoints[i], XMVector3TransformCoord(XMLoadFloat4(&m_vPoints[i]), ProjMatrixInverse));
+		XMStoreFloat4(&m_vWorldPoints[i], XMVector3TransformCoord(XMLoadFloat4(&m_vWorldPoints[i]), ViewMatrixInverse));
 	}
 
-	Make_Planes(vWorldPoints, m_vWorldPlanes);
+	Make_Planes(m_vWorldPoints, m_vWorldPlanes);
 }
 
-_bool CFrustum::isIn_WorldSpace(_fvector vWorldPos)
+void CFrustum::Transform_ToLocalSpace(_fmatrix WorldMatrix)
+{
+	_matrix		WorldMatrixInverse = XMMatrixInverse(nullptr, WorldMatrix);
+
+	_float4		vLocalPoints[8] = {};
+
+	for (size_t i = 0; i < 8; i++)
+	{
+		XMStoreFloat4(&vLocalPoints[i], XMVector3TransformCoord(XMLoadFloat4(&m_vWorldPoints[i]), WorldMatrixInverse));
+	}
+
+	Make_Planes(vLocalPoints, m_vLocalPlanes);
+}
+
+
+_bool CFrustum::isIn_WorldSpace(_fvector vWorldPos, _float fRange)
 {
 	for (size_t i = 0; i < 6; i++)
 	{
-		if (0 < XMVectorGetX(XMPlaneDotCoord(XMLoadFloat4(&m_vWorldPlanes[i]), vWorldPos)))
+		if (fRange < XMVectorGetX(XMPlaneDotCoord(XMLoadFloat4(&m_vWorldPlanes[i]), vWorldPos)))
 			return false;
 		/*a b c d
 		x y z 1
 
 		ax + by + cz + d = 0*/
+	}
+
+	return true;
+}
+
+_bool CFrustum::isIn_LocalSpace(_fvector vLocalPos, _float fRange)
+{
+	for (size_t i = 0; i < 6; i++)
+	{
+		if (fRange < XMVectorGetX(XMPlaneDotCoord(XMLoadFloat4(&m_vLocalPlanes[i]), vLocalPos)))
+			return false;
 	}
 
 	return true;

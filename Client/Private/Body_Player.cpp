@@ -152,7 +152,7 @@ void CBody_Player::Update(_float fTimeDelta)
 
 void CBody_Player::Late_Update(_float fTimeDelta)
 {
-    if (true == m_pGameInstance->isIn_WorldSpace(m_pTransformCom->Get_State(STATE::POSITION)))
+    if (true == m_pGameInstance->isIn_Frustum_WorldSpace(m_pTransformCom->Get_State(STATE::POSITION), 3.f))
     {
         if (FAILED(m_pGameInstance->Add_RenderGroup(RENDERGROUP::NONBLEND, this)))
             return;
