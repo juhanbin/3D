@@ -65,6 +65,8 @@ HRESULT CMainApp::Render()
 		m_iRenderCount = 0;
 	}
 	m_pGameInstance->DrawText(TEXT("Font_153"), m_szFPS, _float2(100.f, 0.f), XMVectorSet(1.f, 0.f, 0.f, 1.f));
+
+	/*m_pGameInstance->DrawText(TEXT("Font_153"), (TEXT("¹ß°ß¾È‰Î")), _float2(200.f, 200.f), XMVectorSet(1.f, 0.f, 0.f, 1.f));*/
 #endif
 
 	m_pGameInstance->Render_End();

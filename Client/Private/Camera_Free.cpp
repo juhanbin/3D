@@ -39,19 +39,19 @@ void CCamera_Free::Priority_Update(_float fTimeDelta)
     //    //OutputDebugStringA("Space PRESSING...\n");
     //}
 
-    if (m_pGameInstance->Get_DIKeyState(DIK_W) & 0x80)
+    if (m_pGameInstance->Get_DIKeyState(DIK_I) & 0x80)
     {
         m_pTransformCom->Go_Straight(fTimeDelta *2);
     }
-    if (m_pGameInstance->Get_DIKeyState(DIK_S) & 0x80)
+    if (m_pGameInstance->Get_DIKeyState(DIK_K) & 0x80)
     {
         m_pTransformCom->Go_Backward(fTimeDelta *2);
     }
-    if (m_pGameInstance->Get_DIKeyState(DIK_A) & 0x80)
+    if (m_pGameInstance->Get_DIKeyState(DIK_J) & 0x80)
     {
         m_pTransformCom->Go_Left(fTimeDelta*2);
     }
-    if (m_pGameInstance->Get_DIKeyState(DIK_D) & 0x80)
+    if (m_pGameInstance->Get_DIKeyState(DIK_L) & 0x80)
     {
         m_pTransformCom->Go_Right(fTimeDelta*2);
     }
