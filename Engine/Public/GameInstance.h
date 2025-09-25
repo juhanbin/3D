@@ -17,6 +17,8 @@ public:
 	HRESULT Initialize_Engine(const ENGINE_DESC& EngineDesc, ID3D11Device** ppDevice, ID3D11DeviceContext** ppContext);
 	void Update_Engine(_float fTimeDelta);
 	HRESULT Clear_Resources(_uint iClearLevelID);
+
+	_uint   Get_CurrentLevelID() const noexcept;
 public:
 	void Render_Begin(const _float4* pClearColor);
 	HRESULT Draw();
@@ -32,6 +34,7 @@ public:
 #pragma region LEVEL_MANAGER
 public:
 	HRESULT Open_Level(_uint iLevelID, class CLevel* pNewLevel);
+	void Queue_Open_Level(_uint id, std::function<CLevel* ()> factory);
 #pragma endregion
 
 #pragma region PROTOTYPE_MANAGER

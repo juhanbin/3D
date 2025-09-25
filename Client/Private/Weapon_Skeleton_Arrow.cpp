@@ -209,7 +209,7 @@ HRESULT CWeapon_Skeleton_Arrow::Ready_Components()
     SphereDesc.fRadius = 0.1f;
     SphereDesc.vCenter = _float3(0.f, SphereDesc.fRadius + 0.6f, 0.f);
 
-    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Collider_Sphere"),
+    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_Component_Collider_Sphere"),
         TEXT("Com_Collider"), reinterpret_cast<CComponent**>(&m_pColliderCom), &SphereDesc)))
         return E_FAIL;
 

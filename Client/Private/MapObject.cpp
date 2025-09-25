@@ -125,6 +125,42 @@ HRESULT CMapObject::Ready_Components()
     case EObjectType::BRIDGE:
         modelProto = TEXT("Prototype_Component_Model_Bridge");
         break;
+    case EObjectType::BIG_DOOR:
+        modelProto = TEXT("Prototype_Component_Model_BIG_DOOR");
+        break;
+    case EObjectType::CELLING_AA:
+        modelProto = TEXT("Prototype_Component_Model_CELLING_AA");
+        break;
+    case EObjectType::CUBE_004:
+        modelProto = TEXT("Prototype_Component_Model_CUBE_004");
+        break;
+    case EObjectType::DOORFRAME:
+        modelProto = TEXT("Prototype_Component_Model_DOORFRAME");
+        break;
+    case EObjectType::DOORWALL_AA:
+        modelProto = TEXT("Prototype_Component_Model_DOORWALL_AA");
+        break;
+    case EObjectType::HANGINGROPES:
+        modelProto = TEXT("Prototype_Component_Model_HANGINGROPES");
+        break;
+    case EObjectType::MOD_STARTCAP:
+        modelProto = TEXT("Prototype_Component_Model_MOD_STARTCAP");
+        break;
+    case EObjectType::MOD_STARTRING_AA:
+        modelProto = TEXT("Prototype_Component_Model_MOD_STARTRING_AA");
+        break;
+    case EObjectType::PEDSTAL:
+        modelProto = TEXT("Prototype_Component_Model_MOD_PEDSTAL");
+        break;
+    case EObjectType::PILLAR:
+        modelProto = TEXT("Prototype_Component_Model_PILLAR");
+        break;
+    case EObjectType::VAULTED_WALL_AA:
+        modelProto = TEXT("Prototype_Component_Model_VAULTED_WALL_AA");
+        break;
+    case EObjectType::WINDOW_AA:
+        modelProto = TEXT("Prototype_Component_Model_WINDOW_AA");
+        break;
     default:
         OutputDebugStringA("Unknown EObjectType in Ready_Components!\n");
         return E_FAIL;

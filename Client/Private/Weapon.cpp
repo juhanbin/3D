@@ -33,9 +33,6 @@ HRESULT CWeapon::Initialize(void* pArg)
     if (FAILED(Ready_Components()))
         return E_FAIL;
 
-    //m_pTransformCom->Scaling(_float3(0.1f, 0.1f, 0.1f));
-    
-    //m_pTransformCom->Set_State(STATE::POSITION, XMVectorSet(0.f, 0.f, 0.f, 1.f));
     m_pTransformCom->Set_State(STATE::POSITION, XMVectorSet(0.f, -1.f, 0.2f, 1.f));
     m_pModelCom->Set_Animation(2, true);
 
@@ -88,7 +85,7 @@ void CWeapon::Update(_float fTimeDelta)
 
     m_pModelCom->Play_Animation(fTimeDelta);
 
-    m_pColliderCom->Update(XMLoadFloat4x4(&m_CombinedWorldMatrix));
+    //m_pColliderCom->Update(XMLoadFloat4x4(&m_CombinedWorldMatrix));
 }
 
 
@@ -97,9 +94,9 @@ void CWeapon::Late_Update(_float fTimeDelta)
     if (FAILED(m_pGameInstance->Add_RenderGroup(RENDERGROUP::NONBLEND, this)))
         return;
 
-#ifdef _DEBUG
-    m_pGameInstance->Add_DebugComponent(m_pColliderCom);
-#endif
+//#ifdef _DEBUG
+//    m_pGameInstance->Add_DebugComponent(m_pColliderCom);
+//#endif
 }
 
 HRESULT CWeapon::Render()
@@ -139,22 +136,22 @@ HRESULT CWeapon::Render()
 
 HRESULT CWeapon::Ready_Components()
 {
-    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Shader_VtxAnimMesh"),
+    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_Component_Shader_VtxAnimMesh"),
         TEXT("Com_Shader"), reinterpret_cast<CComponent**>(&m_pShaderCom), nullptr)))
         return E_FAIL;
 
-    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Model_Spear"),
+    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_Component_Model_Spear"),
         TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom), nullptr)))
         return E_FAIL;    
 
-    CBounding_OBB::BOUNDING_OBB_DESC  OBBDesc{};
+    /*CBounding_OBB::BOUNDING_OBB_DESC  OBBDesc{};
     OBBDesc.vAngles = _float3(0.f, 0.f, 0.f);
     OBBDesc.vExtents = _float3(1.0f, 1.5f, 2.f);
     OBBDesc.vCenter = _float3(0.f, OBBDesc.vExtents.y, 0.f);
 
-    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Collider_OBB"),
+    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_Component_Collider_OBB"),
         TEXT("Com_Collider"), reinterpret_cast<CComponent**>(&m_pColliderCom), &OBBDesc)))
-        return E_FAIL;
+        return E_FAIL;*/
 
     return S_OK;
 }
@@ -172,21 +169,6 @@ HRESULT CWeapon::Bind_ShaderResources()
 
     if (FAILED(m_pShaderCom->Bind_Matrix("g_ProjMatrix", m_pGameInstance->Get_Transform_Float4x4(D3DTS::PROJ))))
         return E_FAIL;    
-
-    /*const LIGHT_DESC*       pLightDesc = m_pGameInstance->Get_LightDesc(0);
-    if (nullptr == pLightDesc)
-        return E_FAIL;
-
-    if (FAILED(m_pShaderCom->Bind_RawValue("g_vLightDir", &pLightDesc->vDirection, sizeof(_float4))))
-        return E_FAIL;
-    if (FAILED(m_pShaderCom->Bind_RawValue("g_vLightDiffuse", &pLightDesc->vDiffuse, sizeof(_float4))))
-        return E_FAIL;
-    if (FAILED(m_pShaderCom->Bind_RawValue("g_vLightAmbient", &pLightDesc->vAmbient, sizeof(_float4))))
-        return E_FAIL;
-    if (FAILED(m_pShaderCom->Bind_RawValue("g_vLightSpecular", &pLightDesc->vSpecular, sizeof(_float4))))
-        return E_FAIL;
-    if (FAILED(m_pShaderCom->Bind_RawValue("g_vCamPosition", m_pGameInstance->Get_CamPosition(), sizeof(_float4))))
-        return E_FAIL;*/
 
     return S_OK;
 }

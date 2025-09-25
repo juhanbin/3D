@@ -9,7 +9,7 @@ namespace Client
 	const unsigned int			g_iWinSizeX = 1280;
 	const unsigned int			g_iWinSizeY = 720;
 
-	enum class LEVEL { STATIC, LOADING, LOGO, GAMEPLAY, END };
+	enum class LEVEL { STATIC, LOADING, LOGO,GAMEPLAY, INTRO,BRIDGE,BOSS, END };
 	enum  class FILETYPE { FBX, BIN };
 
 	enum class MOVING {IDLE,JOG,RUN,DASH};
@@ -42,6 +42,43 @@ namespace Client
         SMALLMUSHROOM,
         PARASIT_EYE,
         MONSTER_ARROW,
+        BIG_DOOR,
+        CELLING_AA,
+        CIRCLE,
+        CUBE_004,
+        DOORFRAME,
+        DOORWALL_AA,
+        HANGINGROPES,
+        MOD_STARTCAP,
+        MOD_STARTRING_AA,
+        PEDSTAL,
+        PILLAR,
+        PRISON,
+        PROSON_DOOR,
+        VAULTED_ARCH,
+        VAULTED_WALL_AA,
+        WINDOW_AA,
+        MOD_VAULTED_STAIR_AA,
+        MOD_VAULTED_BROKEN_AA,
+        MOD_VAULTED_BROKEN_AB,
+        MOD_VAULTED_CORRIDOR_AA,
+        BLA_BRIDGE_ENTRANCE_02,
+        MOD_BOSSROOM_CEILING_AA,
+        MOD_BOSSROOM_GROUND_AA,
+        MOD_BOSSROOM_GROUNDFENCE_AA,
+        MOD_BOSSROOM_GROUNDFENCE_AB,
+        MOD_BOSSROOM_GROUNDFENCE_AC,
+        MOD_BOSSROOM_PILLAR_AA,
+        MOD_BOSSROOM_PILLAR_AB,
+        MOD_BOSSROOM_WALL_AA,
+        MOD_BOSSROOM_WALL_AB,
+        MOD_BOSSROOM_WALL_AC,
+        PROP_BOSSAUTEL_AA,
+        SHADOWMASK_BOSSROOM,
+        HALFBOSSROOM,
+        HALDBOSSROOM_V2,
+        HALFBOSSROOM_HIGHER,
+        MOD_GUARDRAIL_AB,
         END
 	};
 

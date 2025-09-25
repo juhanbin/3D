@@ -15,6 +15,7 @@
 #include "Boss_Mask.h"
 #include "Parasit_Eye.h"
 #include <functional>
+#include "Level_Loading.h"
 
 // 공용 MapObject 구조체는 헤더에 정의
 //#pragma pack(push,1)
@@ -88,7 +89,18 @@ HRESULT CLevel_GamePlay::Initialize()
 
 void CLevel_GamePlay::Update(_float fTimeDelta)
 {
+	if (m_pGameInstance->Get_DIKeyState(DIK_I) & 0x80)
+	{
+		// 바로 Open_Level 금지!
+		m_pGameInstance->Queue_Open_Level(
+			static_cast<_uint>(LEVEL::LOADING),
+			[dev = m_pDevice, ctx = m_pContext]() {
+				return CLevel_Loading::Create(dev, ctx, LEVEL::INTRO);
+			}
+		);
+	}
 
+	return;
 }
 
 HRESULT CLevel_GamePlay::Render()

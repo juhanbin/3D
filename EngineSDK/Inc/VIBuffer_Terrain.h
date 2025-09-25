@@ -14,7 +14,9 @@ private:
 public:
 	virtual HRESULT Initialize_Prototype(const _tchar* pHeightMapFilePath);
 	virtual HRESULT Initialize(void* pArg) override;
-
+	HRESULT Initialize_Flat(_uint nx, _uint nz, float cell = 1.f, float baseHeight = 0.f);
+	static CVIBuffer_Terrain* CreateFlat(ID3D11Device* d, ID3D11DeviceContext* c,
+		_uint nx, _uint nz, float cell = 1.f, float baseHeight = 0.f);
 public:
 	void Culling(_fmatrix WorldMatrix);
 

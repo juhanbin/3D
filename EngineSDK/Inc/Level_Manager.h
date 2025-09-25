@@ -20,8 +20,13 @@ private:
 
 public:
 	HRESULT Open_Level(_uint iLevelID, class CLevel* pNewLevel);
+	void Queue_Open_Level(_uint iLevelID, std::function<CLevel* ()> factory);
 	void Update(_float fTimeDelta);
 	HRESULT Render();
+
+public:
+	_uint Get_CurrentLevelID() const { return m_iCurrentLevelID; }
+	class CLevel* Get_CurrentLevel() const { return m_pCurrentLevel; }
 
 private:
 	class CLevel*				m_pCurrentLevel = { nullptr };
@@ -30,6 +35,12 @@ private:
 
 private:
 	HRESULT Clear_Resources();
+private:
+	struct PendingChange {
+		bool pending = false;
+		_uint id = 0;
+		std::function<CLevel* ()> factory;
+	} m_Pending;
 
 public:
 	static CLevel_Manager* Create();

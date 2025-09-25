@@ -48,6 +48,7 @@ namespace Engine
 	const unsigned int g_iMaxHeight = 4608;
 }
 
+
 #include "Engine_Enum.h"
 #include "Engine_Macro.h"
 #include "Engine_Struct.h"

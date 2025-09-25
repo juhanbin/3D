@@ -32,7 +32,7 @@ CModel::CModel(const CModel& Prototype)
     for (auto& pPrototypeBone : Prototype.m_Bones)
         m_Bones.push_back(pPrototypeBone->Clone());
 
-    for (auto& pMesh : m_Meshes)      Safe_AddRef(pMesh);
+    for (auto& pMesh : m_Meshes)       Safe_AddRef(pMesh);
     for (auto& pMaterial : m_Materials) Safe_AddRef(pMaterial);
 }
 
@@ -54,42 +54,48 @@ HRESULT CModel::Initialize_Prototype(MODELTYPE eModelType, FILETYPE eFileType,
 
     if (eFileType == FILETYPE::BIN)
     {
+        std::ifstream ifs(pModelFilePath, std::ios::binary);
+        if (!ifs) { OutputDebugStringA("[BIN] 파일 열기 실패!\n"); return E_FAIL; }
+
         if (eModelType == MODELTYPE::NONANIM)
         {
-            ifstream ifs(pModelFilePath, std::ios::binary);
-            if (!ifs) { OutputDebugStringA("[BIN] 파일 열기 실패!\n"); return E_FAIL; }
-
             if (FAILED(Ready_Meshes(ifs, eModelType))) { OutputDebugStringA("[BIN] Ready_Meshes 실패 (NONANIM)\n"); return E_FAIL; }
 
             uint32_t materialCount = 0;
             ifs.read((char*)&materialCount, sizeof(materialCount));
             vector<MaterialInfoBin2> binMaterials(materialCount);
-            ifs.read((char*)binMaterials.data(), sizeof(MaterialInfoBin2) * materialCount);
+            if (materialCount)
+                ifs.read((char*)binMaterials.data(), sizeof(MaterialInfoBin2) * materialCount);
 
             if (FAILED(Ready_Materials(pModelFilePath, binMaterials))) { OutputDebugStringA("[BIN] Ready_Materials 실패 (NONANIM)\n"); return E_FAIL; }
         }
         else
         {
-            ifstream ifs(pModelFilePath, std::ios::binary);
-            if (!ifs) { OutputDebugStringA("[BIN] 파일 열기 실패!\n"); return E_FAIL; }
-
+            // Bones
             uint32_t boneCount = 0;
             ifs.read((char*)&boneCount, sizeof(boneCount));
             vector<BoneInfoBin> binBones(boneCount);
-            ifs.read((char*)binBones.data(), sizeof(BoneInfoBin) * boneCount);
+            if (boneCount)
+                ifs.read((char*)binBones.data(), sizeof(BoneInfoBin) * boneCount);
 
             if (FAILED(Ready_Bones(binBones, -1))) return E_FAIL;
+
+            // Meshes
             if (FAILED(Ready_Meshes(ifs, eModelType))) return E_FAIL;
 
+            // Materials
             uint32_t materialCount = 0;
             ifs.read((char*)&materialCount, sizeof(materialCount));
             vector<MaterialInfoBin2> binMaterials(materialCount);
-            ifs.read((char*)binMaterials.data(), sizeof(MaterialInfoBin2) * materialCount);
+            if (materialCount)
+                ifs.read((char*)binMaterials.data(), sizeof(MaterialInfoBin2) * materialCount);
 
             if (FAILED(Ready_Materials(pModelFilePath, binMaterials))) {
                 OutputDebugStringA("[BIN] Ready_Materials 실패 (ANIM)\n");
                 return E_FAIL;
             }
+
+            // Animations
             if (FAILED(Ready_Animations(ifs))) return E_FAIL;
         }
     }
@@ -144,7 +150,6 @@ _bool CModel::Play_Animation(_float fTimeDelta)
         return false;
     }
 
-    // ---- 이벤트용: 업데이트 '전' 진행도 샘플(비블렌딩 구간 기준) ----
     if (!m_inTransition) {
         m_prevAnim01 = m_Animations[m_iCurrentAnimIndex]->Get_Progress01();
     }
@@ -212,7 +217,6 @@ _bool CModel::Play_Animation(_float fTimeDelta)
     for (auto& pBone : m_Bones)
         pBone->Update_CombinedTransformationMatrix(m_PreTransformMatrix, m_Bones);
 
-    // ---- 이벤트용: 업데이트 '후' 진행도 샘플(비블렌딩 구간 기준) ----
     if (!m_inTransition) {
         m_curAnim01 = m_Animations[m_iCurrentAnimIndex]->Get_Progress01();
     }
@@ -220,12 +224,10 @@ _bool CModel::Play_Animation(_float fTimeDelta)
     return m_isFinished;
 }
 
-// 클라에서: model->AnimCrossedNormalized(60.f/76.f) 처럼 사용
 bool CModel::AnimCrossedNormalized(float t01) const
 {
     if (m_iCurrentAnimIndex < 0 || m_iCurrentAnimIndex >= (int)m_Animations.size())
         return false;
-    // 블렌딩 중엔 보통 트리거를 지연/무시 (원하면 제거)
     if (m_inTransition) return false;
 
     return CAnimation::Crossed_Normalized(t01, m_prevAnim01, m_curAnim01);
@@ -254,7 +256,6 @@ void CModel::Set_Animation(_uint iIndex, _bool isLoop, float blendDuration, bool
         if (forceRestart) m_Animations[m_iCurrentAnimIndex]->ResetTimeToZero();
         m_inTransition = false;
         m_iNextAnimIndex = -1;
-        // 이벤트 창 리셋
         m_prevAnim01 = m_curAnim01 = 0.f;
         return;
     }
@@ -265,10 +266,10 @@ void CModel::Set_Animation(_uint iIndex, _bool isLoop, float blendDuration, bool
     m_inTransition = true;
 
     if (forceRestart) m_Animations[m_iNextAnimIndex]->ResetTimeToZero();
-    // 전환 시작 시 이벤트 창 리셋
     m_prevAnim01 = m_curAnim01 = 0.f;
 }
 
+// ---------- ASSIMP ----------
 HRESULT CModel::Ready_Meshes()
 {
     m_iNumMeshes = m_pAIScene->mNumMeshes;
@@ -277,7 +278,7 @@ HRESULT CModel::Ready_Meshes()
         CMesh* pMesh = CMesh::Create(m_pDevice, m_pContext, m_eModelType,
             m_pAIScene->mMeshes[i], m_Bones,
             XMLoadFloat4x4(&m_PreTransformMatrix));
-        if (nullptr == pMesh) return E_FAIL;
+        if (!pMesh) return E_FAIL;
         m_Meshes.push_back(pMesh);
     }
     return S_OK;
@@ -290,7 +291,7 @@ HRESULT CModel::Ready_Materials(const _char* pModelFilePath)
     {
         CMeshMaterial* pMeshMaterial =
             CMeshMaterial::Create(m_pDevice, m_pContext, pModelFilePath, m_pAIScene->mMaterials[i]);
-        if (nullptr == pMeshMaterial) return E_FAIL;
+        if (!pMeshMaterial) return E_FAIL;
         m_Materials.push_back(pMeshMaterial);
     }
     return S_OK;
@@ -299,7 +300,7 @@ HRESULT CModel::Ready_Materials(const _char* pModelFilePath)
 HRESULT CModel::Ready_Bones(const aiNode* pAINode, _int iParentIndex)
 {
     CBone* pBone = CBone::Create(pAINode, iParentIndex);
-    if (nullptr == pBone) return E_FAIL;
+    if (!pBone) return E_FAIL;
 
     m_Bones.push_back(pBone);
     _int iIndex = (int)m_Bones.size() - 1;
@@ -316,13 +317,14 @@ HRESULT CModel::Ready_Animations()
     for (size_t i = 0; i < m_iNumAnimations; i++)
     {
         CAnimation* pAnimation = CAnimation::Create(m_pAIScene->mAnimations[i], m_Bones);
-        if (nullptr == pAnimation) return E_FAIL;
+        if (!pAnimation) return E_FAIL;
         m_Animations.push_back(pAnimation);
     }
     return S_OK;
 }
 
-HRESULT CModel::Ready_Meshes(ifstream& ifs, MODELTYPE eModelType)
+// ---------- BIN ----------
+HRESULT CModel::Ready_Meshes(std::ifstream& ifs, MODELTYPE eModelType)
 {
     uint32_t meshCount = 0;
     ifs.read((char*)&meshCount, sizeof(meshCount));
@@ -403,7 +405,7 @@ HRESULT CModel::Ready_Materials(const _char* pModelFilePath, const vector<Materi
     return S_OK;
 }
 
-HRESULT CModel::Ready_Bones(const vector<BoneInfoBin>& binBones, _int iParentIndex)
+HRESULT CModel::Ready_Bones(const vector<BoneInfoBin>& binBones, _int /*iParentIndex*/)
 {
     m_Bones.clear();
     for (size_t i = 0; i < binBones.size(); ++i)
@@ -426,6 +428,7 @@ HRESULT CModel::Ready_Animations(std::ifstream& ifs)
         AnimInfoBin animBin = {};
         ifs.read((char*)&animBin, sizeof(AnimInfoBin));
 
+        // ← 네 프로젝트 시그니처 유지
         CAnimation* pAnimation = CAnimation::Create(ifs, animBin, m_Bones);
         if (nullptr == pAnimation) return E_FAIL;
         m_Animations.push_back(pAnimation);

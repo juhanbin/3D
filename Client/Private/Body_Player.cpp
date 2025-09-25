@@ -152,14 +152,14 @@ void CBody_Player::Update(_float fTimeDelta)
 
 void CBody_Player::Late_Update(_float fTimeDelta)
 {
-    if (true == m_pGameInstance->isIn_Frustum_WorldSpace(m_pTransformCom->Get_State(STATE::POSITION), 25.f))
-    {
+    //if (true == m_pGameInstance->isIn_Frustum_WorldSpace(m_pTransformCom->Get_State(STATE::POSITION), 25.f))
+    //{
         if (FAILED(m_pGameInstance->Add_RenderGroup(RENDERGROUP::NONBLEND, this)))
             return;
 
         if (FAILED(m_pGameInstance->Add_RenderGroup(RENDERGROUP::SHADOW, this)))
             return;
-    }
+    //}
 
     
 #ifdef _DEBUG
@@ -247,12 +247,12 @@ void CBody_Player::SetClipSmart(int animIndex, bool loop, _float blendDur, bool 
 HRESULT CBody_Player::Ready_Components()
 {
     if (FAILED(CGameObject::Add_Component(
-        ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Shader_VtxAnimMesh"),
+        ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_Component_Shader_VtxAnimMesh"),
         TEXT("Com_Shader"), reinterpret_cast<CComponent**>(&m_pShaderCom), nullptr)))
         return E_FAIL;
 
     if (FAILED(CGameObject::Add_Component(
-        ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Model_Hero"),
+        ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_Component_Model_Hero"),
         TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom), nullptr)))
         return E_FAIL;
 
@@ -260,7 +260,7 @@ HRESULT CBody_Player::Ready_Components()
     SphereDesc.fRadius = 0.7f;
     SphereDesc.vCenter = _float3(0.f, SphereDesc.fRadius, 0.f);
 
-    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Collider_Sphere"),
+    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_Component_Collider_Sphere"),
         TEXT("Com_Collider"), reinterpret_cast<CComponent**>(&m_pColliderCom), &SphereDesc)))
         return E_FAIL;
 

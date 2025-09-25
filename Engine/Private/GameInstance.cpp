@@ -121,6 +121,11 @@ HRESULT CGameInstance::Clear_Resources(_uint iClearLevelID)
 	return S_OK;
 }
 
+_uint CGameInstance::Get_CurrentLevelID() const noexcept
+{
+	return m_pLevel_Manager ? m_pLevel_Manager->Get_CurrentLevelID() : 0;
+}
+
 void CGameInstance::Render_Begin(const _float4* pClearColor)
 {
 	if (nullptr == m_pGraphic_Device)
@@ -179,6 +184,14 @@ HRESULT CGameInstance::Open_Level(_uint iLevelID, CLevel* pNewLevel)
 		return E_FAIL;
 
 	return m_pLevel_Manager->Open_Level(iLevelID, pNewLevel);
+}
+
+void CGameInstance::Queue_Open_Level(_uint id, std::function<CLevel* ()> factory)
+{
+	if (nullptr == m_pLevel_Manager)
+		return;
+
+	m_pLevel_Manager->Queue_Open_Level(id, std::move(factory));
 }
 
 #pragma endregion

@@ -261,7 +261,7 @@ void CPlayer::Throw_Spear()
     desc.owner = this;
 
     CObject_Pool_Manager::GetInstance()
-        ->Acquire(LEVEL::GAMEPLAY, L"Layer_Spear", &desc);
+        ->Acquire(LEVEL::BOSS, L"Layer_Spear", &desc);
 }
 
 HRESULT CPlayer::Ready_Components()
@@ -270,7 +270,7 @@ HRESULT CPlayer::Ready_Components()
     NaviDesc.iCurrentCellIndex = 0;
 
     if (FAILED(CGameObject::Add_Component(
-        ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Navigation"),
+        ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_Component_Navigation_Boss"),
         TEXT("Com_Navigation"), reinterpret_cast<CComponent**>(&m_pNavigationCom), &NaviDesc)))
         return E_FAIL;
 
@@ -280,7 +280,7 @@ HRESULT CPlayer::Ready_Components()
     S.vCenter = _float3(0.f, S.fRadius, 0.f);
 
     if (FAILED(CGameObject::Add_Component(
-        ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Collider_Sphere"),
+        ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_Component_Collider_Sphere"),
         TEXT("Com_Collider"), reinterpret_cast<CComponent**>(&m_pColliderCom), &S)))
         return E_FAIL;
 
@@ -296,7 +296,7 @@ HRESULT CPlayer::Ready_PartObjects()
     BodyDesc.pAttack = &m_eAttack;
 
     if (FAILED(__super::Add_PartObject(TEXT("Part_Body"),
-        ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Body_Player"), &BodyDesc)))
+        ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_GameObject_Body_Player"), &BodyDesc)))
         return E_FAIL;
 
     CPartObject* pBody = Find_PartObject(TEXT("Part_Body"));
@@ -311,7 +311,7 @@ HRESULT CPlayer::Ready_PartObjects()
     WDesc.pAttack = &m_eAttack;
 
     if (FAILED(__super::Add_PartObject(TEXT("Part_Weapon"),
-        ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Weapon"), &WDesc)))
+        ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_GameObject_Weapon"), &WDesc)))
         return E_FAIL;
 
     return S_OK;
@@ -320,7 +320,7 @@ HRESULT CPlayer::Ready_PartObjects()
 // ====== 충돌/트리거 유틸 구현 ======
 bool CPlayer::CheckBlockingWithLayer(const _wstring& layerName) const
 {
-    const _uint level = ENUM_CLASS(LEVEL::GAMEPLAY);
+    const _uint level = ENUM_CLASS(LEVEL::BOSS);
 
     for (_uint i = 0;; ++i)
     {
@@ -338,7 +338,7 @@ bool CPlayer::CheckBlockingWithLayer(const _wstring& layerName) const
 
 bool CPlayer::CheckTriggerWithLayer(const _wstring& layerName) const
 {
-    const _uint level = ENUM_CLASS(LEVEL::GAMEPLAY);
+    const _uint level = ENUM_CLASS(LEVEL::BOSS);
 
     for (_uint i = 0;; ++i)
     {
@@ -358,7 +358,7 @@ bool CPlayer::ResolveBlockingCollisions()
 {
     if (!m_pTransformCom || !m_pColliderCom) return false;
 
-    const _uint    level = ENUM_CLASS(LEVEL::GAMEPLAY);
+    const _uint    level = ENUM_CLASS(LEVEL::BOSS);
     const _wstring layer = L"Layer_Mushroom";
 
     DirectX::XMVECTOR prevR = m_pTransformCom->Get_State(Engine::STATE::RIGHT);
@@ -410,7 +410,7 @@ void CPlayer::TickDamageTriggers(float dt)
 
     const float hpBefore = pm->GetActiveHP();
 
-    const _uint level = ENUM_CLASS(LEVEL::GAMEPLAY);
+    const _uint level = ENUM_CLASS(LEVEL::BOSS);
     const _wstring layer = L"Layer_Mushroom";
 
     int hitCount = 0;
@@ -466,7 +466,7 @@ void CPlayer::TickHostileHits(float dt)
     auto* pm = CPlayerManager::GetInstance();
     if (!pm || !m_pColliderCom) return;
 
-    const _uint level = ENUM_CLASS(LEVEL::GAMEPLAY);
+    const _uint level = ENUM_CLASS(LEVEL::BOSS);
 
     // ---------- 1) 적 화살 ----------
     {
@@ -526,8 +526,6 @@ void CPlayer::TickHostileHits(float dt)
                     kSpearDamage, hpBefore, hpAfter);
                 OutputDebugStringW(wbuf);
 
-                // 근접무기는 파츠/히트박스 측에서 타격당 프레임만 Attach/Detach 하거나
-                // 이쪽에서 i-프레임 쿨다운을 걸어 다단히트 방지하는 걸 추천
             }
         }
     }

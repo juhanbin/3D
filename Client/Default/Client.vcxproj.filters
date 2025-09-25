@@ -136,6 +136,27 @@
     <Filter Include="02.GameObject\Sky">
       <UniqueIdentifier>{de173bc8-c64a-43c9-bf1b-aeee516741b1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01.Levels\Intro">
+      <UniqueIdentifier>{c989b47a-51a8-47dd-b5fd-3a0c00c7e3f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Levels\Boss">
+      <UniqueIdentifier>{a0ff73ea-cf8f-44e4-8906-d5a770b5a43e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObject\MapObject\MapObject_Intro">
+      <UniqueIdentifier>{8fac9c25-7e62-4425-9160-a0a9e0e6a8e5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObject\MapObject\MapObject_Boss">
+      <UniqueIdentifier>{af68e8a5-5145-4993-a1e7-9c24f03b134b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObject\Navi\Navi_Intro">
+      <UniqueIdentifier>{736e7ebc-529e-4a4d-879b-3e3cb579a699}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObject\Terrain\Terrain_Intro">
+      <UniqueIdentifier>{3982d697-1ba2-46c8-bfd9-99f3408551c2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObject\Terrain\Terrain_Boss">
+      <UniqueIdentifier>{e500d1a1-6402-4bf9-8ced-91c3012922d4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h">
@@ -260,6 +281,27 @@
     </ClInclude>
     <ClInclude Include="..\Public\Sky.h">
       <Filter>02.GameObject\Sky</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Level_Intro.h">
+      <Filter>01.Levels\Intro</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\MapObject_Intro.h">
+      <Filter>02.GameObject\MapObject\MapObject_Intro</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Terrain_Intro.h">
+      <Filter>02.GameObject\Terrain\Terrain_Intro</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Navi_Intro.h">
+      <Filter>02.GameObject\Navi\Navi_Intro</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Level_Boss.h">
+      <Filter>01.Levels\Boss</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\MapObject_Boss.h">
+      <Filter>02.GameObject\MapObject\MapObject_Boss</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Terrain_Boss.h">
+      <Filter>02.GameObject\Terrain\Terrain_Boss</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -386,6 +428,27 @@
     </ClCompile>
     <ClCompile Include="..\Private\Sky.cpp">
       <Filter>02.GameObject\Sky</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Level_Intro.cpp">
+      <Filter>01.Levels\Intro</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\MapObject_Intro.cpp">
+      <Filter>02.GameObject\MapObject\MapObject_Intro</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Terrain_Intro.cpp">
+      <Filter>02.GameObject\Terrain\Terrain_Intro</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Navi_Intro.cpp">
+      <Filter>02.GameObject\Navi\Navi_Intro</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Level_Boss.cpp">
+      <Filter>01.Levels\Boss</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\MapObject_Boss.cpp">
+      <Filter>02.GameObject\MapObject\MapObject_Boss</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Terrain_Boss.cpp">
+      <Filter>02.GameObject\Terrain\Terrain_Boss</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

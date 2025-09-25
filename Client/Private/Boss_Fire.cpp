@@ -169,7 +169,7 @@ HRESULT CBoss_Fire::Ready_Components()
     S.vCenter = _float3(0.f, 0.25f, 0.f);
 
     if (FAILED(CGameObject::Add_Component(
-        ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Collider_Sphere"),
+        ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_Component_Collider_Sphere"),
         TEXT("Com_Collider"), reinterpret_cast<CComponent**>(&m_pColliderCom), &S)))
         return E_FAIL;
 

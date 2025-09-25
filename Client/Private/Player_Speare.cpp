@@ -160,12 +160,13 @@ bool CPlayer_Speare::Check_Hit()
 {
     if (m_hasDealtDamage) return false;
 
-    const _uint level = ENUM_CLASS(LEVEL::GAMEPLAY);
+    auto curLevel = static_cast<LEVEL>(m_pGameInstance->Get_CurrentLevelID());
     const std::wstring layer = L"Layer_Mushroom";
+
 
     for (_uint i = 0;; ++i)
     {
-        CGameObject* obj = m_pGameInstance->Find_GameObject(level, layer, i);
+        CGameObject* obj = m_pGameInstance->Find_GameObject(ENUM_CLASS(curLevel), layer, i);
         if (!obj) break;
 
         auto* mush = dynamic_cast<CMushroom*>(obj);
@@ -188,16 +189,19 @@ bool CPlayer_Speare::Check_Hit()
 void CPlayer_Speare::ReturnToPool()
 {
     Set_Active(false);
-    CObject_Pool_Manager::GetInstance()->Release(LEVEL::GAMEPLAY, L"Layer_Spear", this);
+
+    const auto curLevel = static_cast<LEVEL>(m_pGameInstance->Get_CurrentLevelID());
+    CObject_Pool_Manager::GetInstance()->Release(curLevel, L"Layer_Spear", this);
 }
+
 
 HRESULT CPlayer_Speare::Ready_Components()
 {
     if (FAILED(CGameObject::Add_Component(
-        ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Shader_VtxMesh"),
+        ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_Component_Shader_VtxMesh_Spear"),
         TEXT("Com_Shader"), reinterpret_cast<CComponent**>(&m_pShaderCom), nullptr))) return E_FAIL;
 
-    Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Model_Spear_Static"),
+    Add_Component(ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_Component_Model_Spear_Static"),
         TEXT("Com_Model"), (CComponent**)&m_pModelCom, nullptr);
 
     CBounding_Sphere::BOUNDING_SPHERE_DESC  SphereDesc{};
@@ -205,7 +209,7 @@ HRESULT CPlayer_Speare::Ready_Components()
     SphereDesc.vCenter = _float3(0.f, SphereDesc.fRadius + 0.6f, 0.f);
 
     if (FAILED(CGameObject::Add_Component(
-        ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Collider_Sphere"),
+        ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_Component_Collider_Sphere"),
         TEXT("Com_Collider"), reinterpret_cast<CComponent**>(&m_pColliderCom), &SphereDesc)))
         return E_FAIL;
 
@@ -218,13 +222,6 @@ HRESULT CPlayer_Speare::Bind_ShaderResources()
     if (FAILED(m_pShaderCom->Bind_Matrix("g_ViewMatrix", m_pGameInstance->Get_Transform_Float4x4(D3DTS::VIEW)))) return E_FAIL;
     if (FAILED(m_pShaderCom->Bind_Matrix("g_ProjMatrix", m_pGameInstance->Get_Transform_Float4x4(D3DTS::PROJ)))) return E_FAIL;
 
-    /*const LIGHT_DESC* L = m_pGameInstance->Get_LightDesc(0);
-    if (!L) return E_FAIL;
-    m_pShaderCom->Bind_RawValue("g_vLightDir", &L->vDirection, sizeof(_float4));
-    m_pShaderCom->Bind_RawValue("g_vLightDiffuse", &L->vDiffuse, sizeof(_float4));
-    m_pShaderCom->Bind_RawValue("g_vLightAmbient", &L->vAmbient, sizeof(_float4));
-    m_pShaderCom->Bind_RawValue("g_vLightSpecular", &L->vSpecular, sizeof(_float4));
-    m_pShaderCom->Bind_RawValue("g_vCamPosition", m_pGameInstance->Get_CamPosition(), sizeof(_float4));*/
     return S_OK;
 }
 

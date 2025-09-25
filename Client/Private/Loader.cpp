@@ -8,6 +8,7 @@
 #include "Terrain.h"
 #include "Monster_Skeleton.h"
 #include "MapObject.h"
+#include "MapObject_Intro.h"
 #include "Camera_Free.h"
 #include "Camera_Player.h"
 #include "Cursor.h"
@@ -36,6 +37,13 @@
 
 #include "Explosion.h"
 #include "Sky.h"
+
+#include "Terrain_Intro.h"
+#include "Navi_Intro.h"
+
+//보스
+#include "Terrain_Boss.h"
+#include "MapObject_Boss.h"
 //#include "Effect.h"
 //#include "Sky.h"
 
@@ -94,6 +102,15 @@ HRESULT CLoader::Loading()
 		break;
 	case LEVEL::GAMEPLAY:
 		hr = Loading_For_GamePlay_Level();
+		break;
+	case LEVEL::INTRO:
+		hr = Loading_For_Intro_Level();
+		break;
+	case LEVEL::BRIDGE:
+		hr = Loading_For_Bridge_Level();
+		break;
+	case LEVEL::BOSS:
+		hr = Loading_For_Boss_Level();
 		break;
 	}
 
@@ -435,10 +452,10 @@ HRESULT CLoader::Loading_For_GamePlay_Level()
 		CCollider::Create(m_pDevice, m_pContext, COLLIDER::OBB))))
 		return E_FAIL;
 
-	/* Prototype_Component_Collider_Sphere */
-	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Collider_Sphere"),
-		CCollider::Create(m_pDevice, m_pContext, COLLIDER::SPHERE))))
-		return E_FAIL;
+	///* Prototype_Component_Collider_Sphere */
+	//if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Collider_Sphere"),
+	//	CCollider::Create(m_pDevice, m_pContext, COLLIDER::SPHERE))))
+	//	return E_FAIL;
 
 	lstrcpy(m_szLoadingText, TEXT("쉐이더를 로딩중입니다."));
 	/* Prototype_Component_Shader_VtxNorTex */
@@ -596,6 +613,743 @@ HRESULT CLoader::Loading_For_GamePlay_Level()
 	/* Prototype_GameObject_Sky */
 	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Sky"),
 		CSky::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	lstrcpy(m_szLoadingText, TEXT("로딩이 완료되었습니다."));
+
+	m_isFinished = true;
+
+	return S_OK;
+}
+HRESULT CLoader::Loading_For_Intro_Level()
+{
+	lstrcpy(m_szLoadingText, TEXT("텍스쳐를 로딩중입니다."));
+	/* Prototype_Component_Texture_Terrain */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::INTRO), TEXT("Prototype_Component_Texture_Terrain"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Terrain/blood.png"), 1))))
+		return E_FAIL;
+
+	/* Prototype_Component_Texture_Mask_Terrain */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::INTRO), TEXT("Prototype_Component_Texture_Mask_Terrain"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Terrain/TerrainMask.dds"), 1))))
+		return E_FAIL;
+
+	/* Prototype_Component_Texture_Brush */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::INTRO), TEXT("Prototype_Component_Texture_Brush"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Terrain/Brush.png"), 1))))
+		return E_FAIL;
+
+	lstrcpy(m_szLoadingText, TEXT("모델을 로딩중입니다."));
+	/* Prototype_Component_VIBuffer_Terrain */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::INTRO), TEXT("Prototype_Component_VIBuffer_Terrain"),
+		CVIBuffer_Terrain::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Terrain/Height1.bmp")))))
+		return E_FAIL;
+
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::INTRO),TEXT("Prototype_Component_VIBuffer_Terrain_Flat"),
+		CVIBuffer_Terrain::CreateFlat(m_pDevice, m_pContext, /*nx*/135, /*nz*/135, /*cell*/1.f, /*height*/0.f))))
+		return E_FAIL;
+
+	_matrix		PreTransformMatrix = XMMatrixIdentity();
+
+
+	// Hero 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::INTRO),
+		TEXT("Prototype_Component_Model_Hero"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::ANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/Hero.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] Hero 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
+	// Spear 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::INTRO),
+		TEXT("Prototype_Component_Model_Spear"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::ANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/Spear.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] Spear 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
+	//// Spear_Static 프로토타입 등록
+	//PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+
+	//if (FAILED(m_pGameInstance->Add_Prototype(
+	//	ENUM_CLASS(LEVEL::INTRO),
+	//	TEXT("Prototype_Component_Model_Spear_Static"),
+	//	CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::BIN,
+	//		"../../Mapdata/Spear_Static.bin", PreTransformMatrix))))
+	//{
+	//	OutputDebugStringA("[LOADER] Spear_Static 모델 프로토타입 등록 실패!\n");
+	//	return E_FAIL;
+	//}
+
+	// BIG_DOOR 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::INTRO),
+		TEXT("Prototype_Component_Model_Big_Door"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/Big_Door.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] BIG_DOOR 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
+	// Celling_AA 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::INTRO),
+		TEXT("Prototype_Component_Model_Celling_AA"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/Celling_AA.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] Celling_AA 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
+	// Cube_004 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::INTRO),
+		TEXT("Prototype_Component_Model_Cube_004"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/Cube_004.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] Cube_004 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
+	// DoorFrame 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::INTRO),
+		TEXT("Prototype_Component_Model_DoorFrame"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/DoorFrame.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] DoorFrame 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
+	// DOORWALL_AA 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::INTRO),
+		TEXT("Prototype_Component_Model_DoorWall_AA"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/DoorWall_AA.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] DoorWall_AA 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
+	// HangingRopes 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::INTRO),
+		TEXT("Prototype_Component_Model_HangingRopes"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/HangingRopes.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] HangingRopes 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
+	// MOD_startCap 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::INTRO),
+		TEXT("Prototype_Component_Model_MOD_startCap"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/MOD_startCap.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] MOD_startCap 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
+	// MOD_startRing_AA 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::INTRO),
+		TEXT("Prototype_Component_Model_MOD_startRing_AA"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/MOD_startRing_AA.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] MOD_startRing_AA 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
+	//// PEDSTAL 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::INTRO),
+		TEXT("Prototype_Component_Model_MOD_Pedestal"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/Pedestal.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] Pedestal 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
+	// PILLAR 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::INTRO),
+		TEXT("Prototype_Component_Model_Pillar"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/Pillar.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] Pillar 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
+	// Vaulted_Wall_AA 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::INTRO),
+		TEXT("Prototype_Component_Model_Vaulted_Wall_AA"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/Vaulted_Wall_AA.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] Vaulted_Wall_AA 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
+	// Window_AA 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::INTRO),
+		TEXT("Prototype_Component_Model_Window_AA"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/Window_AA.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] Window_AA 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
+
+	lstrcpy(m_szLoadingText, TEXT("네비게이션을 로딩중입니다."));
+	/* Prototype_Component_Navigation */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::INTRO), TEXT("Prototype_Component_Navigation_Intro"),
+		CNavigation::Create(m_pDevice, m_pContext, TEXT("../../Mapdata/nav_intro.bin")))))
+		return E_FAIL;
+
+	lstrcpy(m_szLoadingText, TEXT("콜라이더를 로딩중입니다."));
+	/* Prototype_Component_Collider_AABB */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::INTRO), TEXT("Prototype_Component_Collider_AABB"),
+		CCollider::Create(m_pDevice, m_pContext, COLLIDER::AABB))))
+		return E_FAIL;
+
+	///* Prototype_Component_Collider_OBB */
+	//if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::INTRO), TEXT("Prototype_Component_Collider_OBB"),
+	//	CCollider::Create(m_pDevice, m_pContext, COLLIDER::OBB))))
+	//	return E_FAIL;
+
+	///* Prototype_Component_Collider_Sphere */
+	//if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::INTRO), TEXT("Prototype_Component_Collider_Sphere"),
+	//	CCollider::Create(m_pDevice, m_pContext, COLLIDER::SPHERE))))
+	//	return E_FAIL;
+
+	lstrcpy(m_szLoadingText, TEXT("쉐이더를 로딩중입니다."));
+	/* Prototype_Component_Shader_VtxNorTex */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::INTRO), TEXT("Prototype_Component_Shader_VtxNorTex"),
+		CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxNorTex.hlsl"), VTXNORTEX::Elements, VTXNORTEX::iNumElements))))
+		return E_FAIL;
+
+	/* Prototype_Component_Shader_VtxNorTex */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::INTRO), TEXT("Prototype_Component_Shader_VtxNorTex_Blood"),
+		CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxNorTex_Blood.hlsl"), VTXNORTEX::Elements, VTXNORTEX::iNumElements))))
+		return E_FAIL;
+
+	/* Prototype_Component_Shader_VtxCube */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::INTRO), TEXT("Prototype_Component_Shader_VtxCube"),
+		CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxCube.hlsl"), VTXCUBE::Elements, VTXCUBE::iNumElements))))
+		return E_FAIL;
+
+	/* Prototype_Component_Shader_VtxMesh */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::INTRO), TEXT("Prototype_Component_Shader_VtxMesh"),
+		CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxMesh.hlsl"), VTXMESH::Elements, VTXMESH::iNumElements))))
+		return E_FAIL;
+
+	/* Prototype_Component_Shader_VtxAnimMesh */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::INTRO), TEXT("Prototype_Component_Shader_VtxAnimMesh"),
+		CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxAnimMesh.hlsl"), VTXANIMMESH::Elements, VTXANIMMESH::iNumElements))))
+		return E_FAIL;
+
+	/* Prototype_Component_Shader_VtxAnimMesh */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::INTRO), TEXT("Prototype_Component_Shader_VtxAnimMesh_ani"),
+		CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxAnimMesh_ani.hlsl"), VTXANIMMESH::Elements, VTXANIMMESH::iNumElements))))
+		return E_FAIL;
+
+	/* Prototype_Component_Shader_VtxInstance_Particle */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::INTRO), TEXT("Prototype_Component_Shader_VtxInstance_Particle"),
+		CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxInstance_Particle.hlsl"), VTXPARTICLE::Elements, VTXPARTICLE::iNumElements))))
+		return E_FAIL;
+
+	/* Prototype_Component_Shader_VtxInstance_PointParticle*/
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::INTRO), TEXT("Prototype_Component_Shader_VtxInstance_PointParticle"),
+		CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxInstance_PointParticle.hlsl"), VTXPOINTPARTICLE::Elements, VTXPOINTPARTICLE::iNumElements))))
+		return E_FAIL;
+
+	lstrcpy(m_szLoadingText, TEXT("게임오브젝트를 로딩중입니다."));
+
+	/* Prototype_GameObject_Terrain*/
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::INTRO), TEXT("Prototype_GameObject_Terrain_Intro"),
+		CTerrain_Intro::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	/*if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Intro"),
+		CNavi_Intro::Create(m_pDevice, m_pContext))))
+		return E_FAIL;*/
+
+	/* Prototype_GameObject_Camera_Free */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::INTRO), TEXT("Prototype_GameObject_Camera_Free"),
+		CCamera_Free::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	/* Prototype_GameObject_Camera_Player */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::INTRO), TEXT("Prototype_GameObject_Camera_Player"),
+		CCamera_Player::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	/* Prototype_GameObject_Player */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::INTRO), TEXT("Prototype_GameObject_Player"),
+		CPlayer::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	/* Prototype_GameObject_Body_Player */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::INTRO), TEXT("Prototype_GameObject_Body_Player"),
+		CBody_Player::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	/* Prototype_GameObject_Weapon */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::INTRO), TEXT("Prototype_GameObject_Weapon"),
+		CWeapon::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	///* Prototype_GameObject_Player_Spear */
+	//if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::INTRO), TEXT("Prototype_GameObject_Spear"),
+	//	CPlayer_Speare::Create(m_pDevice, m_pContext))))
+	//	return E_FAIL;
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::INTRO), TEXT("Prototype_GameObject_MapObject_Intro"),
+		CMapObject_Intro::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+
+	///* Prototype_GameObject_Particle */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::INTRO), TEXT("Prototype_GameObject_Particle"),
+		CParticle::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	///* Prototype_GameObject_Snow */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::INTRO), TEXT("Prototype_GameObject_Snow"),
+		CSnow::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	/* Prototype_GameObject_Effect_Explosion */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::INTRO), TEXT("Prototype_GameObject_Effect_Explosion"),
+		CExplosion::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	lstrcpy(m_szLoadingText, TEXT("로딩이 완료되었습니다."));
+
+	m_isFinished = true;
+
+	return S_OK;
+}
+HRESULT CLoader::Loading_For_Bridge_Level()
+{
+	return E_NOTIMPL;
+}
+HRESULT CLoader::Loading_For_Boss_Level()
+{
+	lstrcpy(m_szLoadingText, TEXT("텍스쳐를 로딩중입니다."));
+	/* Prototype_Component_Texture_Terrain */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_Component_Texture_Terrain"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Terrain/blood.png"), 1))))
+		return E_FAIL;
+
+	/* Prototype_Component_Texture_Mask_Terrain */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_Component_Texture_Mask_Terrain"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Terrain/TerrainMask.dds"), 1))))
+		return E_FAIL;
+
+	/* Prototype_Component_Texture_Brush */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_Component_Texture_Brush"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Terrain/Brush.png"), 1))))
+		return E_FAIL;
+
+	lstrcpy(m_szLoadingText, TEXT("모델을 로딩중입니다."));
+	/* Prototype_Component_VIBuffer_Terrain */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_Component_VIBuffer_Terrain"),
+		CVIBuffer_Terrain::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Terrain/Height1.bmp")))))
+		return E_FAIL;
+
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_Component_VIBuffer_Terrain_Flat"),
+		CVIBuffer_Terrain::CreateFlat(m_pDevice, m_pContext, /*nx*/135, /*nz*/135, /*cell*/1.f, /*height*/0.f))))
+		return E_FAIL;
+
+	_matrix		PreTransformMatrix = XMMatrixIdentity();
+
+
+	// Hero 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::BOSS),
+		TEXT("Prototype_Component_Model_Hero"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::ANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/Hero.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] Hero 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
+	// Spear 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::BOSS),
+		TEXT("Prototype_Component_Model_Spear"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::ANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/Spear.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] Spear 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
+	//// Spear_Static 프로토타입 등록
+	//PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+
+	//if (FAILED(m_pGameInstance->Add_Prototype(
+	//	ENUM_CLASS(LEVEL::BOSS),
+	//	TEXT("Prototype_Component_Model_Spear_Static"),
+	//	CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::BIN,
+	//		"../../Mapdata/Spear_Static.bin", PreTransformMatrix))))
+	//{
+	//	OutputDebugStringA("[LOADER] Spear_Static 모델 프로토타입 등록 실패!\n");
+	//	return E_FAIL;
+	//}
+
+	// Boss_hand_L 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::BOSS),
+		TEXT("Prototype_Component_Model_Boss_hand_L"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::ANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/Boss_hand_L.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] Boss_hand_L 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
+	// Boss_hand_R 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::BOSS),
+		TEXT("Prototype_Component_Model_Boss_hand_R"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::ANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/Boss_hand_R.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] Boss_hand_R 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
+	// Boss_Mask 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::BOSS),
+		TEXT("Prototype_Component_Model_Boss_Mask"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/Boss_Mask.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] Boss_Mask 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
+	// Boss_Fire 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::BOSS),
+		TEXT("Prototype_Component_Model_Boss_Fire"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/Boss_Eye_Mid.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] Boss_Fire 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
+	// MOD_BossRoom_Ceiling_AA 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::BOSS),
+		TEXT("Prototype_Component_Model_MOD_BossRoom_Ceiling_AA"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/MOD_BossRoom_Ceiling_AA.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] MOD_BossRoom_Ceiling_AA 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
+	// MOD_BossRoom_Ground_AA 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::BOSS),
+		TEXT("Prototype_Component_Model_MOD_BossRoom_Ground_AA"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/MOD_BossRoom_Ground_AA.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] MOD_BossRoom_Ground_AA 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
+	// MOD_BossRoom_GroundFence_AA 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::BOSS),
+		TEXT("Prototype_Component_Model_MOD_BossRoom_GroundFence_AA"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/MOD_BossRoom_GroundFence_AA.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] MOD_BossRoom_GroundFence_AA 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
+	// MOD_BossRoom_GroundFence_AB 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::BOSS),
+		TEXT("Prototype_Component_Model_MOD_BossRoom_GroundFence_AB"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/MOD_BossRoom_GroundFence_AB.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] MOD_BossRoom_GroundFence_AB 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
+	// MOD_BossRoom_Pillar_AA 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::BOSS),
+		TEXT("Prototype_Component_Model_MOD_BossRoom_Pillar_AA"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/MOD_BossRoom_Pillar_AA.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] MOD_BossRoom_Pillar_AA 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
+	// MOD_BossRoom_Pillar_AB 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::BOSS),
+		TEXT("Prototype_Component_Model_MOD_BossRoom_Pillar_AB"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/MOD_BossRoom_Pillar_AB.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] MOD_BossRoom_Pillar_AB 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
+	// MOD_BossRoom_Wall_AA 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::BOSS),
+		TEXT("Prototype_Component_Model_MOD_BossRoom_Wall_AA"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/MOD_BossRoom_Wall_AA.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] MOD_BossRoom_Wall_AA 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
+	//// MOD_BossRoom_Wall_AB 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::BOSS),
+		TEXT("Prototype_Component_Model_MOD_BossRoom_Wall_AB"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/MOD_BossRoom_Wall_AB.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] MOD_BossRoom_Wall_AB 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
+	// MOD_BossRoom_Wall_AC 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::BOSS),
+		TEXT("Prototype_Component_Model_MOD_BossRoom_Wall_AC"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/MOD_BossRoom_Wall_AC.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] MOD_BossRoom_Wall_AC 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
+	// MOD_guardrail_AB 프로토타입 등록
+	PreTransformMatrix = XMMatrixScaling(0.01f, 0.01f, 0.01f) * XMMatrixRotationY(XMConvertToRadians(180.0f));
+
+	if (FAILED(m_pGameInstance->Add_Prototype(
+		ENUM_CLASS(LEVEL::BOSS),
+		TEXT("Prototype_Component_Model_MOD_guardrail_AB"),
+		CModel::Create(m_pDevice, m_pContext, MODELTYPE::NONANIM, Engine::FILETYPE::BIN,
+			"../../Mapdata/MOD_guardrail_AB.bin", PreTransformMatrix))))
+	{
+		OutputDebugStringA("[LOADER] MOD_guardrail_AB 모델 프로토타입 등록 실패!\n");
+		return E_FAIL;
+	}
+
+	lstrcpy(m_szLoadingText, TEXT("네비게이션을 로딩중입니다."));
+	/* Prototype_Component_Navigation */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_Component_Navigation_Boss"),
+		CNavigation::Create(m_pDevice, m_pContext, TEXT("../../Mapdata/nav_boss.bin")))))
+		return E_FAIL;
+
+	lstrcpy(m_szLoadingText, TEXT("콜라이더를 로딩중입니다."));
+	/* Prototype_Component_Collider_AABB */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_Component_Collider_AABB"),
+		CCollider::Create(m_pDevice, m_pContext, COLLIDER::AABB))))
+		return E_FAIL;
+
+	/* Prototype_Component_Collider_OBB */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_Component_Collider_OBB"),
+		CCollider::Create(m_pDevice, m_pContext, COLLIDER::OBB))))
+		return E_FAIL;
+
+	///* Prototype_Component_Collider_Sphere */
+	//if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_Component_Collider_Sphere"),
+	//	CCollider::Create(m_pDevice, m_pContext, COLLIDER::SPHERE))))
+	//	return E_FAIL;
+
+	lstrcpy(m_szLoadingText, TEXT("쉐이더를 로딩중입니다."));
+	/* Prototype_Component_Shader_VtxNorTex */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_Component_Shader_VtxNorTex"),
+		CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxNorTex.hlsl"), VTXNORTEX::Elements, VTXNORTEX::iNumElements))))
+		return E_FAIL;
+
+	/* Prototype_Component_Shader_VtxNorTex */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_Component_Shader_VtxNorTex_Blood"),
+		CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxNorTex_Blood.hlsl"), VTXNORTEX::Elements, VTXNORTEX::iNumElements))))
+		return E_FAIL;
+
+	/* Prototype_Component_Shader_VtxCube */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_Component_Shader_VtxCube"),
+		CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxCube.hlsl"), VTXCUBE::Elements, VTXCUBE::iNumElements))))
+		return E_FAIL;
+
+	/* Prototype_Component_Shader_VtxMesh */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_Component_Shader_VtxMesh"),
+		CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxMesh.hlsl"), VTXMESH::Elements, VTXMESH::iNumElements))))
+		return E_FAIL;
+
+	/* Prototype_Component_Shader_VtxAnimMesh */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_Component_Shader_VtxAnimMesh"),
+		CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxAnimMesh.hlsl"), VTXANIMMESH::Elements, VTXANIMMESH::iNumElements))))
+		return E_FAIL;
+
+	/* Prototype_Component_Shader_VtxAnimMesh */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_Component_Shader_VtxAnimMesh_ani"),
+		CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxAnimMesh_ani.hlsl"), VTXANIMMESH::Elements, VTXANIMMESH::iNumElements))))
+		return E_FAIL;
+
+	/* Prototype_Component_Shader_VtxInstance_Particle */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_Component_Shader_VtxInstance_Particle"),
+		CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxInstance_Particle.hlsl"), VTXPARTICLE::Elements, VTXPARTICLE::iNumElements))))
+		return E_FAIL;
+
+	/* Prototype_Component_Shader_VtxInstance_PointParticle*/
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_Component_Shader_VtxInstance_PointParticle"),
+		CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxInstance_PointParticle.hlsl"), VTXPOINTPARTICLE::Elements, VTXPOINTPARTICLE::iNumElements))))
+		return E_FAIL;
+
+	lstrcpy(m_szLoadingText, TEXT("게임오브젝트를 로딩중입니다."));
+
+	/* Prototype_GameObject_Terrain*/
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_GameObject_Terrain_Boss"),
+		CTerrain_Boss::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	/* Prototype_GameObject_Camera_Free */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_GameObject_Camera_Free"),
+		CCamera_Free::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	/* Prototype_GameObject_Camera_Player */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_GameObject_Camera_Player"),
+		CCamera_Player::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	/* Prototype_GameObject_Player */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_GameObject_Player"),
+		CPlayer::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	/* Prototype_GameObject_Body_Player */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_GameObject_Body_Player"),
+		CBody_Player::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	/* Prototype_GameObject_Weapon */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_GameObject_Weapon"),
+		CWeapon::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	/* Prototype_GameObject_Player_Spear */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_GameObject_Spear"),
+		CPlayer_Speare::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_GameObject_MapObject_Boss"),
+		CMapObject_Boss::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+
+	///* Prototype_GameObject_Particle */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_GameObject_Particle"),
+		CParticle::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	///* Prototype_GameObject_Snow */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_GameObject_Snow"),
+		CSnow::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	/* Prototype_GameObject_Effect_Explosion */
+	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_GameObject_Effect_Explosion"),
+		CExplosion::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
 	lstrcpy(m_szLoadingText, TEXT("로딩이 완료되었습니다."));

@@ -167,6 +167,78 @@ HRESULT CVIBuffer_Terrain::Initialize(void* pArg)
 	return S_OK;
 }
 
+HRESULT CVIBuffer_Terrain::Initialize_Flat(_uint nx, _uint nz, float cell, float h)
+{
+	m_iNumVerticesX = nx;  m_iNumVerticesZ = nz;
+	m_iNumVertices = nx * nz;
+
+	m_iVertexStride = sizeof(VTXNORTEX);
+	m_iNumIndices = (nx - 1) * (nz - 1) * 6;
+	m_iIndexStride = 4;
+	m_iNumVertexBuffers = 1;
+	m_eIndexFormat = DXGI_FORMAT_R32_UINT;
+	m_ePrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+
+	auto* pVertices = new VTXNORTEX[m_iNumVertices];
+	m_pVertexPositions = new _float3[m_iNumVertices];
+
+	// 원점 기준으로 가운데 정렬(원하면 +0.5*cell 오프셋 제거)
+	const float ox = -0.5f * (static_cast<float>(nx) - 1.f) * cell;
+	const float oz = -0.5f * (static_cast<float>(nz) - 1.f) * cell;
+
+	for (_uint z = 0; z < nz; ++z) {
+		for (_uint x = 0; x < nx; ++x) {
+			_uint i = z * nx + x;
+			float px = ox + x * cell;
+			float pz = oz + z * cell;
+
+			m_pVertexPositions[i] = _float3(px, h, pz);
+			pVertices[i].vPosition = _float3(px, h, pz);
+			pVertices[i].vNormal = _float3(0.f, 1.f, 0.f);
+			pVertices[i].vTexcoord = _float2(x / (nx - 1.f), z / (nz - 1.f));
+		}
+	}
+
+	// 인덱스
+	auto* pIndices = new _uint[m_iNumIndices];
+	_uint k = 0;
+	for (_uint z = 0; z < nz - 1; ++z) {
+		for (_uint x = 0; x < nx - 1; ++x) {
+			_uint i0 = z * nx + x;
+			_uint i1 = z * nx + (x + 1);
+			_uint i2 = (z + 1) * nx + (x + 1);
+			_uint i3 = (z + 1) * nx + x;
+
+			pIndices[k++] = i3; pIndices[k++] = i2; pIndices[k++] = i1;
+			pIndices[k++] = i3; pIndices[k++] = i1; pIndices[k++] = i0;
+		}
+	}
+
+	// VB / IB 생성 (IB는 고정이면 DEFAULT 권장)
+	D3D11_BUFFER_DESC VB{}; VB.ByteWidth = m_iNumVertices * m_iVertexStride;
+	VB.Usage = D3D11_USAGE_DEFAULT; VB.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	D3D11_SUBRESOURCE_DATA VData{ pVertices };
+	if (FAILED(m_pDevice->CreateBuffer(&VB, &VData, &m_pVB))) return E_FAIL;
+
+	D3D11_BUFFER_DESC IB{}; IB.ByteWidth = m_iNumIndices * m_iIndexStride;
+	IB.Usage = D3D11_USAGE_DEFAULT; IB.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	D3D11_SUBRESOURCE_DATA IData{ pIndices };
+	if (FAILED(m_pDevice->CreateBuffer(&IB, &IData, &m_pIB))) return E_FAIL;
+
+	Safe_Delete_Array(pVertices);
+	Safe_Delete_Array(pIndices);
+	return S_OK;
+}
+
+CVIBuffer_Terrain* CVIBuffer_Terrain::CreateFlat(ID3D11Device* d, ID3D11DeviceContext* c,
+	_uint nx, _uint nz, float cell, float h)
+{
+	auto* p = new CVIBuffer_Terrain(d, c);
+	if (FAILED(p->Initialize_Flat(nx, nz, cell, h))) { Safe_Release(p); }
+	return p;
+}
+
+
 void CVIBuffer_Terrain::Culling(_fmatrix WorldMatrix)
 {
 	m_pGameInstance->Transform_Frustum_ToLocalSpace(WorldMatrix);

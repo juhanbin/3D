@@ -25,20 +25,36 @@ HRESULT CLevel_Manager::Open_Level(_uint iLevelID, CLevel* pNewLevel)
 	return S_OK;
 }
 
+void CLevel_Manager::Queue_Open_Level(_uint iLevelID, std::function<CLevel* ()> factory)
+{
+	m_Pending.pending = true;
+	m_Pending.id = iLevelID;
+	m_Pending.factory = std::move(factory);
+}
+
 void CLevel_Manager::Update(_float fTimeDelta)
 {
 	if (nullptr == m_pCurrentLevel)
 		return;
 
 	m_pCurrentLevel->Update(fTimeDelta);
+
+
 }
 
 HRESULT CLevel_Manager::Render()
 {
-	if (nullptr == m_pCurrentLevel)
-		return E_FAIL;
+	if (!m_pCurrentLevel) return E_FAIL;
 
-	return m_pCurrentLevel->Render();
+	HRESULT hr = m_pCurrentLevel->Render();
+
+	// ★ 이번 프레임을 다 그린 뒤에 안전하게 레벨 전환
+	if (m_Pending.pending) {
+		CLevel* pNew = m_Pending.factory ? m_Pending.factory() : nullptr;
+		if (pNew) Open_Level(m_Pending.id, pNew);
+		m_Pending = {};
+	}
+	return hr;
 }
 
 

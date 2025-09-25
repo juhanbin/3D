@@ -139,7 +139,7 @@ HRESULT CMushroom::Ready_Components()
     body.fRadius = 0.45f;
     body.vCenter = _float3(0.f, body.fRadius, 0.f);
     if (FAILED(CGameObject::Add_Component(
-        ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Collider_Sphere"),
+        ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_Component_Collider_Sphere"),
         TEXT("Com_Collider_Block"), reinterpret_cast<CComponent**>(&m_pCollider_Block), &body)))
         return E_FAIL;
 
@@ -148,7 +148,7 @@ HRESULT CMushroom::Ready_Components()
     trg.fRadius = 0.6f;
     trg.vCenter = _float3(0.f, trg.fRadius, 0.f);
     if (FAILED(CGameObject::Add_Component(
-        ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Collider_Sphere"),
+        ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_Component_Collider_Sphere"),
         TEXT("Com_Collider_Trigger"), reinterpret_cast<CComponent**>(&m_pCollider_Trigger), &trg)))
         return E_FAIL;
 

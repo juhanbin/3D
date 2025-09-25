@@ -63,6 +63,7 @@ HRESULT CMainApp::Render()
     m_pGameInstance->Render_Begin(&clr);
     m_pGameInstance->Draw();
 
+    // ★ ImGui 프레임 시작
     ImGui_ImplDX11_NewFrame();
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
@@ -70,10 +71,28 @@ HRESULT CMainApp::Render()
     Render_ImGuiPanel();
 
     ImGui::Render();
+
+    // ★★★ 여기 추가: 반드시 백버퍼 RTV/DSV와 올바른 뷰포트로 복귀
+    {
+        ID3D11RenderTargetView* rtv = m_pBackBufferRTV;
+        m_pContext->OMSetRenderTargets(1, &rtv, m_pDepthStencilView);
+
+        D3D11_VIEWPORT vp{};
+        vp.TopLeftX = 0.0f;
+        vp.TopLeftY = 0.0f;
+        vp.Width    = static_cast<float>(g_iWinSizeX);
+        vp.Height   = static_cast<float>(g_iWinSizeY);
+        vp.MinDepth = 0.0f;
+        vp.MaxDepth = 1.0f;
+        m_pContext->RSSetViewports(1, &vp);
+    }
+
     ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
     m_pGameInstance->Render_End();
     return S_OK;
 }
+
 
 HRESULT CMainApp::Ready_Prototype_ForStatic()
 {
