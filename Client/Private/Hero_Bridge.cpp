@@ -1,25 +1,25 @@
-#include "Player.h"
+#include "Hero_Bridge.h"
 #include "GameInstance.h"
 #include "PlayerManager.h"
-#include "Body_Player.h"
-#include "Weapon.h"
+#include "Body_Bridge.h"
+#include "Weapon_Bridge.h"
 #include "Player_Speare.h"
 #include "Object_Pool_Manager.h"
 #include "Mushroom.h"
 #include "Weapon_Skeleton_Arrow.h"
 USING(Client)
 
-CPlayer::CPlayer(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
+CHero_Bridge::CHero_Bridge(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
     : CContainerObject{ pDevice, pContext } {
 }
 
-CPlayer::CPlayer(const CPlayer& Prototype)
+CHero_Bridge::CHero_Bridge(const CHero_Bridge& Prototype)
     : CContainerObject{ Prototype } {
 }
 
-HRESULT CPlayer::Initialize_Prototype() { return S_OK; }
+HRESULT CHero_Bridge::Initialize_Prototype() { return S_OK; }
 
-HRESULT CPlayer::Initialize(void* pArg)
+HRESULT CHero_Bridge::Initialize(void* pArg)
 {
     GAMEOBJECT_DESC Desc{};
     Desc.fSpeedPerSec = 10.f;
@@ -52,18 +52,19 @@ HRESULT CPlayer::Initialize(void* pArg)
     if (FAILED(Ready_PartObjects()))  return E_FAIL;
 
     // PlayerManager 등록 및 활성화
-    CPlayerManager::GetInstance()->Register(ENUM_CLASS(LEVEL::BOSS), 2, this, -1.f);
-    CPlayerManager::GetInstance()->SetActive(ENUM_CLASS(LEVEL::BOSS), 2);
+    CPlayerManager::GetInstance()->Register(ENUM_CLASS(LEVEL::BRIDGE), 1, this, -1.f);
+    CPlayerManager::GetInstance()->
+    CPlayerManager::GetInstance()->SetActive(ENUM_CLASS(LEVEL::BRIDGE), 1);
 
     return S_OK;
 }
 
-void CPlayer::Priority_Update(_float fTimeDelta)
+void CHero_Bridge::Priority_Update(_float fTimeDelta)
 {
     __super::Priority_Update(fTimeDelta);
 }
 
-void CPlayer::Update(_float fTimeDelta)
+void CHero_Bridge::Update(_float fTimeDelta)
 {
     // ---- 입력 ----
     const bool w = m_pGameInstance->KeyPressing(DIK_W);
@@ -204,7 +205,7 @@ void CPlayer::Update(_float fTimeDelta)
     __super::Update(fTimeDelta);
 }
 
-void CPlayer::Late_Update(_float fTimeDelta)
+void CHero_Bridge::Late_Update(_float fTimeDelta)
 {
     // 네비 위 보정
     m_pTransformCom->Set_State(
@@ -221,27 +222,27 @@ void CPlayer::Late_Update(_float fTimeDelta)
     __super::Late_Update(fTimeDelta);
 }
 
-HRESULT CPlayer::Render()
+HRESULT CHero_Bridge::Render()
 {
     return S_OK;
 }
 
 // --- Helpers ---
-_vector CPlayer::Get_TransformState(Engine::STATE s) const
+_vector CHero_Bridge::Get_TransformState(Engine::STATE s) const
 {
     return m_pTransformCom ? m_pTransformCom->Get_State(s) : XMVectorZero();
 }
 
-_vector CPlayer::GetPos()    const { return Get_TransformState(Engine::STATE::POSITION); }
-_vector CPlayer::GetRight()  const { return XMVector3Normalize(Get_TransformState(Engine::STATE::RIGHT)); }
-_vector CPlayer::GetUp()     const { return XMVector3Normalize(Get_TransformState(Engine::STATE::UP)); }
-_vector CPlayer::GetForward(bool flattenY) const
+_vector CHero_Bridge::GetPos()    const { return Get_TransformState(Engine::STATE::POSITION); }
+_vector CHero_Bridge::GetRight()  const { return XMVector3Normalize(Get_TransformState(Engine::STATE::RIGHT)); }
+_vector CHero_Bridge::GetUp()     const { return XMVector3Normalize(Get_TransformState(Engine::STATE::UP)); }
+_vector CHero_Bridge::GetForward(bool flattenY) const
 {
     _vector f = Get_TransformState(Engine::STATE::LOOK);
     return flattenY ? XMVector3Normalize(XMVectorSetY(f, 0.f)) : XMVector3Normalize(f);
 }
 
-void CPlayer::Throw_Spear()
+void CHero_Bridge::Throw_Spear()
 {
     using namespace DirectX;
 
@@ -261,16 +262,16 @@ void CPlayer::Throw_Spear()
     desc.owner = this;
 
     CObject_Pool_Manager::GetInstance()
-        ->Acquire(LEVEL::BOSS, L"Layer_Spear", &desc);
+        ->Acquire(LEVEL::BRIDGE, L"Layer_Spear", &desc);
 }
 
-HRESULT CPlayer::Ready_Components()
+HRESULT CHero_Bridge::Ready_Components()
 {
     CNavigation::NAVIGATION_DESC NaviDesc{};
     NaviDesc.iCurrentCellIndex = 0;
 
     if (FAILED(CGameObject::Add_Component(
-        ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_Component_Navigation_Boss"),
+        ENUM_CLASS(LEVEL::BRIDGE), TEXT("Prototype_Component_Navigation_Bridge"),
         TEXT("Com_Navigation"), reinterpret_cast<CComponent**>(&m_pNavigationCom), &NaviDesc)))
         return E_FAIL;
 
@@ -287,40 +288,40 @@ HRESULT CPlayer::Ready_Components()
     return S_OK;
 }
 
-HRESULT CPlayer::Ready_PartObjects()
+HRESULT CHero_Bridge::Ready_PartObjects()
 {
-    CBody_Player::BODY_DESC BodyDesc{};
+    CBody_Bridge::BODY_DESC BodyDesc{};
     BodyDesc.pState = &m_iState;
     BodyDesc.pParentMatrix = m_pTransformCom->Get_WorldMatrixPtr();
     BodyDesc.pMoving = &m_eMoving;
     BodyDesc.pAttack = &m_eAttack;
 
     if (FAILED(__super::Add_PartObject(TEXT("Part_Body"),
-        ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_GameObject_Body_Player"), &BodyDesc)))
+        ENUM_CLASS(LEVEL::BRIDGE), TEXT("Prototype_GameObject_Body_Bridge"), &BodyDesc)))
         return E_FAIL;
 
     CPartObject* pBody = Find_PartObject(TEXT("Part_Body"));
     if (!pBody) return E_FAIL;
 
-    CWeapon::WEAPON_DESC WDesc{};
+    CWeapon_Bridge::WEAPON_DESC WDesc{};
     WDesc.pState = &m_iState;
-    WDesc.pSocketMatrix = dynamic_cast<CBody_Player*>(pBody)->Get_BoneMatrix("jnt_Spine_01_SKN");
-    WDesc.pSocketMatrix_Hand = dynamic_cast<CBody_Player*>(pBody)->Get_BoneMatrix("jnt_weapon");
+    WDesc.pSocketMatrix = dynamic_cast<CBody_Bridge*>(pBody)->Get_BoneMatrix("jnt_Spine_01_SKN");
+    WDesc.pSocketMatrix_Hand = dynamic_cast<CBody_Bridge*>(pBody)->Get_BoneMatrix("jnt_weapon");
     WDesc.pParentMatrix = m_pTransformCom->Get_WorldMatrixPtr();
     WDesc.pMoving = &m_eMoving;
     WDesc.pAttack = &m_eAttack;
 
     if (FAILED(__super::Add_PartObject(TEXT("Part_Weapon"),
-        ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_GameObject_Weapon"), &WDesc)))
+        ENUM_CLASS(LEVEL::BRIDGE), TEXT("Prototype_GameObject_Weapon_Bridge"), &WDesc)))
         return E_FAIL;
 
     return S_OK;
 }
 
 // ====== 충돌/트리거 유틸 구현 ======
-bool CPlayer::CheckBlockingWithLayer(const _wstring& layerName) const
+bool CHero_Bridge::CheckBlockingWithLayer(const _wstring& layerName) const
 {
-    const _uint level = ENUM_CLASS(LEVEL::BOSS);
+    const _uint level = ENUM_CLASS(LEVEL::BRIDGE);
 
     for (_uint i = 0;; ++i)
     {
@@ -336,9 +337,9 @@ bool CPlayer::CheckBlockingWithLayer(const _wstring& layerName) const
     return false;
 }
 
-bool CPlayer::CheckTriggerWithLayer(const _wstring& layerName) const
+bool CHero_Bridge::CheckTriggerWithLayer(const _wstring& layerName) const
 {
-    const _uint level = ENUM_CLASS(LEVEL::BOSS);
+    const _uint level = ENUM_CLASS(LEVEL::BRIDGE);
 
     for (_uint i = 0;; ++i)
     {
@@ -354,11 +355,11 @@ bool CPlayer::CheckTriggerWithLayer(const _wstring& layerName) const
     return false;
 }
 
-bool CPlayer::ResolveBlockingCollisions()
+bool CHero_Bridge::ResolveBlockingCollisions()
 {
     if (!m_pTransformCom || !m_pColliderCom) return false;
 
-    const _uint    level = ENUM_CLASS(LEVEL::BOSS);
+    const _uint    level = ENUM_CLASS(LEVEL::BRIDGE);
     const _wstring layer = L"Layer_Mushroom";
 
     DirectX::XMVECTOR prevR = m_pTransformCom->Get_State(Engine::STATE::RIGHT);
@@ -397,7 +398,7 @@ bool CPlayer::ResolveBlockingCollisions()
     return blocked;
 }
 
-void CPlayer::TickDamageTriggers(float dt)
+void CHero_Bridge::TickDamageTriggers(float dt)
 {
     m_damageTickAcc += dt;
     if (m_damageTickAcc < m_damageTickGap) return;
@@ -410,7 +411,7 @@ void CPlayer::TickDamageTriggers(float dt)
 
     const float hpBefore = pm->GetActiveHP();
 
-    const _uint level = ENUM_CLASS(LEVEL::BOSS);
+    const _uint level = ENUM_CLASS(LEVEL::BRIDGE);
     const _wstring layer = L"Layer_Mushroom";
 
     int hitCount = 0;
@@ -442,7 +443,7 @@ void CPlayer::TickDamageTriggers(float dt)
     }
 }
 
-void CPlayer::ApplyDamage(int amount)
+void CHero_Bridge::ApplyDamage(int amount)
 {
     // 필요 시 다른 소스(예: 근접 피격 등)에서 호출 가능
     auto* pm = CPlayerManager::GetInstance();
@@ -461,12 +462,12 @@ void CPlayer::ApplyDamage(int amount)
     OutputDebugStringW(wbuf);
 }
 
-void CPlayer::TickHostileHits(float dt)
+void CHero_Bridge::TickHostileHits(float dt)
 {
     auto* pm = CPlayerManager::GetInstance();
     if (!pm || !m_pColliderCom) return;
 
-    const _uint level = ENUM_CLASS(LEVEL::BOSS);
+    const _uint level = ENUM_CLASS(LEVEL::BRIDGE);
 
     // ---------- 1) 적 화살 ----------
     {
@@ -532,29 +533,29 @@ void CPlayer::TickHostileHits(float dt)
 }
 
 
-CPlayer* CPlayer::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
+CHero_Bridge* CHero_Bridge::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 {
-    CPlayer* pInstance = new CPlayer(pDevice, pContext);
+    CHero_Bridge* pInstance = new CHero_Bridge(pDevice, pContext);
     if (FAILED(pInstance->Initialize_Prototype()))
     {
-        MSG_BOX(TEXT("Failed to Created : CPlayer"));
+        MSG_BOX(TEXT("Failed to Created : CHero_Bridge"));
         Safe_Release(pInstance);
     }
     return pInstance;
 }
 
-CGameObject* CPlayer::Clone(void* pArg)
+CGameObject* CHero_Bridge::Clone(void* pArg)
 {
-    CPlayer* pInstance = new CPlayer(*this);
+    CHero_Bridge* pInstance = new CHero_Bridge(*this);
     if (FAILED(pInstance->Initialize(pArg)))
     {
-        MSG_BOX(TEXT("Failed to Clone : CPlayer"));
+        MSG_BOX(TEXT("Failed to Clone : CHero_Bridge"));
         Safe_Release(pInstance);
     }
     return pInstance;
 }
 
-void CPlayer::Free()
+void CHero_Bridge::Free()
 {
     __super::Free();
     Safe_Release(m_pColliderCom);

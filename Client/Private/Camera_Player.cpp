@@ -84,11 +84,11 @@ void CCamera_Player::UpdateInput(_float dt)
 void CCamera_Player::ComputeCamera(_float dt)
 {
     auto* PM = CPlayerManager::GetInstance();
-    if (!PM || !PM->GetActive()) return;
+    if (!PM || !PM->GetActiveRaw()) return;   // was: PM->GetActive()
 
-    // 플레이어 월드축
+    // 플레이어 월드 축/위치는 매니저에서 바로 얻기
     const _vector P = PM->GetPos();
-    const _vector F = PM->GetForward(true);  
+    const _vector F = PM->GetForward(true);   // 필요 시 Y평탄화
     const _vector R = PM->GetRight();
     const _vector U = PM->GetUp();
 

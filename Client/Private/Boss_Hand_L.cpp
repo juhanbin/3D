@@ -49,7 +49,7 @@ HRESULT CBoss_Hand_L::Initialize(void* pArg)
     if (FAILED(Ready_Components())) return E_FAIL;
 
     // 적절한 애니메이션 슬롯으로 재생
-    m_pModelCom->Set_Animation(10, true);
+    m_pModelCom->Set_Animation(1, true);
 
     // 발사 타이머 초기화
     m_fireTimer = 0.f;
@@ -91,7 +91,7 @@ HRESULT CBoss_Hand_L::Render()
         if (FAILED(m_pModelCom->Bind_BoneMatrices(m_pShaderCom, "g_BoneMatrices", i)))
             return E_FAIL;
 
-        m_pShaderCom->Begin(0);
+        m_pShaderCom->Begin(1);
         m_pModelCom->Render(i);
     }
 
@@ -107,12 +107,12 @@ HRESULT CBoss_Hand_L::Render()
 HRESULT CBoss_Hand_L::Ready_Components()
 {
     if (FAILED(CGameObject::Add_Component(
-        ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Shader_VtxAnimMesh"),
+        ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_Component_Shader_VtxAnimMesh"),
         TEXT("Com_Shader"), reinterpret_cast<CComponent**>(&m_pShaderCom), nullptr)))
         return E_FAIL;
 
     if (FAILED(CGameObject::Add_Component(
-        ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Model_Boss_hand_L"),
+        ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_Component_Model_Boss_hand_L"),
         TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom), nullptr)))
         return E_FAIL;
 

@@ -1,106 +1,248 @@
 #include "PlayerManager.h"
-#include "Player.h"
+#include "GameInstance.h"   // CurLevelId() 구현 위해 필요
 #include <algorithm>
 
 USING(Client)
 
 IMPLEMENT_SINGLETON(CPlayerManager)
 
-void CPlayerManager::Register(_uint id, CPlayer* pPlayer, _float maxHp)
-{
-    PlayerData d; d.pPlayer = pPlayer; d.maxHp = maxHp; d.hp = maxHp;
-    m_players[id] = d;
-    if (!m_pActive) { m_pActive = pPlayer; m_activeId = id; }
+// ===== 내부 유틸 =====
+inline _uint CPlayerManager::CurLevelId() {
+    return CGameInstance::GetInstance()->Get_CurrentLevelID();
 }
 
-void CPlayerManager::Unregister(_uint id)
+const CPlayerManager::LevelBucket* CPlayerManager::FindBucket(_uint levelId) const {
+    auto it = m_levels.find(levelId);
+    return (it == m_levels.end()) ? nullptr : &it->second;
+}
+CPlayerManager::LevelBucket* CPlayerManager::FindBucket(_uint levelId) {
+    auto it = m_levels.find(levelId);
+    return (it == m_levels.end()) ? nullptr : &it->second;
+}
+
+const CPlayerManager::PlayerData* CPlayerManager::FindPlayer(_uint levelId, _uint playerId) const {
+    auto b = FindBucket(levelId);
+    if (!b) return nullptr;
+    auto it = b->players.find(playerId);
+    return (it == b->players.end()) ? nullptr : &it->second;
+}
+CPlayerManager::PlayerData* CPlayerManager::FindPlayer(_uint levelId, _uint playerId) {
+    auto b = FindBucket(levelId);
+    if (!b) return nullptr;
+    auto it = b->players.find(playerId);
+    return (it == b->players.end()) ? nullptr : &it->second;
+}
+
+// ===== 등록/해제 =====
+void CPlayerManager::Unregister(_uint levelId, _uint playerId)
 {
-    const bool wasActive = (m_activeId == id);
-    m_players.erase(id);
+    LevelBucket* b = FindBucket(levelId);
+    if (!b) return;
+
+    const bool wasActive = (b->hasActive && b->activeId == playerId);
+    b->players.erase(playerId);
+
+    if (b->players.empty()) {
+        // 레벨 버킷 자체 제거
+        m_levels.erase(levelId);
+        return;
+    }
 
     if (wasActive) {
-        m_pActive = nullptr;
-        m_activeId = 0;
-        if (!m_players.empty()) {
-            auto it = m_players.begin();
-            m_pActive = it->second.pPlayer;
-            m_activeId = it->first;
-        }
+        // 남아있는 첫 플레이어를 Active로 지정
+        auto it = b->players.begin();
+        b->activeId = it->first;
+        b->hasActive = true;
     }
 }
 
-void CPlayerManager::SetActive(_uint id)
+// ===== Active 선택 =====
+void CPlayerManager::SetActive(_uint levelId, _uint playerId)
 {
-    auto it = m_players.find(id);
-    if (it == m_players.end()) return;
-    m_pActive = it->second.pPlayer;
-    m_activeId = id;
+    LevelBucket* b = FindBucket(levelId);
+    if (!b) return;
+
+    if (b->players.find(playerId) == b->players.end()) return;
+
+    b->activeId = playerId;
+    b->hasActive = true;
+}
+void CPlayerManager::SetActiveByCurrentLevel(_uint playerId)
+{
+    SetActive(CurLevelId(), playerId);
 }
 
+void* CPlayerManager::GetActiveRaw() const
+{
+    const _uint lev = CurLevelId();
+    const LevelBucket* b = FindBucket(lev);
+    if (!b || !b->hasActive) return nullptr;
+
+    auto it = b->players.find(b->activeId);
+    if (it == b->players.end()) return nullptr;
+    return it->second.pObject;
+}
+
+_uint CPlayerManager::GetActiveId() const
+{
+    const _uint lev = CurLevelId();
+    const LevelBucket* b = FindBucket(lev);
+    if (!b || !b->hasActive) return 0;
+    return b->activeId;
+}
+
+void* CPlayerManager::GetRaw(_uint levelId, _uint playerId) const
+{
+    const PlayerData* p = FindPlayer(levelId, playerId);
+    return p ? p->pObject : nullptr;
+}
+
+// ===== 위치/방향 (현재 레벨 Active) =====
 _vector CPlayerManager::GetPos() const
 {
-    return m_pActive ? m_pActive->GetPos() : XMVectorZero();
+    const _uint lev = CurLevelId();
+    const LevelBucket* b = FindBucket(lev);
+    if (!b || !b->hasActive) return XMVectorZero();
+
+    auto it = b->players.find(b->activeId);
+    if (it == b->players.end() || !it->second.fnGetPos) return XMVectorZero();
+    return it->second.fnGetPos();
 }
 
-_vector CPlayerManager::GetForward(bool flattenY) const
+_vector CPlayerManager::GetForward(_bool flattenY) const
 {
-    return m_pActive ? m_pActive->GetForward(flattenY)
-        : XMVectorSet(0.f, 0.f, 1.f, 0.f);
+    const _uint lev = CurLevelId();
+    const LevelBucket* b = FindBucket(lev);
+    if (!b || !b->hasActive) return XMVectorSet(0.f, 0.f, 1.f, 0.f);
+
+    auto it = b->players.find(b->activeId);
+    if (it == b->players.end() || !it->second.fnGetForward) return XMVectorSet(0.f, 0.f, 1.f, 0.f);
+    return it->second.fnGetForward(flattenY);
 }
 
 _vector CPlayerManager::GetRight() const
 {
-    return m_pActive ? m_pActive->GetRight()
-        : XMVectorSet(1.f, 0.f, 0.f, 0.f);
+    const _uint lev = CurLevelId();
+    const LevelBucket* b = FindBucket(lev);
+    if (!b || !b->hasActive) return XMVectorSet(1.f, 0.f, 0.f, 0.f);
+
+    auto it = b->players.find(b->activeId);
+    if (it == b->players.end() || !it->second.fnGetRight) return XMVectorSet(1.f, 0.f, 0.f, 0.f);
+    return it->second.fnGetRight();
 }
 
 _vector CPlayerManager::GetUp() const
 {
-    return m_pActive ? m_pActive->GetUp()
+    const _uint lev = CurLevelId();
+    const LevelBucket* b = FindBucket(lev);
+    if (!b || !b->hasActive) return XMVectorSet(0.f, 1.f, 0.f, 0.f);
+
+    auto it = b->players.find(b->activeId);
+    if (it == b->players.end() || !it->second.fnGetUp) return XMVectorSet(0.f, 1.f, 0.f, 0.f);
+    return it->second.fnGetUp();
+}
+
+// ===== 위치/방향 (지정) =====
+_vector CPlayerManager::GetPos(_uint levelId, _uint playerId) const
+{
+    const PlayerData* p = FindPlayer(levelId, playerId);
+    return (p && p->fnGetPos) ? p->fnGetPos() : XMVectorZero();
+}
+_vector CPlayerManager::GetForward(_uint levelId, _uint playerId, _bool flattenY) const
+{
+    const PlayerData* p = FindPlayer(levelId, playerId);
+    return (p && p->fnGetForward) ? p->fnGetForward(flattenY)
+        : XMVectorSet(0.f, 0.f, 1.f, 0.f);
+}
+_vector CPlayerManager::GetRight(_uint levelId, _uint playerId) const
+{
+    const PlayerData* p = FindPlayer(levelId, playerId);
+    return (p && p->fnGetRight) ? p->fnGetRight()
+        : XMVectorSet(1.f, 0.f, 0.f, 0.f);
+}
+_vector CPlayerManager::GetUp(_uint levelId, _uint playerId) const
+{
+    const PlayerData* p = FindPlayer(levelId, playerId);
+    return (p && p->fnGetUp) ? p->fnGetUp()
         : XMVectorSet(0.f, 1.f, 0.f, 0.f);
 }
-_float CPlayerManager::GetHP(_uint id) const
-{
-    auto it = m_players.find(id);
-    return (it != m_players.end()) ? it->second.hp : 0.f;
-}
 
-_float CPlayerManager::GetMaxHP(_uint id) const
+// ===== HP =====
+_float CPlayerManager::GetHP(_uint levelId, _uint playerId) const
 {
-    auto it = m_players.find(id);
-    return (it != m_players.end()) ? it->second.maxHp : 0.f;
+    const PlayerData* p = FindPlayer(levelId, playerId);
+    return p ? p->hp : 0.f;
 }
-
-void CPlayerManager::SetHP(_uint id, _float hp)
+_float CPlayerManager::GetMaxHP(_uint levelId, _uint playerId) const
 {
-    auto it = m_players.find(id);
-    if (it == m_players.end()) return;
-    it->second.hp = clamp_compat(hp, 0.f, it->second.maxHp);
+    const PlayerData* p = FindPlayer(levelId, playerId);
+    return p ? p->maxHp : 0.f;
 }
-
-void CPlayerManager::ApplyDamage(_uint id, _float amount)
+void CPlayerManager::SetHP(_uint levelId, _uint playerId, _float hp)
 {
-    auto it = m_players.find(id);
-    if (it == m_players.end()) return;
+    PlayerData* p = FindPlayer(levelId, playerId);
+    if (!p) return;
+    p->hp = clamp_compat(hp, 0.f, p->maxHp);
+}
+void CPlayerManager::ApplyDamage(_uint levelId, _uint playerId, _float amount)
+{
+    PlayerData* p = FindPlayer(levelId, playerId);
+    if (!p) return;
     const float dmg = max(0.f, amount);
-    it->second.hp = clamp_compat(it->second.hp - dmg, 0.f, it->second.maxHp);
+    p->hp = clamp_compat(p->hp - dmg, 0.f, p->maxHp);
 }
-
-void CPlayerManager::Heal(_uint id, _float amount)
+void CPlayerManager::Heal(_uint levelId, _uint playerId, _float amount)
 {
-    auto it = m_players.find(id);
-    if (it == m_players.end()) return;
+    PlayerData* p = FindPlayer(levelId, playerId);
+    if (!p) return;
     const float heal = max(0.f, amount);
-    it->second.hp = clamp_compat(it->second.hp + heal, 0.f, it->second.maxHp);
+    p->hp = clamp_compat(p->hp + heal, 0.f, p->maxHp);
 }
 
-_float CPlayerManager::GetActiveHP() const { return GetHP(m_activeId); }
-void   CPlayerManager::ApplyDamageActive(_float amount) { ApplyDamage(m_activeId, amount); }
-void   CPlayerManager::HealActive(_float amount) { Heal(m_activeId, amount); }
+// 현재 레벨 Active HP
+_float CPlayerManager::GetActiveHP() const
+{
+    const _uint lev = CurLevelId();
+    const LevelBucket* b = FindBucket(lev);
+    if (!b || !b->hasActive) return 0.f;
 
+    auto it = b->players.find(b->activeId);
+    return (it == b->players.end()) ? 0.f : it->second.hp;
+}
+_float CPlayerManager::GetActiveMaxHP() const
+{
+    const _uint lev = CurLevelId();
+    const LevelBucket* b = FindBucket(lev);
+    if (!b || !b->hasActive) return 0.f;
+
+    auto it = b->players.find(b->activeId);
+    return (it == b->players.end()) ? 0.f : it->second.maxHp;
+}
+void CPlayerManager::ApplyDamageActive(_float amount)
+{
+    const _uint lev = CurLevelId();
+    LevelBucket* b = FindBucket(lev);
+    if (!b || !b->hasActive) return;
+
+    PlayerData* p = FindPlayer(lev, b->activeId);
+    if (!p) return;
+    const float dmg = max(0.f, amount);
+    p->hp = clamp_compat(p->hp - dmg, 0.f, p->maxHp);
+}
+void CPlayerManager::HealActive(_float amount)
+{
+    const _uint lev = CurLevelId();
+    LevelBucket* b = FindBucket(lev);
+    if (!b || !b->hasActive) return;
+
+    PlayerData* p = FindPlayer(lev, b->activeId);
+    if (!p) return;
+    const float heal = max(0.f, amount);
+    p->hp = clamp_compat(p->hp + heal, 0.f, p->maxHp);
+}
+
+// ===== 정리 =====
 void CPlayerManager::Free()
 {
-    m_players.clear();
-    m_pActive = nullptr;
-    m_activeId = 0;
+    m_levels.clear();
 }

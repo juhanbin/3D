@@ -265,7 +265,7 @@ HRESULT CLevel_Intro::Ready_Layer_Player(const _wstring& strLayerTag)
 
 			if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(
 				ENUM_CLASS(LEVEL::INTRO), strLayerTag,
-				ENUM_CLASS(LEVEL::INTRO), TEXT("Prototype_GameObject_Player"), &desc)))
+				ENUM_CLASS(LEVEL::INTRO), TEXT("Prototype_GameObject_Player_Intro"), &desc)))
 			{
 				OutputDebugStringW(L"[SCENE] Player Add ½ÇÆÐ!\n");
 			}

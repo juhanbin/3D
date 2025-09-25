@@ -13,7 +13,7 @@ NS_END
 
 NS_BEGIN(Client)
 
-class CWeapon_Intro final : public CPartObject
+class CWeapon_Bridge final : public CPartObject
 {
 public:
 	typedef struct tagWeaponDesc : public CPartObject::PARTOBJECT_DESC
@@ -25,9 +25,9 @@ public:
 		ATTACK* pAttack = { nullptr };
 	}WEAPON_DESC;
 private:
-	CWeapon_Intro(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
-	CWeapon_Intro(const CWeapon_Intro& Prototype);
-	virtual ~CWeapon_Intro() = default;
+	CWeapon_Bridge(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
+	CWeapon_Bridge(const CWeapon_Bridge& Prototype);
+	virtual ~CWeapon_Bridge() = default;
 
 public:
 	virtual HRESULT Initialize_Prototype();
@@ -60,7 +60,7 @@ private:
 	HRESULT Bind_ShaderResources();
 
 public:
-	static CWeapon_Intro* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
+	static CWeapon_Bridge* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	virtual CGameObject* Clone(void* pArg) override;
 	virtual void Free() override;
 };

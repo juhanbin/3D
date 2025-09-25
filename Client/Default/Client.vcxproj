@@ -153,6 +153,8 @@
   <ItemGroup>
     <ClInclude Include="..\Private\Boss_Mask.h" />
     <ClInclude Include="..\public\BackGround.h" />
+    <ClInclude Include="..\Public\Body_Bridge.h" />
+    <ClInclude Include="..\Public\Body_Into.h" />
     <ClInclude Include="..\Public\Body_Monster_Skeleton.h" />
     <ClInclude Include="..\Public\Body_Player.h" />
     <ClInclude Include="..\Public\Boss_Fire.h" />
@@ -164,6 +166,8 @@
     <ClInclude Include="..\Public\Cursor.h" />
     <ClInclude Include="..\Public\Explosion.h" />
     <ClInclude Include="..\Public\Fade.h" />
+    <ClInclude Include="..\Public\Hero_Bridge.h" />
+    <ClInclude Include="..\Public\Hero_Intro.h" />
     <ClInclude Include="..\Public\Level_Boss.h" />
     <ClInclude Include="..\Public\Level_GamePlay.h" />
     <ClInclude Include="..\Public\Level_Intro.h" />
@@ -192,6 +196,8 @@
     <ClInclude Include="..\Public\Terrain_Boss.h" />
     <ClInclude Include="..\Public\Terrain_Intro.h" />
     <ClInclude Include="..\Public\Weapon.h" />
+    <ClInclude Include="..\Public\Weapon_Bridge.h" />
+    <ClInclude Include="..\Public\Weapon_Intro.h" />
     <ClInclude Include="..\Public\Weapon_Skeleton_Arrow.h" />
     <ClInclude Include="..\Public\Weapon_Skeleton_Bow.h" />
     <ClInclude Include="..\Public\Weapon_Skeleton_Spear.h" />
@@ -202,6 +208,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\private\BackGround.cpp" />
+    <ClCompile Include="..\Private\Body_Bridge.cpp" />
+    <ClCompile Include="..\Private\Body_Into.cpp" />
     <ClCompile Include="..\Private\Body_Monster_Skeleton.cpp" />
     <ClCompile Include="..\Private\Body_Player.cpp" />
     <ClCompile Include="..\Private\Boss_Fire.cpp" />
@@ -213,6 +221,8 @@
     <ClCompile Include="..\Private\Cursor.cpp" />
     <ClCompile Include="..\Private\Explosion.cpp" />
     <ClCompile Include="..\Private\Fade.cpp" />
+    <ClCompile Include="..\Private\Hero_Bridge.cpp" />
+    <ClCompile Include="..\Private\Hero_Intro.cpp" />
     <ClCompile Include="..\Private\Level_Boss.cpp" />
     <ClCompile Include="..\Private\Level_GamePlay.cpp" />
     <ClCompile Include="..\Private\Level_Intro.cpp" />
@@ -241,6 +251,8 @@
     <ClCompile Include="..\Private\Terrain_Boss.cpp" />
     <ClCompile Include="..\Private\Terrain_Intro.cpp" />
     <ClCompile Include="..\Private\Weapon.cpp" />
+    <ClCompile Include="..\Private\Weapon_Bridge.cpp" />
+    <ClCompile Include="..\Private\Weapon_Intro.cpp" />
     <ClCompile Include="..\Private\Weapon_Skeleton_Arrow.cpp" />
     <ClCompile Include="..\Private\Weapon_Skeleton_Bow.cpp" />
     <ClCompile Include="..\Private\Weapon_Skeleton_Spear.cpp" />

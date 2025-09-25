@@ -1,26 +1,26 @@
-#include "Body_Into.h"
+#include "Body_Bridge.h"
 #include "GameInstance.h"
 #include <cmath>
 
-CBody_Into::CBody_Into(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
+CBody_Bridge::CBody_Bridge(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
     : CPartObject{ pDevice, pContext } {
 }
 
-CBody_Into::CBody_Into(const CBody_Into& Prototype)
+CBody_Bridge::CBody_Bridge(const CBody_Bridge& Prototype)
     : CPartObject{ Prototype } {
 }
 
-_float4x4* CBody_Into::Get_BoneMatrix(const _char* pBoneName)
+_float4x4* CBody_Bridge::Get_BoneMatrix(const _char* pBoneName)
 {
     return m_pModelCom->Get_BoneMatrix(pBoneName);
 }
 
-HRESULT CBody_Into::Initialize_Prototype()
+HRESULT CBody_Bridge::Initialize_Prototype()
 {
     return S_OK;
 }
 
-HRESULT CBody_Into::Initialize(void* pArg)
+HRESULT CBody_Bridge::Initialize(void* pArg)
 {
     if (!pArg) return E_FAIL;
 
@@ -47,12 +47,12 @@ HRESULT CBody_Into::Initialize(void* pArg)
     return S_OK;
 }
 
-void CBody_Into::Priority_Update(_float /*fTimeDelta*/)
+void CBody_Bridge::Priority_Update(_float /*fTimeDelta*/)
 {
 
 }
 
-void CBody_Into::Update(_float fTimeDelta)
+void CBody_Bridge::Update(_float fTimeDelta)
 {
     if (m_fDashFinishBlock > 0.f)
         m_fDashFinishBlock -= fTimeDelta;
@@ -150,7 +150,7 @@ void CBody_Into::Update(_float fTimeDelta)
     m_pColliderCom->Update(XMLoadFloat4x4(&m_CombinedWorldMatrix));
 }
 
-void CBody_Into::Late_Update(_float fTimeDelta)
+void CBody_Bridge::Late_Update(_float fTimeDelta)
 {
     //if (true == m_pGameInstance->isIn_Frustum_WorldSpace(m_pTransformCom->Get_State(STATE::POSITION), 25.f))
     //{
@@ -167,7 +167,7 @@ void CBody_Into::Late_Update(_float fTimeDelta)
 #endif
 }
 
-HRESULT CBody_Into::Render()
+HRESULT CBody_Bridge::Render()
 {
     if (FAILED(Bind_ShaderResources()))
         return E_FAIL;
@@ -192,7 +192,7 @@ HRESULT CBody_Into::Render()
     return S_OK;
 }
 
-HRESULT CBody_Into::Render_Shadow()
+HRESULT CBody_Bridge::Render_Shadow()
 {
     if (FAILED(m_pShaderCom->Bind_Matrix("g_WorldMatrix", &m_CombinedWorldMatrix)))
         return E_FAIL;
@@ -220,7 +220,7 @@ HRESULT CBody_Into::Render_Shadow()
     return S_OK;
 }
 
-void CBody_Into::SetClipSmart(int animIndex, bool loop, _float blendDur, bool forceRestart)
+void CBody_Bridge::SetClipSmart(int animIndex, bool loop, _float blendDur, bool forceRestart)
 {
 
     if (animIndex != m_iCurAnim) {
@@ -244,15 +244,15 @@ void CBody_Into::SetClipSmart(int animIndex, bool loop, _float blendDur, bool fo
     }
 }
 
-HRESULT CBody_Into::Ready_Components()
+HRESULT CBody_Bridge::Ready_Components()
 {
     if (FAILED(CGameObject::Add_Component(
-        ENUM_CLASS(LEVEL::INTRO), TEXT("Prototype_Component_Shader_VtxAnimMesh"),
+        ENUM_CLASS(LEVEL::BRIDGE), TEXT("Prototype_Component_Shader_VtxAnimMesh"),
         TEXT("Com_Shader"), reinterpret_cast<CComponent**>(&m_pShaderCom), nullptr)))
         return E_FAIL;
 
     if (FAILED(CGameObject::Add_Component(
-        ENUM_CLASS(LEVEL::INTRO), TEXT("Prototype_Component_Model_Hero"),
+        ENUM_CLASS(LEVEL::BRIDGE), TEXT("Prototype_Component_Model_Hero"),
         TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom), nullptr)))
         return E_FAIL;
 
@@ -267,7 +267,7 @@ HRESULT CBody_Into::Ready_Components()
     return S_OK;
 }
 
-HRESULT CBody_Into::Bind_ShaderResources()
+HRESULT CBody_Bridge::Bind_ShaderResources()
 {
     if (FAILED(m_pShaderCom->Bind_Matrix("g_WorldMatrix", &m_CombinedWorldMatrix)))
         return E_FAIL;
@@ -281,7 +281,7 @@ HRESULT CBody_Into::Bind_ShaderResources()
     return S_OK;
 }
 
-_bool CBody_Into::Collision_ToMushroom()
+_bool CBody_Bridge::Collision_ToMushroom()
 {
     /*CContainerObject* pPlayer = dynamic_cast<CContainerObject*>(m_pGameInstance->Find_GameObject(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Layer_Player")));
     if (nullptr == pPlayer)
@@ -296,27 +296,27 @@ _bool CBody_Into::Collision_ToMushroom()
 }
 
 
-CBody_Into* CBody_Into::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
+CBody_Bridge* CBody_Bridge::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 {
-    CBody_Into* pInstance = new CBody_Into(pDevice, pContext);
+    CBody_Bridge* pInstance = new CBody_Bridge(pDevice, pContext);
     if (FAILED(pInstance->Initialize_Prototype())) {
-        MSG_BOX(TEXT("Failed to Created : CBody_Into"));
+        MSG_BOX(TEXT("Failed to Created : CBody_Bridge"));
         Safe_Release(pInstance);
     }
     return pInstance;
 }
 
-CGameObject* CBody_Into::Clone(void* pArg)
+CGameObject* CBody_Bridge::Clone(void* pArg)
 {
-    CBody_Into* pInstance = new CBody_Into(*this);
+    CBody_Bridge* pInstance = new CBody_Bridge(*this);
     if (FAILED(pInstance->Initialize(pArg))) {
-        MSG_BOX(TEXT("Failed to Clone : CBody_Into"));
+        MSG_BOX(TEXT("Failed to Clone : CBody_Bridge"));
         Safe_Release(pInstance);
     }
     return pInstance;
 }
 
-void CBody_Into::Free()
+void CBody_Bridge::Free()
 {
     __super::Free();
     Safe_Release(m_pModelCom);

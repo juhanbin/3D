@@ -9,10 +9,10 @@ class CNavigation;
 NS_END
 
 NS_BEGIN(Client)
-class CBody_Into;
-class CWeapon_Intro;
+class CBody_Bridge;
+class CWeapon_Bridge;
 
-class CHero_Intro final : public CContainerObject
+class CHero_Bridge final : public CContainerObject
 {
 public:
     struct HERO_DESC
@@ -24,9 +24,9 @@ public:
     };
 
 private:
-    CHero_Intro(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
-    CHero_Intro(const CHero_Intro& Prototype);
-    virtual ~CHero_Intro() = default;
+    CHero_Bridge(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
+    CHero_Bridge(const CHero_Bridge& Prototype);
+    virtual ~CHero_Bridge() = default;
 
 public:
     // CGameObject
@@ -113,7 +113,7 @@ private:
     static constexpr float kAimRunMul = 0.6f;
 
 public:
-    static CHero_Intro* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
+    static CHero_Bridge* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
     virtual CGameObject* Clone(void* pArg) override;
     virtual void         Free() override;
 };

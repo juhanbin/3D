@@ -8,6 +8,9 @@
 #include <fstream>
 #include "Object_Pool_Manager.h"
 #include "Player_Speare.h"
+#include "Boss_Hand_L.h"
+#include "Boss_Hand_R.h"
+#include "Boss_Mask.h"
 #include <functional>
 
 
@@ -37,6 +40,15 @@ HRESULT CLevel_Boss::Initialize()
 		return E_FAIL;
 
 	if (FAILED(Ready_Layer_MapObjects(TEXT("Layer_MapObject"))))
+		return E_FAIL;
+
+	if (FAILED(Ready_Layer_Boss_Hand_L(TEXT("Layer_Boss_Hand_L"))))
+		return E_FAIL;
+
+	if (FAILED(Ready_Layer_Boss_Hand_R(TEXT("Layer_Boss_Hand_R"))))
+		return E_FAIL;
+
+	if (FAILED(Ready_Layer_Boss_Mask(TEXT("Ready_Layer_Boss_Mask"))))
 		return E_FAIL;
 
 	if (FAILED(Ready_Layer_Effect(TEXT("Layer_Effect"))))
@@ -249,7 +261,74 @@ HRESULT CLevel_Boss::Ready_Layer_Player(const _wstring& strLayerTag)
 	}
 	return S_OK;
 }
+HRESULT CLevel_Boss::Ready_Layer_Boss_Hand_L(const _wstring& strLayerTag)
+{
+	for (auto& obj : m_SceneObjects)
+	{
+		if ((EObjectType)obj.type == EObjectType::BOSS_HAND_L)
+		{
+			CBoss_Hand_L::Boss_Hand_L_DESC desc{};
+			desc.type = static_cast<EObjectType>(obj.type);
+			desc.vScale = _float3(obj.size[0], obj.size[1], obj.size[2]);
+			desc.vRot = _float3(obj.rot[0], obj.rot[1], obj.rot[2]);
+			desc.vPos = _float3(obj.pos[0], obj.pos[1], obj.pos[2]);
 
+			if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(
+				ENUM_CLASS(LEVEL::BOSS), strLayerTag,
+				ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_GameObject_Boss_Hand_L"), &desc)))
+			{
+				OutputDebugStringW(L"[SCENE] Boss_Hand_L Add 실패!\n");
+			}
+		}
+	}
+	return S_OK;
+}
+
+HRESULT CLevel_Boss::Ready_Layer_Boss_Hand_R(const _wstring& strLayerTag)
+{
+	for (auto& obj : m_SceneObjects)
+	{
+		if ((EObjectType)obj.type == EObjectType::BOSS_HAND_R)
+		{
+			CBoss_Hand_R::Boss_Hand_R_DESC desc{};
+			desc.type = static_cast<EObjectType>(obj.type);
+			desc.vScale = _float3(obj.size[0], obj.size[1], obj.size[2]);
+			desc.vRot = _float3(obj.rot[0], obj.rot[1], obj.rot[2]);
+			desc.vPos = _float3(obj.pos[0], obj.pos[1], obj.pos[2]);
+
+			if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(
+				ENUM_CLASS(LEVEL::BOSS), strLayerTag,
+				ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_GameObject_Boss_Hand_R"), &desc)))
+			{
+				OutputDebugStringW(L"[SCENE] Boss_Hand_R Add 실패!\n");
+			}
+		}
+	}
+	return S_OK;
+}
+
+HRESULT CLevel_Boss::Ready_Layer_Boss_Mask(const _wstring& strLayerTag)
+{
+	for (auto& obj : m_SceneObjects)
+	{
+		if ((EObjectType)obj.type == EObjectType::BOSS_MASK)
+		{
+			CBoss_Mask::Boss_Mask desc{};
+			desc.type = static_cast<EObjectType>(obj.type);
+			desc.vScale = _float3(obj.size[0], obj.size[1], obj.size[2]);
+			desc.vRot = _float3(obj.rot[0], obj.rot[1], obj.rot[2]);
+			desc.vPos = _float3(obj.pos[0], obj.pos[1], obj.pos[2]);
+
+			if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(
+				ENUM_CLASS(LEVEL::BOSS), strLayerTag,
+				ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_GameObject_Boss_Mask"), &desc)))
+			{
+				OutputDebugStringW(L"[SCENE] Boss_Mask Add 실패!\n");
+			}
+		}
+	}
+	return S_OK;
+}
 
 HRESULT CLevel_Boss::Ready_Layer_MapObjects(const _wstring& strLayerTag)
 {

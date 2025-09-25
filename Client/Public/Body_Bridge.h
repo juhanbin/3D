@@ -11,7 +11,7 @@ NS_END
 
 NS_BEGIN(Client)
 
-class CBody_Into final : public CPartObject
+class CBody_Bridge final : public CPartObject
 {
 public:
     struct BODY_DESC : public CPartObject::PARTOBJECT_DESC
@@ -22,9 +22,9 @@ public:
     };
 
 private:
-    CBody_Into(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
-    CBody_Into(const CBody_Into& Prototype);
-    virtual ~CBody_Into() = default;
+    CBody_Bridge(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
+    CBody_Bridge(const CBody_Bridge& Prototype);
+    virtual ~CBody_Bridge() = default;
 
 public:
     _float4x4* Get_BoneMatrix(const _char* pBoneName);
@@ -67,7 +67,7 @@ private:
     float m_fDashFinishBlock = 0.f;
 
 public:
-    static CBody_Into* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
+    static CBody_Bridge* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
     virtual CGameObject* Clone(void* pArg) override;
     virtual void         Free() override;
 };

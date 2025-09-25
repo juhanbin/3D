@@ -28,6 +28,9 @@ private:
 	HRESULT Ready_Layer_Camera_Player(const _wstring& strLayerTag);
 	HRESULT Ready_Layer_BackGround(const _wstring& strLayerTag);
 	HRESULT Ready_Layer_Player(const _wstring& strLayerTag);
+	HRESULT Ready_Layer_Boss_Hand_L(const _wstring& strLayerTag);
+	HRESULT Ready_Layer_Boss_Hand_R(const _wstring& strLayerTag);
+	HRESULT Ready_Layer_Boss_Mask(const _wstring& strLayerTag);
 	HRESULT Ready_Layer_MapObjects(const _wstring& strLayerTag);
 	HRESULT Ready_Layer_Effect(const _wstring& strLayerTag);
 

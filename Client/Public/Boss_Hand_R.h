@@ -52,6 +52,7 @@ private:
 
 private:
     EObjectType             m_eType = EObjectType::BOSS_HAND_R;
+
 public:
     static CBoss_Hand_R* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
     virtual CGameObject* Clone(void* pArg) override;

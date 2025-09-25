@@ -157,6 +157,24 @@
     <Filter Include="02.GameObject\Terrain\Terrain_Boss">
       <UniqueIdentifier>{e500d1a1-6402-4bf9-8ced-91c3012922d4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02.GameObject\Hero_Intro">
+      <UniqueIdentifier>{71c547df-a596-4203-afb1-392c7058bd38}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObject\Hero_Intro\Weapon_Intro">
+      <UniqueIdentifier>{c2352384-13c7-4ba0-8aab-9a53e1160b72}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObject\Hero_Intro\Body_Intro">
+      <UniqueIdentifier>{6758cc87-f0a7-4894-8357-97de72dcdb33}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObject\Hero_Bridge">
+      <UniqueIdentifier>{a7304c41-91a0-4c3b-94e4-e81e93fe2d88}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObject\Hero_Bridge\Weapon_Bridge">
+      <UniqueIdentifier>{234b710a-b009-4da8-ba72-078df6526f9f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObject\Hero_Bridge\Body_Bridge">
+      <UniqueIdentifier>{cb7af0a0-fdcf-4c32-a874-6600ce1804b1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h">
@@ -302,6 +320,24 @@
     </ClInclude>
     <ClInclude Include="..\Public\Terrain_Boss.h">
       <Filter>02.GameObject\Terrain\Terrain_Boss</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Hero_Intro.h">
+      <Filter>02.GameObject\Hero_Intro</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Weapon_Intro.h">
+      <Filter>02.GameObject\Hero_Intro\Weapon_Intro</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Body_Into.h">
+      <Filter>02.GameObject\Hero_Intro\Body_Intro</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Hero_Bridge.h">
+      <Filter>02.GameObject\Hero_Bridge</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Weapon_Bridge.h">
+      <Filter>02.GameObject\Hero_Bridge\Weapon_Bridge</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Body_Bridge.h">
+      <Filter>02.GameObject\Hero_Bridge\Body_Bridge</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -449,6 +485,24 @@
     </ClCompile>
     <ClCompile Include="..\Private\Terrain_Boss.cpp">
       <Filter>02.GameObject\Terrain\Terrain_Boss</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Hero_Intro.cpp">
+      <Filter>02.GameObject\Hero_Intro</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Weapon_Intro.cpp">
+      <Filter>02.GameObject\Hero_Intro\Weapon_Intro</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Body_Into.cpp">
+      <Filter>02.GameObject\Hero_Intro\Body_Intro</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Hero_Bridge.cpp">
+      <Filter>02.GameObject\Hero_Bridge</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Weapon_Bridge.cpp">
+      <Filter>02.GameObject\Hero_Bridge\Weapon_Bridge</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Body_Bridge.cpp">
+      <Filter>02.GameObject\Hero_Bridge\Body_Bridge</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

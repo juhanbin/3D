@@ -1,24 +1,24 @@
-#include "Weapon_Intro.h"
+#include "Weapon_Bridge.h"
 #include "GameInstance.h"
 
-CWeapon_Intro::CWeapon_Intro(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
+CWeapon_Bridge::CWeapon_Bridge(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
     : CPartObject{ pDevice, pContext }
 {
 
 }
 
-CWeapon_Intro::CWeapon_Intro(const CWeapon_Intro& Prototype)
+CWeapon_Bridge::CWeapon_Bridge(const CWeapon_Bridge& Prototype)
     : CPartObject{ Prototype }
 {
 
 }
 
-HRESULT CWeapon_Intro::Initialize_Prototype()
+HRESULT CWeapon_Bridge::Initialize_Prototype()
 {
     return S_OK;
 }
 
-HRESULT CWeapon_Intro::Initialize(void* pArg)
+HRESULT CWeapon_Bridge::Initialize(void* pArg)
 {
     WEAPON_DESC* pDesc = static_cast<WEAPON_DESC*>(pArg);
     m_pParentState = pDesc->pState;
@@ -43,12 +43,12 @@ HRESULT CWeapon_Intro::Initialize(void* pArg)
     return S_OK;
 }
 
-void CWeapon_Intro::Priority_Update(_float fTimeDelta)
+void CWeapon_Bridge::Priority_Update(_float fTimeDelta)
 {
     int a = 10;
 }
 
-void CWeapon_Intro::Update(_float fTimeDelta)
+void CWeapon_Bridge::Update(_float fTimeDelta)
 {
     const bool aiming =
         (*m_pAttack == ATTACK::ENTER || *m_pAttack == ATTACK::IDLE ||
@@ -89,7 +89,7 @@ void CWeapon_Intro::Update(_float fTimeDelta)
 }
 
 
-void CWeapon_Intro::Late_Update(_float fTimeDelta)
+void CWeapon_Bridge::Late_Update(_float fTimeDelta)
 {
     if (FAILED(m_pGameInstance->Add_RenderGroup(RENDERGROUP::NONBLEND, this)))
         return;
@@ -99,7 +99,7 @@ void CWeapon_Intro::Late_Update(_float fTimeDelta)
     //#endif
 }
 
-HRESULT CWeapon_Intro::Render()
+HRESULT CWeapon_Bridge::Render()
 {
     if (*m_pAttack == ATTACK::THROW)
         return S_OK;
@@ -134,13 +134,13 @@ HRESULT CWeapon_Intro::Render()
     return S_OK;
 }
 
-HRESULT CWeapon_Intro::Ready_Components()
+HRESULT CWeapon_Bridge::Ready_Components()
 {
-    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::INTRO), TEXT("Prototype_Component_Shader_VtxAnimMesh"),
+    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::BRIDGE), TEXT("Prototype_Component_Shader_VtxAnimMesh"),
         TEXT("Com_Shader"), reinterpret_cast<CComponent**>(&m_pShaderCom), nullptr)))
         return E_FAIL;
 
-    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::INTRO), TEXT("Prototype_Component_Model_Spear"),
+    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::BRIDGE), TEXT("Prototype_Component_Model_Spear"),
         TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom), nullptr)))
         return E_FAIL;
 
@@ -156,7 +156,7 @@ HRESULT CWeapon_Intro::Ready_Components()
     return S_OK;
 }
 
-HRESULT CWeapon_Intro::Bind_ShaderResources()
+HRESULT CWeapon_Bridge::Bind_ShaderResources()
 {
     if (FAILED(m_pTransformCom->Bind_Shader_Resource(m_pShaderCom, "g_WorldMatrix")))
         return E_FAIL;
@@ -173,33 +173,33 @@ HRESULT CWeapon_Intro::Bind_ShaderResources()
     return S_OK;
 }
 
-CWeapon_Intro* CWeapon_Intro::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
+CWeapon_Bridge* CWeapon_Bridge::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 {
-    CWeapon_Intro* pInstance = new CWeapon_Intro(pDevice, pContext);
+    CWeapon_Bridge* pInstance = new CWeapon_Bridge(pDevice, pContext);
 
     if (FAILED(pInstance->Initialize_Prototype()))
     {
-        MSG_BOX(TEXT("Failed to Created : CWeapon_Intro"));
+        MSG_BOX(TEXT("Failed to Created : CWeapon_Bridge"));
         Safe_Release(pInstance);
     }
 
     return pInstance;
 }
 
-CGameObject* CWeapon_Intro::Clone(void* pArg)
+CGameObject* CWeapon_Bridge::Clone(void* pArg)
 {
-    CWeapon_Intro* pInstance = new CWeapon_Intro(*this);
+    CWeapon_Bridge* pInstance = new CWeapon_Bridge(*this);
 
     if (FAILED(pInstance->Initialize(pArg)))
     {
-        MSG_BOX(TEXT("Failed to Clone : CWeapon_Intro"));
+        MSG_BOX(TEXT("Failed to Clone : CWeapon_Bridge"));
         Safe_Release(pInstance);
     }
 
     return pInstance;
 }
 
-void CWeapon_Intro::Free()
+void CWeapon_Bridge::Free()
 {
     __super::Free();
 

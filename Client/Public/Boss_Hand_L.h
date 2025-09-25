@@ -67,7 +67,7 @@ private:
 
 private:
     EObjectType m_eType = EObjectType::BOSS_HAND_L;
-
+    ID3D11RasterizerState* m_pRS_NoCull = nullptr;
 public:
     static CBoss_Hand_L* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
     virtual CGameObject* Clone(void* pArg) override;

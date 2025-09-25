@@ -84,12 +84,12 @@ HRESULT CBoss_Mask::Render()
 HRESULT CBoss_Mask::Ready_Components()
 {
     if (FAILED(CGameObject::Add_Component(
-        ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Shader_VtxMesh"),
+        ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_Component_Shader_VtxMesh"),
         TEXT("Com_Shader"), reinterpret_cast<CComponent**>(&m_pShaderCom), nullptr)))
         return E_FAIL;
 
     if (FAILED(CGameObject::Add_Component(
-        ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Model_Boss_Mask"),
+        ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_Component_Model_Boss_Mask"),
         TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom), nullptr)))
         return E_FAIL;
 
