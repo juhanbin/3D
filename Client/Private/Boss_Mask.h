@@ -8,6 +8,7 @@ class CCollider;
 class CShader;
 class CModel;
 class CNavigation;
+class CTransform;
 NS_END
 
 NS_BEGIN(Client)
@@ -37,6 +38,8 @@ public:
     virtual void    Late_Update(_float fTimeDelta) override;
     virtual HRESULT Render() override;
 
+    Engine::CTransform* Get_Transform() const { return m_pTransformCom; }
+    //class CTransform* Get_Transform() const { return m_pTransformCom; }
 private:
     HRESULT                 Ready_Components();
     HRESULT                 Bind_ShaderResources();
@@ -45,10 +48,11 @@ private:
     // 렌더/애니
     Engine::CShader* m_pShaderCom = nullptr;
     Engine::CModel* m_pModelCom = nullptr;
-
+    //gine::CCollider* m_pColiderCom = nullptr;
+   
     // 네비/콜리전
     Engine::CNavigation* m_pNavigationCom = nullptr;
-    Engine::CCollider* m_pCollider = nullptr; // 생존 중 플레이어 이동 방해
+    Engine::CCollider* m_pColliderCom = nullptr; // 생존 중 플레이어 이동 방해
 
 private:
     EObjectType             m_eType = EObjectType::BOSS_MASK;

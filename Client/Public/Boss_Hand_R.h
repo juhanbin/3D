@@ -1,13 +1,11 @@
 #pragma once
-
-#include "Client_Defines.h"
 #include "GameObject.h"
+#include "Client_Defines.h"
 
 NS_BEGIN(Engine)
-class CCollider;
 class CShader;
 class CModel;
-class CNavigation;
+class CCollider;
 NS_END
 
 NS_BEGIN(Client)
@@ -15,48 +13,70 @@ NS_BEGIN(Client)
 class CBoss_Hand_R final : public CGameObject
 {
 public:
-    struct Boss_Hand_R_DESC
-    {
-        EObjectType type{ EObjectType::MUSHROOM };
-        _float3 vScale{ 1.f,1.f,1.f };
-        _float3 vRot{ 0.f,0.f,0.f };
-        _float3 vPos{ 0.f,0.f,0.f };
+    struct Boss_Hand_R_DESC {
+        EObjectType type;
+        _float3 vScale;
+        _float3 vRot;
+        _float3 vPos;
     };
 
-private:
-    CBoss_Hand_R(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
-    CBoss_Hand_R(const CBoss_Hand_R& Prototype);
+public:
+    CBoss_Hand_R(ID3D11Device*, ID3D11DeviceContext*);
+    CBoss_Hand_R(const CBoss_Hand_R& rhs);
     virtual ~CBoss_Hand_R() = default;
 
-public:
-    // CGameObject
-    virtual HRESULT Initialize_Prototype() override;
-    virtual HRESULT Initialize(void* pArg) override;
-    virtual void    Priority_Update(_float fTimeDelta) override;
-    virtual void    Update(_float fTimeDelta) override;
-    virtual void    Late_Update(_float fTimeDelta) override;
-    virtual HRESULT Render() override;
-
-private:
-    HRESULT                 Ready_Components();
-    HRESULT                 Bind_ShaderResources();
-
-private:
-    // 렌더/애니
-    Engine::CShader* m_pShaderCom = nullptr;
-    Engine::CModel* m_pModelCom = nullptr;
-
-    // 네비/콜리전
-    Engine::CNavigation* m_pNavigationCom = nullptr;
-    Engine::CCollider* m_pCollider = nullptr; // 생존 중 플레이어 이동 방해
-
-private:
-    EObjectType             m_eType = EObjectType::BOSS_HAND_R;
-
-public:
-    static CBoss_Hand_R* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
+    static CBoss_Hand_R* Create(ID3D11Device*, ID3D11DeviceContext*);
     virtual CGameObject* Clone(void* pArg) override;
-    virtual void            Free() override;
+
+    HRESULT Initialize_Prototype() override;
+    HRESULT Initialize(void* pArg) override;
+    void    Priority_Update(_float) override {}
+    void    Update(_float dt) override;
+    void    Late_Update(_float dt) override;
+    HRESULT Render() override;
+
+    // 패턴: 내려찍기만 사용
+    void StartSlam(const _float3& targetWorld);
+
+    // 컨트롤러에서 선회 덮어쓰지 않도록 상태 조회
+    bool IsBusy() const { return m_slam != SLAM::NONE; }
+
+    class CTransform* Get_Transform() const { return m_pTransformCom; }
+
+private:
+    HRESULT Ready_Components();
+    HRESULT Bind_ShaderResources();
+
+    _float4x4 GetWorld() const;
+
+    void TickSlam(_float dt);
+
+    static inline DirectX::XMVECTOR AsPos(const _float3& p)
+    {
+        return DirectX::XMVectorSet(p.x, p.y, p.z, 1.f);
+    }
+    static inline DirectX::XMVECTOR AsPos(DirectX::FXMVECTOR v)
+    {
+        return DirectX::XMVectorSet(DirectX::XMVectorGetX(v), DirectX::XMVectorGetY(v), DirectX::XMVectorGetZ(v), 1.f);
+    }
+
+private:
+    class CShader* m_pShaderCom = nullptr;
+    class CModel* m_pModelCom = nullptr;
+    class CCollider* m_pCollider = nullptr;
+
+    enum class SLAM { NONE, RISE, DOWN, RECOVER };
+    SLAM    m_slam = SLAM::NONE;
+
+    _float3 m_slamTarget{};
+    _float3 m_slamStart{};
+    _float  m_slamT = 0.f;
+
+    _float  m_slamRiseH = 4.f;
+    _float  m_slamSpeed = 12.f;
+    _float  m_recoverSpeed = 14.f;
+
+    _uint   m_eType = 0;
 };
 
 NS_END

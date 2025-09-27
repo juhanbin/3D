@@ -228,6 +228,37 @@ void CTransform::RotationKeepPos(_fvector axis, _float rad)
 	);
 }
 
+void CTransform::Set_Scaled(_float3 vScale)
+{
+	// 현재 기준축
+	XMVECTOR r = Get_State(STATE::RIGHT);
+	XMVECTOR u = Get_State(STATE::UP);
+	XMVECTOR l = Get_State(STATE::LOOK);
+
+	// 정규화 후 축 길이=스케일 로 맞춤
+	r = XMVector3Normalize(r) * vScale.x;
+	u = XMVector3Normalize(u) * vScale.y;
+	l = XMVector3Normalize(l) * vScale.z;
+
+	SetBasisKeepPos(r, u, l);   // ★ 위치 유지하면서 기준축 교체
+}
+
+void CTransform::Set_Position(_fvector p)
+{
+	Set_State(STATE::POSITION, p);
+}
+
+void CTransform::Set_Position(const _float3& p)
+{
+	Set_State(STATE::POSITION, XMLoadFloat3(&p));
+}
+
+_float3 CTransform::Get_PositionF() const
+{
+	_float3 out{};
+	XMStoreFloat3(&out, Get_State(STATE::POSITION));
+	return out;
+}
 void CTransform::Translate(_fvector delta)
 {
 	Set_State(STATE::POSITION, Get_State(STATE::POSITION) + XMVectorSetW(delta, 0.f));

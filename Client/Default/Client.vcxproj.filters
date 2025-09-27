@@ -339,6 +339,17 @@
     <ClInclude Include="..\Public\Body_Bridge.h">
       <Filter>02.GameObject\Hero_Bridge\Body_Bridge</Filter>
     </ClInclude>
+    <ClInclude Include="..\Public\Boss_Controller.h">
+      <Filter>02.GameObject\Boss</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\UI_HPFram.h" />
+    <ClInclude Include="..\Public\UI_HPFill_Boss.h" />
+    <ClInclude Include="..\Public\Levle_Bridge.h">
+      <Filter>01.Levels\Bridge</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\MapObject_Bridge.h">
+      <Filter>02.GameObject\MapObject\MapObject_Bridge</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Client.ico">
@@ -503,6 +514,17 @@
     </ClCompile>
     <ClCompile Include="..\Private\Body_Bridge.cpp">
       <Filter>02.GameObject\Hero_Bridge\Body_Bridge</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Boss_Controller.cpp">
+      <Filter>02.GameObject\Boss</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\UI_HPFram.cpp" />
+    <ClCompile Include="..\Private\UI_HPFill_Boss.cpp" />
+    <ClCompile Include="..\Private\Levle_Bridge.cpp">
+      <Filter>01.Levels\Bridge</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\MapObject_Bridge.cpp">
+      <Filter>02.GameObject\MapObject\MapObject_Bridge</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

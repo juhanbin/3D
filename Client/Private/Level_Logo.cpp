@@ -58,17 +58,8 @@ void CLevel_Logo::Update(_float fTimeDelta)
 			return;
 	}
 
-	if (m_pGameInstance->Get_DIKeyState(DIK_V) & 0x80)
-	{
-		// 바로 Open_Level 금지!
-		m_pGameInstance->Queue_Open_Level(
-			static_cast<_uint>(LEVEL::LOADING),
-			[dev = m_pDevice, ctx = m_pContext]() {
-				return CLevel_Loading::Create(dev, ctx, LEVEL::BOSS);
-			}
-		);
-	}
-	if (m_pGameInstance->Get_DIKeyState(DIK_C) & 0x80)
+	
+	if (m_pGameInstance->Get_DIKeyState(DIK_Z) & 0x80)
 	{
 		// 바로 Open_Level 금지!
 		m_pGameInstance->Queue_Open_Level(
@@ -78,13 +69,23 @@ void CLevel_Logo::Update(_float fTimeDelta)
 			}
 		);
 	}
+	if (m_pGameInstance->Get_DIKeyState(DIK_P) & 0x80)
+	{
+		// 바로 Open_Level 금지!
+		m_pGameInstance->Queue_Open_Level(
+			static_cast<_uint>(LEVEL::LOADING),
+			[dev = m_pDevice, ctx = m_pContext]() {
+				return CLevel_Loading::Create(dev, ctx, LEVEL::BOSS);
+			}
+		);
+	}
 
 	return;
 }
 
 HRESULT CLevel_Logo::Render()
 {
-	SetWindowText(g_hWnd, TEXT("로고레벨입니다."));
+	//SetWindowText(g_hWnd, TEXT("로고레벨입니다."));
 
 	return S_OK;
 }

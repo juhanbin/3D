@@ -157,6 +157,7 @@
     <ClInclude Include="..\Public\Body_Into.h" />
     <ClInclude Include="..\Public\Body_Monster_Skeleton.h" />
     <ClInclude Include="..\Public\Body_Player.h" />
+    <ClInclude Include="..\Public\Boss_Controller.h" />
     <ClInclude Include="..\Public\Boss_Fire.h" />
     <ClInclude Include="..\Public\Boss_Hand_L.h" />
     <ClInclude Include="..\Public\Boss_Hand_R.h" />
@@ -173,12 +174,14 @@
     <ClInclude Include="..\Public\Level_Intro.h" />
     <ClInclude Include="..\Public\Level_Loading.h" />
     <ClInclude Include="..\Public\Level_Logo.h" />
+    <ClInclude Include="..\Public\Levle_Bridge.h" />
     <ClInclude Include="..\Public\Loader.h" />
     <ClInclude Include="..\Public\Logo_Logo.h" />
     <ClInclude Include="..\Public\Logo_StartButton.h" />
     <ClInclude Include="..\Public\MainApp.h" />
     <ClInclude Include="..\Public\MapObject.h" />
     <ClInclude Include="..\Public\MapObject_Boss.h" />
+    <ClInclude Include="..\Public\MapObject_Bridge.h" />
     <ClInclude Include="..\Public\MapObject_Intro.h" />
     <ClInclude Include="..\Public\Monster_Skeleton.h" />
     <ClInclude Include="..\Public\Mushroom.h" />
@@ -212,6 +215,7 @@
     <ClCompile Include="..\Private\Body_Into.cpp" />
     <ClCompile Include="..\Private\Body_Monster_Skeleton.cpp" />
     <ClCompile Include="..\Private\Body_Player.cpp" />
+    <ClCompile Include="..\Private\Boss_Controller.cpp" />
     <ClCompile Include="..\Private\Boss_Fire.cpp" />
     <ClCompile Include="..\Private\Boss_Hand_L.cpp" />
     <ClCompile Include="..\Private\Boss_Hand_R.cpp" />
@@ -228,12 +232,14 @@
     <ClCompile Include="..\Private\Level_Intro.cpp" />
     <ClCompile Include="..\Private\Level_Loading.cpp" />
     <ClCompile Include="..\Private\Level_Logo.cpp" />
+    <ClCompile Include="..\Private\Levle_Bridge.cpp" />
     <ClCompile Include="..\Private\Loader.cpp" />
     <ClCompile Include="..\Private\Logo_Logo.cpp" />
     <ClCompile Include="..\Private\Logo_StartButton.cpp" />
     <ClCompile Include="..\Private\MainApp.cpp" />
     <ClCompile Include="..\Private\MapObject.cpp" />
     <ClCompile Include="..\Private\MapObject_Boss.cpp" />
+    <ClCompile Include="..\Private\MapObject_Bridge.cpp" />
     <ClCompile Include="..\Private\MapObject_Intro.cpp" />
     <ClCompile Include="..\Private\Monster_Skeleton.cpp" />
     <ClCompile Include="..\Private\Mushroom.cpp" />

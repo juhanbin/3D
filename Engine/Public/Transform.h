@@ -73,6 +73,10 @@ public:
 	void RotationKeepPos(_float rx, _float ry, _float rz);
 	void RotationKeepPos(_fvector axis, _float rad);
 
+	void Set_Scaled(_float3 vScale);              // 스케일만 교체(회전/위치 유지)
+	void Set_Position(_fvector p);                // 위치 세터 (벡터)
+	void Set_Position(const _float3& p);          // 위치 세터 (float3)
+	_float3 Get_PositionF() const;
 private:
 	inline void SetBasisKeepPos(_fvector r, _fvector u, _fvector l) {
 		_vector pos = Get_State(STATE::POSITION);     // ★ 위치 캐시

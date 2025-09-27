@@ -38,11 +38,11 @@ HRESULT CLevel_Intro::Initialize()
 		return E_FAIL;
 
 	/* 현재 레벨을 구성해주기 위한 객체들을 생성한다. */
-	if (FAILED(Ready_Layer_Camera(TEXT("Layer_Camera"))))
-		return E_FAIL;
-
-	/*if (FAILED(Ready_Layer_Camera_Player(TEXT("Layer_Camera"))))
+	/*if (FAILED(Ready_Layer_Camera(TEXT("Layer_Camera"))))
 		return E_FAIL;*/
+
+	if (FAILED(Ready_Layer_Camera_Player(TEXT("Layer_Camera"))))
+		return E_FAIL;
 
 	if (FAILED(Ready_Layer_BackGround(TEXT("Layer_BackGround"))))
 		return E_FAIL;
@@ -72,6 +72,16 @@ void CLevel_Intro::Update(_float fTimeDelta)
 			static_cast<_uint>(LEVEL::LOADING),
 			[dev = m_pDevice, ctx = m_pContext]() {
 				return CLevel_Loading::Create(dev, ctx, LEVEL::BOSS);
+			}
+		);
+	}
+	if (m_pGameInstance->Get_DIKeyState(DIK_X) & 0x80)
+	{
+		// 바로 Open_Level 금지!
+		m_pGameInstance->Queue_Open_Level(
+			static_cast<_uint>(LEVEL::LOADING),
+			[dev = m_pDevice, ctx = m_pContext]() {
+				return CLevel_Loading::Create(dev, ctx, LEVEL::BRIDGE);
 			}
 		);
 	}

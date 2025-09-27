@@ -49,7 +49,7 @@ HRESULT CRenderer::Initialize()
         return E_FAIL;
 
     /* For.Target_BackBuffer */
-    if (FAILED(m_pGameInstance->Add_RenderTarget(TEXT("Target_BackBuffer"), ViewportDesc.Width, ViewportDesc.Height, DXGI_FORMAT_R8G8B8A8_UNORM, _float4(0.0f, 0.0f, 0.0f, 0.0f))))
+    if (FAILED(m_pGameInstance->Add_RenderTarget(TEXT("Target_BackBuffer"), ViewportDesc.Width, ViewportDesc.Height, DXGI_FORMAT_R8G8B8A8_UNORM, _float4(.0f, 0.0f, 0.0f, 1.0f))))
         return E_FAIL;
 
     /* For.Target_BlurX */

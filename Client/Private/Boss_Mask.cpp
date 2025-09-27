@@ -56,7 +56,7 @@ void CBoss_Mask::Late_Update(_float)
     m_pGameInstance->Add_RenderGroup(RENDERGROUP::NONBLEND, this);
 
 #ifdef _DEBUG
-    m_pGameInstance->Add_DebugComponent(m_pCollider);
+    //m_pGameInstance->Add_DebugComponent(m_pCollider);
 #endif
 }
 
@@ -91,6 +91,24 @@ HRESULT CBoss_Mask::Ready_Components()
     if (FAILED(CGameObject::Add_Component(
         ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_Component_Model_Boss_Mask"),
         TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom), nullptr)))
+        return E_FAIL;
+
+    //// Boss_Mask::Ready_Components()
+    //if (FAILED(CGameObject::Add_Component(
+    //    ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_Component_Shader_VtxMesh"),
+    //    TEXT("Com_Shader"), reinterpret_cast<CComponent**>(&m_pShaderCom), nullptr))) return E_FAIL;
+
+    //if (FAILED(CGameObject::Add_Component(
+    //    ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_Component_Model_Boss_Mask"),
+    //    TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom), nullptr))) return E_FAIL;
+
+   CBounding_OBB::BOUNDING_OBB_DESC  OBBDesc{};
+    OBBDesc.vAngles = _float3(0.f, 0.f, 0.f);
+    OBBDesc.vExtents = _float3(1.0f, 1.5f, 2.f);
+    OBBDesc.vCenter = _float3(0.f, OBBDesc.vExtents.y, 0.f);
+
+    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_Component_Collider_OBB"),
+        TEXT("Com_Collider"), reinterpret_cast<CComponent**>(&m_pColliderCom), &OBBDesc)))
         return E_FAIL;
 
     return S_OK;
@@ -129,7 +147,7 @@ CGameObject* CBoss_Mask::Clone(void* pArg)
 void CBoss_Mask::Free()
 {
     __super::Free();
-    Safe_Release(m_pCollider);
+    //Safe_Release(m_pCollider);
     Safe_Release(m_pModelCom);
     Safe_Release(m_pShaderCom);
 }

@@ -129,7 +129,7 @@ void CPlayer::Update(_float fTimeDelta)
         if (shiftUp) {
             if (m_fShiftHeldSec < kRunHoldThreshold) {
                 m_eMoving = MOVING::DASH;
-                m_pTransformCom->Go_Straight(fTimeDelta * kDashImpulseMul, m_pNavigationCom);
+                m_pTransformCom->Go_Straight(fTimeDelta * kDashImpulseMul);
                 m_iDashFlagFrames = 1;
             }
             m_bShiftPressed = false;
@@ -167,7 +167,7 @@ void CPlayer::Update(_float fTimeDelta)
         if (d) m_pTransformCom->Go_Right(fTimeDelta * mul);
     }
     else {
-        if (w) m_pTransformCom->Go_Straight(fTimeDelta * mul, m_pNavigationCom);
+        if (w) m_pTransformCom->Go_Straight(fTimeDelta * mul);
         else if (s) m_pTransformCom->Go_Backward(fTimeDelta * mul);
         else if (a) {
             m_pTransformCom->Go_Straight(fTimeDelta * mul);
