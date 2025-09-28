@@ -438,7 +438,12 @@ HRESULT CLevel_Boss::Ready_Layer_UI(const _wstring& strLayerTag)
         ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_GameObject_Boss_Fill"))))
         return E_FAIL;
 
-    
+    if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::BOSS), strLayerTag,
+        ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_GameObject_Crosshair_Circle"))))
+        return E_FAIL;
+    if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::BOSS), strLayerTag,
+        ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_GameObject_Crosshair_Side"))))
+        return E_FAIL;
 }
 
 // ===================== Create/Free =====================
