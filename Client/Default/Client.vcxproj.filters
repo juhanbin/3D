@@ -205,6 +205,9 @@
     <Filter Include="02.GameObject\UI\Crosshair_Side">
       <UniqueIdentifier>{de102396-8d8c-4877-9e9b-73d16390b80d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02.GameObject\MapObject\MapObject_Bridge">
+      <UniqueIdentifier>{7ba3bf55-f39a-4dd6-998d-18a98960afd0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h">
@@ -373,7 +376,6 @@
       <Filter>02.GameObject\Boss</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Levle_Bridge.h" />
-    <ClInclude Include="..\Public\MapObject_Bridge.h" />
     <ClInclude Include="..\Public\Player_Hp.h">
       <Filter>02.GameObject\UI\Player_HP</Filter>
     </ClInclude>
@@ -400,6 +402,9 @@
     </ClInclude>
     <ClInclude Include="..\Public\Crosshair_Side.h">
       <Filter>02.GameObject\UI\Crosshair_Side</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\MapObject_Bridge.h">
+      <Filter>02.GameObject\MapObject\MapObject_Bridge</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -570,7 +575,6 @@
       <Filter>02.GameObject\Boss</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Levle_Bridge.cpp" />
-    <ClCompile Include="..\Private\MapObject_Bridge.cpp" />
     <ClCompile Include="..\Private\Player_Hp.cpp">
       <Filter>02.GameObject\UI\Player_HP</Filter>
     </ClCompile>
@@ -597,6 +601,9 @@
     </ClCompile>
     <ClCompile Include="..\Private\Crosshair_Side.cpp">
       <Filter>02.GameObject\UI\Crosshair_Side</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\MapObject_Bridge.cpp">
+      <Filter>02.GameObject\MapObject\MapObject_Bridge</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

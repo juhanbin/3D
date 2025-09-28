@@ -87,7 +87,7 @@ void CPlayer::Update(_float fTimeDelta)
     {
         const float maxhp = max(pm->GetActiveMaxHP(), 0.0f);
 
-        if (m_pGameInstance->KeyDown(DIK_T))      // 5% 감소
+        if (m_pGameInstance->KeyDown(DIK_Q))      // 5% 감소
             pm->ApplyDamageActive(0.05f * maxhp);
 
         if (m_pGameInstance->KeyDown(DIK_Y))      // 5% 증가

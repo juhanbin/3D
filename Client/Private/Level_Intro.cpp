@@ -71,15 +71,6 @@ HRESULT CLevel_Intro::Initialize()
 
 void CLevel_Intro::Update(_float fTimeDelta)
 {
-	if (m_pGameInstance->Get_DIKeyState(DIK_B) & 0x80)
-	{
-		m_pGameInstance->Queue_Open_Level(
-			static_cast<_uint>(LEVEL::LOADING),
-			[dev = m_pDevice, ctx = m_pContext]() {
-				return CLevel_Loading::Create(dev, ctx, LEVEL::BOSS);
-			}
-		);
-	}
 	if (m_pGameInstance->Get_DIKeyState(DIK_X) & 0x80)
 	{
 		// 바로 Open_Level 금지!
@@ -536,21 +527,15 @@ HRESULT CLevel_Intro::Ready_Layer_UI(const _wstring& strLayerTag)
 		ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_GameObject_Player_Hp_Icon"))))
 		return E_FAIL;
 
-	/*if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::INTRO), strLayerTag,
-		ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_GameObject_Player_Hp_Icon"))))
-		return E_FAIL;
-	if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::INTRO), strLayerTag,
-		ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_GameObject_Player_Hp_Icon"))))
-		return E_FAIL;*/
-
-	
-
 	if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::INTRO), strLayerTag,
 		ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_GameObject_Crosshair_Circle"))))
 		return E_FAIL;
+
 	if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::INTRO), strLayerTag,
 		ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_GameObject_Crosshair_Side"))))
 		return E_FAIL;
+
+	return S_OK;
 }
 
 

@@ -130,7 +130,7 @@ void CMonster_Skeleton::Update(_float fTimeDelta)
             const float newYaw = ApproachYaw(curYaw, tgtYaw, fTimeDelta, kTurnSpeed);
             m_pTransformCom->Rotation(0.f, newYaw, 0.f);
 
-            m_pTransformCom->Go_Straight(fTimeDelta, 1.0f, m_pNavigationCom);
+            m_pTransformCom->Go_Straight(fTimeDelta/*, 1.0f, m_pNavigationCom */ );
         }
         else {
             m_iState = MONSTER::SPEARE_IDLE;
@@ -169,8 +169,8 @@ void CMonster_Skeleton::Update(_float fTimeDelta)
 void CMonster_Skeleton::Late_Update(_float fTimeDelta)
 {
     // 네비 위로 위치 보정
-    m_pTransformCom->Set_State(Engine::STATE::POSITION,
-        m_pNavigationCom->Compute_OnCell(m_pTransformCom->Get_State(Engine::STATE::POSITION)));
+  /*  m_pTransformCom->Set_State(Engine::STATE::POSITION,
+        m_pNavigationCom->Compute_OnCell(m_pTransformCom->Get_State(Engine::STATE::POSITION)));*/
 
     if (FAILED(m_pGameInstance->Add_RenderGroup(RENDERGROUP::NONBLEND, this)))
         return;
@@ -181,8 +181,8 @@ void CMonster_Skeleton::Late_Update(_float fTimeDelta)
         if (FAILED(m_pGameInstance->Add_DebugComponent(pCollider)))
             return;
     }
-    if (m_pNavigationCom)
-        m_pGameInstance->Add_DebugComponent(m_pNavigationCom);
+    /*if (m_pNavigationCom)
+        m_pGameInstance->Add_DebugComponent(m_pNavigationCom);*/
 #endif
 
     __super::Late_Update(fTimeDelta);
@@ -204,10 +204,10 @@ HRESULT CMonster_Skeleton::Ready_Components()
     CNavigation::NAVIGATION_DESC NaviDesc{};
     NaviDesc.iCurrentCellIndex = 0;
 
-    if (FAILED(CGameObject::Add_Component(
-        ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Navigation"),
+    /*if (FAILED(CGameObject::Add_Component(
+        ENUM_CLASS(LEVEL::BRIDGE), TEXT("Prototype_Component_Navigation"),
         TEXT("Com_Navigation"), reinterpret_cast<CComponent**>(&m_pNavigationCom), &NaviDesc)))
-        return E_FAIL;
+        return E_FAIL;*/
 
     /*CBounding_AABB::BOUNDING_AABB_DESC  AABBDesc{};
     AABBDesc.vExtents = _float3(0.4f, 0.7f, 0.4f);
@@ -222,7 +222,7 @@ HRESULT CMonster_Skeleton::Ready_Components()
     OBBDesc.vExtents = _float3(0.35f, 0.9f, 0.35f);
     OBBDesc.vCenter = _float3(0.f, OBBDesc.vExtents.y, 0.f);
 
-    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Collider_OBB"),
+    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::BRIDGE), TEXT("Prototype_Component_Collider_OBB"),
         TEXT("Com_Collider_OBB"), reinterpret_cast<CComponent**>(&m_pColliderCom[ENUM_CLASS(COLLIDER::OBB)]), &OBBDesc)))
         return E_FAIL;
 
@@ -244,7 +244,7 @@ HRESULT CMonster_Skeleton::Ready_PartObjects()
     BodyDesc.pParentMatrix = m_pTransformCom->Get_WorldMatrixPtr();
 
     if (FAILED(__super::Add_PartObject(TEXT("Part_Body_Skeleton"),
-        ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Body_Skeleton"), &BodyDesc)))
+        ENUM_CLASS(LEVEL::BRIDGE), TEXT("Prototype_GameObject_Skeleton_Body"), &BodyDesc)))
         return E_FAIL;
 
     CPartObject* pBody = Find_PartObject(TEXT("Part_Body_Skeleton"));
@@ -263,7 +263,7 @@ HRESULT CMonster_Skeleton::Ready_PartObjects()
         desc.pParentMatrix = m_pTransformCom->Get_WorldMatrixPtr();
 
         if (FAILED(__super::Add_PartObject(TEXT("Part_Weapon_Monster_Spear"),
-            ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Weapon_Skeleton_Spear"), &desc)))
+            ENUM_CLASS(LEVEL::BRIDGE), TEXT("Prototype_GameObject_Weapon_Skeleton_Spear"), &desc)))
             return E_FAIL;
     }
     // ───── Bow ─────
@@ -276,7 +276,7 @@ HRESULT CMonster_Skeleton::Ready_PartObjects()
         desc.pAnimModel = pBodySkel->GetModel();  // ★ 바디 모델 포인터 전달 (애니 진행 질의용)
 
         if (FAILED(__super::Add_PartObject(TEXT("Part_Weapon_Monster_Bow"),
-            ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_GameObject_Weapon_Skeleton_Bow"), &desc)))
+            ENUM_CLASS(LEVEL::BRIDGE), TEXT("Prototype_GameObject_Weapon_Skeleton_Bow"), &desc)))
             return E_FAIL;
     }
 
@@ -290,7 +290,7 @@ _bool CMonster_Skeleton::Collision_ToPlayer()
     if (!pMyCol) return false;
 
     // Layer_Spear에 있는 스피어들을 인덱스로 순회
-    const _uint level = ENUM_CLASS(LEVEL::GAMEPLAY);
+    const _uint level = ENUM_CLASS(LEVEL::BRIDGE);
     const _wstring layer = L"Layer_Spear";
 
     for (_uint i = 0; ; ++i)

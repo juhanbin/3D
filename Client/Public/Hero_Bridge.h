@@ -9,8 +9,8 @@ class CNavigation;
 NS_END
 
 NS_BEGIN(Client)
-class CBody_Bridge;
-class CWeapon_Bridge;
+class CBody_Into;
+class CWeapon_Intro;
 
 class CHero_Bridge final : public CContainerObject
 {
@@ -63,6 +63,9 @@ private:
     // HP 처리(매니저 연동)
     void    ApplyDamage(int amount);
     void TickHostileHits(float dt);
+    void DebugTickHPKeys();
+    void ApplyDamagePM(float amount);
+    void HealPM(float amount);
 
 private:
     Engine::CNavigation* m_pNavigationCom = nullptr;
@@ -83,6 +86,13 @@ private:
     // 트리거 데미지 관리
     float   m_damageTickGap = 0.25f;  // 데미지 틱 간격(초)
     float   m_damageTickAcc = 0.f;    // 누적
+
+private:
+    float m_iframeSec = 0.f;                 // 남은 무적시간
+    const float kIFrameDuration = 0.8f;      // 무적시간 길이(원하는 값)
+    float m_worldTime = 0.f;                 // 누적 시간
+    std::unordered_map<uintptr_t, float> m_lastHitAt; // 가해자별 마지막 히트 시간
+    const float kPerSourceCooldown = 0.35f;  // 같은 무기/화살에게 재히트 허용 간격
 
     struct WorldSnapshot {
         DirectX::XMFLOAT4 right, up, look, pos;

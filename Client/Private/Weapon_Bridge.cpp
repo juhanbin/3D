@@ -136,11 +136,11 @@ HRESULT CWeapon_Bridge::Render()
 
 HRESULT CWeapon_Bridge::Ready_Components()
 {
-    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::INTRO), TEXT("Prototype_Component_Shader_VtxAnimMesh"),
+    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::BRIDGE), TEXT("Prototype_Component_Shader_VtxAnimMesh"),
         TEXT("Com_Shader"), reinterpret_cast<CComponent**>(&m_pShaderCom), nullptr)))
         return E_FAIL;
 
-    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::INTRO), TEXT("Prototype_Component_Model_Spear"),
+    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::BRIDGE), TEXT("Prototype_Component_Model_Spear"),
         TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom), nullptr)))
         return E_FAIL;
 

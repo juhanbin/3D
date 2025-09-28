@@ -7,6 +7,7 @@
 #include "Object_Pool_Manager.h"
 #include "Mushroom.h"
 #include "Weapon_Skeleton_Arrow.h"
+#include "Player.h"
 USING(Client)
 
 CHero_Bridge::CHero_Bridge(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
@@ -52,8 +53,8 @@ HRESULT CHero_Bridge::Initialize(void* pArg)
     if (FAILED(Ready_PartObjects()))  return E_FAIL;
 
     // PlayerManager 등록 및 활성화
-    CPlayerManager::GetInstance()->Register(ENUM_CLASS(LEVEL::BRIDGE), 1, this, -1.f);
-    CPlayerManager::GetInstance()->SetActive(ENUM_CLASS(LEVEL::BRIDGE), 1);
+    CPlayerManager::GetInstance()->Register(ENUM_CLASS(LEVEL::BRIDGE), 0, this, 100.f);
+    CPlayerManager::GetInstance()->SetActive(ENUM_CLASS(LEVEL::BRIDGE), 0);
 
     return S_OK;
 }
@@ -65,6 +66,9 @@ void CHero_Bridge::Priority_Update(_float fTimeDelta)
 
 void CHero_Bridge::Update(_float fTimeDelta)
 {
+    m_worldTime += fTimeDelta;
+    if (m_iframeSec > 0.f) m_iframeSec = max(0.f, m_iframeSec - fTimeDelta);
+    DebugTickHPKeys();
     // ---- 입력 ----
     const bool w = m_pGameInstance->KeyPressing(DIK_W);
     const bool a = m_pGameInstance->KeyPressing(DIK_A);
@@ -167,7 +171,7 @@ void CHero_Bridge::Update(_float fTimeDelta)
         if (d) m_pTransformCom->Go_Right(fTimeDelta * mul);
     }
     else {
-        if (w) m_pTransformCom->Go_Straight(fTimeDelta * mul, m_pNavigationCom);
+        if (w) m_pTransformCom->Go_Straight(fTimeDelta * mul /*m_pNavigationCom*/);
         else if (s) m_pTransformCom->Go_Backward(fTimeDelta * mul);
         else if (a) {
             m_pTransformCom->Go_Straight(fTimeDelta * mul);
@@ -207,16 +211,16 @@ void CHero_Bridge::Update(_float fTimeDelta)
 void CHero_Bridge::Late_Update(_float fTimeDelta)
 {
     // 네비 위 보정
-    m_pTransformCom->Set_State(
+   /* m_pTransformCom->Set_State(
         Engine::STATE::POSITION,
-        m_pNavigationCom->Compute_OnCell(m_pTransformCom->Get_State(Engine::STATE::POSITION)));
+        m_pNavigationCom->Compute_OnCell(m_pTransformCom->Get_State(Engine::STATE::POSITION)));*/
 
     if (FAILED(m_pGameInstance->Add_RenderGroup(RENDERGROUP::NONBLEND, this)))
         return;
 
 #ifdef _DEBUG
     m_pGameInstance->Add_DebugComponent(m_pColliderCom);
-    m_pGameInstance->Add_DebugComponent(m_pNavigationCom);
+    //m_pGameInstance->Add_DebugComponent(m_pNavigationCom);
 #endif
     __super::Late_Update(fTimeDelta);
 }
@@ -266,13 +270,13 @@ void CHero_Bridge::Throw_Spear()
 
 HRESULT CHero_Bridge::Ready_Components()
 {
-    CNavigation::NAVIGATION_DESC NaviDesc{};
+    /*CNavigation::NAVIGATION_DESC NaviDesc{};
     NaviDesc.iCurrentCellIndex = 0;
 
     if (FAILED(CGameObject::Add_Component(
         ENUM_CLASS(LEVEL::BRIDGE), TEXT("Prototype_Component_Navigation_Bridge"),
         TEXT("Com_Navigation"), reinterpret_cast<CComponent**>(&m_pNavigationCom), &NaviDesc)))
-        return E_FAIL;
+        return E_FAIL;*/
 
     // 플레이어 본체 충돌(막힘/피격 판단에 사용)
     CBounding_Sphere::BOUNDING_SPHERE_DESC S{};
@@ -461,14 +465,17 @@ void CHero_Bridge::ApplyDamage(int amount)
     OutputDebugStringW(wbuf);
 }
 
-void CHero_Bridge::TickHostileHits(float dt)
+void CHero_Bridge::TickHostileHits(float /*dt*/)
 {
     auto* pm = CPlayerManager::GetInstance();
     if (!pm || !m_pColliderCom) return;
 
+    // 전역 무적시간이 남아 있으면 스킵
+    if (m_iframeSec > 0.f) return;
+
     const _uint level = ENUM_CLASS(LEVEL::BRIDGE);
 
-    // ---------- 1) 적 화살 ----------
+    // ===== 1) 적 화살 =====
     {
         const std::wstring layer = L"Layer_Arrow";
         for (_uint i = 0;; ++i)
@@ -481,28 +488,38 @@ void CHero_Bridge::TickHostileHits(float dt)
 
             if (m_pColliderCom->Intersect(col))
             {
-                constexpr float kArrowDamage = 12.f;
+                // 가해자별 재히트 쿨다운 체크
+                uintptr_t key = reinterpret_cast<uintptr_t>(obj);
+                auto it = m_lastHitAt.find(key);
+                if (it != m_lastHitAt.end() && (m_worldTime - it->second) < kPerSourceCooldown)
+                    continue;
 
+                constexpr float kArrowDamage = 10.f;
                 const float hpBefore = pm->GetActiveHP();
                 pm->ApplyDamageActive(kArrowDamage);
                 const float hpAfter = pm->GetActiveHP();
 
-                // HP 로그
                 wchar_t wbuf[128];
                 swprintf(wbuf, 128, L"HITED Arrow =%.1f  HP: %.1f -> %.1f\n",
                     kArrowDamage, hpBefore, hpAfter);
                 OutputDebugStringW(wbuf);
 
-                // 화살은 한 번 맞으면 풀로 복귀(중복 히트 방지)
+                // 화살은 1회 판정 후 풀로 복귀
                 if (auto* arrow = dynamic_cast<CWeapon_Skeleton_Arrow*>(obj))
-                    int a = 0;// arrow->ReturnToPool(); // public이어야 함
+                    arrow->ReturnToPool();      // ← 꼭 public 이어야 함
                 else
-                    obj->Set_Active(false); // 최소한 비활성화
+                    obj->Set_Active(false);
+
+                // 무적시간 부여 + 타임스탬프
+                m_iframeSec = kIFrameDuration;
+                m_lastHitAt[key] = m_worldTime;
+
+                return; // 한 프레임에 여러 번 맞지 않게 종료(선택)
             }
         }
     }
 
-    // ---------- 2) 적 근접 무기(스켈레톤 창 등) ----------
+    // ===== 2) 적 근접 무기(스켈레톤 창 등) =====
     {
         const std::wstring layer = L"Layer_MonsterHit";
         for (_uint i = 0;; ++i)
@@ -515,8 +532,13 @@ void CHero_Bridge::TickHostileHits(float dt)
 
             if (m_pColliderCom->Intersect(hitCol))
             {
-                constexpr float kSpearDamage = 15.f;
+                // 가해자별 재히트 쿨다운 체크
+                uintptr_t key = reinterpret_cast<uintptr_t>(obj);
+                auto it = m_lastHitAt.find(key);
+                if (it != m_lastHitAt.end() && (m_worldTime - it->second) < kPerSourceCooldown)
+                    continue;
 
+                constexpr float kSpearDamage = 5.f;
                 const float hpBefore = pm->GetActiveHP();
                 pm->ApplyDamageActive(kSpearDamage);
                 const float hpAfter = pm->GetActiveHP();
@@ -526,9 +548,44 @@ void CHero_Bridge::TickHostileHits(float dt)
                     kSpearDamage, hpBefore, hpAfter);
                 OutputDebugStringW(wbuf);
 
+                // 무적시간 부여 + 타임스탬프
+                m_iframeSec = kIFrameDuration;
+                m_lastHitAt[key] = m_worldTime;
+
+                return; // 한 프레임에 여러 번 맞지 않게 종료(선택)
             }
         }
     }
+}
+
+
+void CHero_Bridge::DebugTickHPKeys()
+{
+    auto* pm = CPlayerManager::GetInstance();
+    if (!pm) return;
+
+    const float maxhp = max(pm->GetMaxHP(ENUM_CLASS(LEVEL::BRIDGE), 0u), 0.0f);
+
+    // T: 5% 데미지, Y: 5% 회복  (한 번 눌렀을 때 한 번만)
+    if (m_pGameInstance->KeyDown(DIK_T))
+        ApplyDamagePM(0.05f * maxhp);
+
+    if (m_pGameInstance->KeyDown(DIK_Y))
+        HealPM(0.05f * maxhp);
+}
+
+void CHero_Bridge::ApplyDamagePM(float amount)
+{
+    if (amount <= 0.f) return;
+    if (auto* pm = CPlayerManager::GetInstance())
+        pm->ApplyDamage(ENUM_CLASS(LEVEL::BRIDGE), /*playerId=*/0, amount);
+}
+
+void CHero_Bridge::HealPM(float amount)
+{
+    if (amount <= 0.f) return;
+    if (auto* pm = CPlayerManager::GetInstance())
+        pm->Heal(ENUM_CLASS(LEVEL::BRIDGE), /*playerId=*/0, amount);
 }
 
 
@@ -554,9 +611,18 @@ CGameObject* CHero_Bridge::Clone(void* pArg)
     return pInstance;
 }
 
-void CHero_Bridge::Free()
-{
-    CPlayerManager::GetInstance()->Unregister(ENUM_CLASS(LEVEL::BRIDGE), 1);
+void CHero_Bridge::Free() {
+    OutputDebugStringW(L"[BRIDGE] Free() called\n");
+    if (auto* pm = CPlayerManager::GetInstance()) {
+        const _uint heroSlot = 0;
+        const float hp = pm->GetHP(ENUM_CLASS(LEVEL::BRIDGE), 0);
+        const float max = pm->GetMaxHP(ENUM_CLASS(LEVEL::BRIDGE), 0);
+        wchar_t buf[128]; swprintf(buf, 128, L"[BRIDGE] save HP=%.1f / Max=%.1f\n", hp, max);
+        OutputDebugStringW(buf);
+
+        pm->SavePersistentHP(heroSlot, hp, max);
+    }
+    CPlayerManager::GetInstance()->Unregister(ENUM_CLASS(LEVEL::BRIDGE), 0);
     __super::Free();
     Safe_Release(m_pColliderCom);
     Safe_Release(m_pNavigationCom);

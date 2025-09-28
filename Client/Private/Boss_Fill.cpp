@@ -19,10 +19,10 @@ namespace BossUI_Debug
         const float step = 0.05f * MaxHP();          // tap 5%
         const float flow = 0.40f * MaxHP() * dtSec;  // hold 40%/s
 
-        if (gi->KeyDown(DIK_G)) HP() = max(0.f, HP() - step);
+        if (gi->KeyDown(DIK_E)) HP() = max(0.f, HP() - step);
         if (gi->KeyDown(DIK_H)) HP() = std::min(MaxHP(), HP() + step);
 
-        if (gi->KeyPressing(DIK_G)) HP() = max(0.f, HP() - flow);
+        if (gi->KeyPressing(DIK_E)) HP() = max(0.f, HP() - flow);
         if (gi->KeyPressing(DIK_H)) HP() = std::min(MaxHP(), HP() + flow);
     }
 }

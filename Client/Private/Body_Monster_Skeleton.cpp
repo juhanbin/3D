@@ -175,12 +175,12 @@ void CBody_Monster_Skeleton::SetClipSmart(int animIndex, bool loop, _float blend
 HRESULT CBody_Monster_Skeleton::Ready_Components()
 {
 	if (FAILED(CGameObject::Add_Component(
-		ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Shader_VtxAnimMesh"),
+		ENUM_CLASS(LEVEL::BRIDGE), TEXT("Prototype_Component_Shader_VtxAnimMesh"),
 		TEXT("Com_Shader"), reinterpret_cast<CComponent**>(&m_pShaderCom), nullptr)))
 		return E_FAIL;
 
 	if (FAILED(CGameObject::Add_Component(
-		ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Model_Monster_Skeleton"),
+		ENUM_CLASS(LEVEL::BRIDGE), TEXT("Prototype_Component_Model_Monster_Skeleton"),
 		TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom), nullptr)))
 		return E_FAIL;
 

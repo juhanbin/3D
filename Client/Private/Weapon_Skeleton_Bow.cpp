@@ -79,12 +79,12 @@ HRESULT CWeapon_Skeleton_Bow::Render()
 HRESULT CWeapon_Skeleton_Bow::Ready_Components()
 {
     if (FAILED(CGameObject::Add_Component(
-        ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Shader_VtxMesh"),
+        ENUM_CLASS(LEVEL::BRIDGE), TEXT("Prototype_Component_Shader_VtxMesh"),
         TEXT("Com_Shader"), reinterpret_cast<CComponent**>(&m_pShaderCom), nullptr)))
         return E_FAIL;
 
     if (FAILED(CGameObject::Add_Component(
-        ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Model_Monster_Bow"),
+        ENUM_CLASS(LEVEL::BRIDGE), TEXT("Prototype_Component_Model_Monster_Bow"),
         TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom), nullptr)))
         return E_FAIL;
 
@@ -235,7 +235,7 @@ void CWeapon_Skeleton_Bow::FireOnce()
     }
 
     auto* pool = CObject_Pool_Manager::GetInstance();
-    auto* obj = pool->Acquire(LEVEL::GAMEPLAY, L"Layer_Arrow");
+    auto* obj = pool->Acquire(LEVEL::BRIDGE, L"Layer_Arrow");
     auto* arrow = dynamic_cast<CWeapon_Skeleton_Arrow*>(obj);
     if (!arrow) return;
 

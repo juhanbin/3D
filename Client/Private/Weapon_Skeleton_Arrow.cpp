@@ -44,8 +44,8 @@ void CWeapon_Skeleton_Arrow::Update(_float dt)
     if (!Is_Active()) return;
 
     // 남은 수명 관리가 필요하면 해제
-    // m_life -= dt;
-    // if (m_life <= 0.f) { ReturnToPool(); return; }
+     m_life -= dt;
+     if (m_life <= 0.f) { ReturnToPool(); return; }
 
     Tick_Move(dt);
 
@@ -187,13 +187,13 @@ bool CWeapon_Skeleton_Arrow::Check_Hit()
 void CWeapon_Skeleton_Arrow::ReturnToPool()
 {
     Set_Active(false);
-    CObject_Pool_Manager::GetInstance()->Release(LEVEL::GAMEPLAY, L"Layer_Arrow", this);
+    CObject_Pool_Manager::GetInstance()->Release(LEVEL::BRIDGE, L"Layer_Arrow", this);
 }
 
 HRESULT CWeapon_Skeleton_Arrow::Ready_Components()
 {
     if (FAILED(CGameObject::Add_Component(
-        ENUM_CLASS(LEVEL::GAMEPLAY),
+        ENUM_CLASS(LEVEL::BRIDGE),
         TEXT("Prototype_Component_Shader_VtxMesh"),
         TEXT("Com_Shader"),
         reinterpret_cast<CComponent**>(&m_pShaderCom), nullptr)))
@@ -202,14 +202,14 @@ HRESULT CWeapon_Skeleton_Arrow::Ready_Components()
         return E_FAIL;
     }
 
-    Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Model_Monster_Arrow"),
+    Add_Component(ENUM_CLASS(LEVEL::BRIDGE), TEXT("Prototype_Component_Model_Monster_Arrow"),
         TEXT("Com_Model"), (CComponent**)&m_pModelCom, nullptr);
 
     CBounding_Sphere::BOUNDING_SPHERE_DESC  SphereDesc{};
     SphereDesc.fRadius = 0.1f;
     SphereDesc.vCenter = _float3(0.f, SphereDesc.fRadius + 0.6f, 0.f);
 
-    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_Component_Collider_Sphere"),
+    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::BRIDGE), TEXT("Prototype_Component_Collider_Sphere"),
         TEXT("Com_Collider"), reinterpret_cast<CComponent**>(&m_pColliderCom), &SphereDesc)))
         return E_FAIL;
 

@@ -43,6 +43,7 @@ public:
 private:
     void    Tick_Move(float dt);
     bool    Check_Hit();
+public:
     void    ReturnToPool();
 
     // 진행방향(속도)에 맞춰 월드 회전 정렬 (스케일/위치 보존)

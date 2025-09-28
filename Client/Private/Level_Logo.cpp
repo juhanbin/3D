@@ -69,16 +69,7 @@ void CLevel_Logo::Update(_float fTimeDelta)
 			}
 		);
 	}
-	if (m_pGameInstance->Get_DIKeyState(DIK_P) & 0x80)
-	{
-		// 바로 Open_Level 금지!
-		m_pGameInstance->Queue_Open_Level(
-			static_cast<_uint>(LEVEL::LOADING),
-			[dev = m_pDevice, ctx = m_pContext]() {
-				return CLevel_Loading::Create(dev, ctx, LEVEL::BOSS);
-			}
-		);
-	}
+	
 
 	return;
 }

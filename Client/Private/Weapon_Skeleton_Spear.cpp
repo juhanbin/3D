@@ -23,6 +23,10 @@ HRESULT CWeapon_Skeleton_Spear::Initialize(void* pArg)
     WEAPON_DESC* pDesc = static_cast<WEAPON_DESC*>(pArg);
     m_pParentState = pDesc->pState;
     m_pSocketMatrix = pDesc->pSocketMatrix;
+    m_pParentMatrix = pDesc->pParentMatrix;
+
+    if (!m_pSocketMatrix || !m_pParentMatrix)  // ★ 방어 코드
+        return E_FAIL;
 
     if (FAILED(__super::Initialize(pArg)))
         return E_FAIL;
@@ -31,7 +35,7 @@ HRESULT CWeapon_Skeleton_Spear::Initialize(void* pArg)
         return E_FAIL;
 
     CGameInstance::GetInstance()
-        ->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::GAMEPLAY), L"Layer_MonsterHit", this);
+        ->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::BRIDGE), L"Layer_MonsterHit", this);
 
     //m_pTransformCom->Scaling(_float3(0.1f, 0.1f, 0.1f));
     //m_pTransformCom->Set_State(STATE::POSITION, XMVectorSet(0.f, 0.f, 0.f, 1.f));
@@ -99,22 +103,22 @@ HRESULT CWeapon_Skeleton_Spear::Render()
 
 HRESULT CWeapon_Skeleton_Spear::Ready_Components()
 {
-    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Shader_VtxMesh"),
+    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::BRIDGE), TEXT("Prototype_Component_Shader_VtxMesh"),
         TEXT("Com_Shader"), reinterpret_cast<CComponent**>(&m_pShaderCom), nullptr)))
         return E_FAIL;
 
-    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Model_Monster_Spear"),
+    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::BRIDGE), TEXT("Prototype_Component_Model_Monster_Spear"),
         TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom), nullptr)))
         return E_FAIL;
 
-    Add_Component(ENUM_CLASS(LEVEL::GAMEPLAY), TEXT("Prototype_Component_Model_Monster_Spear"),
-        TEXT("Com_Model"), (CComponent**)&m_pModelCom, nullptr);
+    /*Add_Component(ENUM_CLASS(LEVEL::BRIDGE), TEXT("Prototype_Component_Model_Monster_Spear"),
+        TEXT("Com_Model"), (CComponent**)&m_pModelCom, nullptr);*/
 
     CBounding_Sphere::BOUNDING_SPHERE_DESC  SphereDesc{};
     SphereDesc.fRadius = 0.1f;
     SphereDesc.vCenter = _float3(0.f, SphereDesc.fRadius + 1.3f, 0.f);
 
-    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_Component_Collider_Sphere"),
+    if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::BRIDGE), TEXT("Prototype_Component_Collider_Sphere"),
         TEXT("Com_Collider"), reinterpret_cast<CComponent**>(&m_pColliderCom), &SphereDesc)))
         return E_FAIL;
 

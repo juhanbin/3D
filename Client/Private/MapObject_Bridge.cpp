@@ -105,7 +105,7 @@ HRESULT CMapObject_Bridge::Ready_Components()
 {
     // Ω¶¿Ã¥ı √ﬂ∞°
     if (FAILED(CGameObject::Add_Component(
-        ENUM_CLASS(LEVEL::INTRO),
+        ENUM_CLASS(LEVEL::BRIDGE),
         TEXT("Prototype_Component_Shader_VtxMesh"),
         TEXT("Com_Shader"),
         reinterpret_cast<CComponent**>(&m_pShaderCom), nullptr)))
@@ -118,31 +118,60 @@ HRESULT CMapObject_Bridge::Ready_Components()
     const wchar_t* modelProto = nullptr;
     switch (m_eType)
     {
-    case EObjectType::MOD_VAULTED_STAIR_AA:
-        modelProto = TEXT("Prototype_Component_Model_Big_Door");
-        break;
-    case EObjectType::MOD_VAULTED_BROKEN_AA:
-        modelProto = TEXT("Prototype_Component_Model_Celling_AA");
-        break;
-    case EObjectType::MOD_VAULTED_BROKEN_AB:
-        modelProto = TEXT("Prototype_Component_Model_Cube_004");
-        break;
-    case EObjectType::MOD_VAULTED_CORRIDOR_AA:
+    case EObjectType::DOORFRAME:
         modelProto = TEXT("Prototype_Component_Model_DoorFrame");
         break;
     case EObjectType::DOORWALL_AA:
         modelProto = TEXT("Prototype_Component_Model_DoorWall_AA");
         break;
-    case EObjectType::MOD_BOSSROOM_WALL_AA:
-        modelProto = TEXT("Prototype_Component_Model_HangingRopes");
+    case EObjectType::CELLING_AA:
+        modelProto = TEXT("Prototype_Component_Model_Celling_AA");
+        break;
+    case EObjectType::PILLAR:
+        modelProto = TEXT("Prototype_Component_Model_Pillar");
+        break;
+    case EObjectType::MOD_VAULTED_CORRIDOR_AA:
+        modelProto = TEXT("Prototype_Component_Model_MOD_Vaulted_Corridor_AA");
+        break;
+    case EObjectType::MOD_VAULTED_STAIR_AA:
+        modelProto = TEXT("Prototype_Component_Model_MOD_Vaulted_Stair_AA");
+        break;
+    case EObjectType::MOD_VAULTED_BROKEN_AA:
+        modelProto = TEXT("Prototype_Component_Model_MOD_Vaulted_Broken_AA");
+        break;
+    case EObjectType::MOD_VAULTED_BROKEN_AB:
+        modelProto = TEXT("Prototype_Component_Model_MOD_Vaulted_Broken_AB");
+        break;
+    case EObjectType::VAULTED_WALL_AA:
+        modelProto = TEXT("Prototype_Component_Model_Vaulted_Wall_AA");
+        break;
+    case EObjectType::MOD_BRIDGEARCH_AA:
+        modelProto = TEXT("Prototype_Component_Model_MOD_BridgeArch_AA");
+        break;
+    case EObjectType::MOD_BRIDGEBROKEN_AA:
+        modelProto = TEXT("Prototype_Component_Model_MOD_BridgeBroken_AA");
+        break;
+    case EObjectType::MOD_BRIDGEGROUND_AA:
+        modelProto = TEXT("Prototype_Component_Model_MOD_BridgeGround_AA");
+        break;
+    case EObjectType::SM_MERGED_MOD_THREEDEFENSES:
+        modelProto = TEXT("Prototype_Component_Model_SM_MERGED_MOD_ThreeDefenses");
+        break;
+    case EObjectType::DOOR:
+        modelProto = TEXT("Prototype_Component_Model_Door");
         break;
     default:
-        OutputDebugStringA("Unknown EObjectType in Ready_Components!\n");
-        return E_FAIL;
+    {
+        char buf[128];
+        sprintf_s(buf, "[MapObj] Unknown EObjectType=%d (Bridge level)\n", int(m_eType));
+        OutputDebugStringA(buf);
+    }
+    return E_FAIL;
     }
 
+
     if (FAILED(CGameObject::Add_Component(
-        ENUM_CLASS(LEVEL::INTRO),
+        ENUM_CLASS(LEVEL::BRIDGE),
         modelProto,
         TEXT("Com_Model"),
         reinterpret_cast<CComponent**>(&m_pModelCom), nullptr)))
@@ -166,20 +195,6 @@ HRESULT CMapObject_Bridge::Bind_ShaderResources()
     if (FAILED(m_pShaderCom->Bind_Matrix("g_ProjMatrix", m_pGameInstance->Get_Transform_Float4x4(D3DTS::PROJ))))
         return E_FAIL;
 
-    /*const LIGHT_DESC* pLightDesc = m_pGameInstance->Get_LightDesc(0);
-    if (!pLightDesc)
-        return E_FAIL;
-
-    if (FAILED(m_pShaderCom->Bind_RawValue("g_vLightDir", &pLightDesc->vDirection, sizeof(_float4))))
-        return E_FAIL;
-    if (FAILED(m_pShaderCom->Bind_RawValue("g_vLightDiffuse", &pLightDesc->vDiffuse, sizeof(_float4))))
-        return E_FAIL;
-    if (FAILED(m_pShaderCom->Bind_RawValue("g_vLightAmbient", &pLightDesc->vAmbient, sizeof(_float4))))
-        return E_FAIL;
-    if (FAILED(m_pShaderCom->Bind_RawValue("g_vLightSpecular", &pLightDesc->vSpecular, sizeof(_float4))))
-        return E_FAIL;
-    if (FAILED(m_pShaderCom->Bind_RawValue("g_vCamPosition", m_pGameInstance->Get_CamPosition(), sizeof(_float4))))
-        return E_FAIL;*/
 
     return S_OK;
 }

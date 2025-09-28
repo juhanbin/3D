@@ -46,4 +46,8 @@ public:
     virtual CGameObject* Clone(void* pArg) override;
     virtual void Free() override;
 };
+
+class MapObject_Bridge
+{
+};
 NS_END
