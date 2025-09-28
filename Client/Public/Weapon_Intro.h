@@ -51,10 +51,14 @@ private:
 	ATTACK* m_pAttack = { nullptr };
 
 private:
-	bool      m_lastAiming = false; // 직전 프레임 조준 여부
-	XMFLOAT3  m_eulerEquip = { XMConvertToRadians(0.f),  XMConvertToRadians(0.f),  XMConvertToRadians(0.f) }; // 허리 장착 각
-	XMFLOAT3  m_eulerAim = { XMConvertToRadians(120.f), XMConvertToRadians(0.f),   XMConvertToRadians(0.f) }; // 조준 각
+	XMFLOAT3 m_alignEuler = { XMConvertToRadians(90.f), XMConvertToRadians(0.f), XMConvertToRadians(180.f) };
+	// 상태별(허리/조준) 미세 보정
+	XMFLOAT3 m_equipEuler = { 89.7f, 0.f, 0.f };
+	XMFLOAT3 m_aimEuler = { XMConvertToRadians(160.f), XMConvertToRadians(350.f), 0.f };  // 필요에 맞게
+	_float3  m_equipOffset = { 0.0f, 0.30f, 0.2f };                   // 허리에서 약간 뒤/아래
+	_float3  m_aimOffset = { 0.02f, 0.07f, -0.12f };                 // 조준시 손 중심 근처
 
+	_float4x4 m_GripLocal; // Initialize에서 Identity로 세팅됨
 private:
 	HRESULT Ready_Components();
 	HRESULT Bind_ShaderResources();

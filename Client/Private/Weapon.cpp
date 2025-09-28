@@ -33,13 +33,14 @@ HRESULT CWeapon::Initialize(void* pArg)
     if (FAILED(Ready_Components()))
         return E_FAIL;
 
-    m_pTransformCom->Set_State(STATE::POSITION, XMVectorSet(0.f, -1.f, 0.2f, 1.f));
+    m_pTransformCom->Set_State(STATE::POSITION, XMVectorSet(0.f, 100.f, 0.2f, 1.f));
     m_pModelCom->Set_Animation(2, true);
 
     wchar_t wbuf[128];
     swprintf(wbuf, 128, L"[ADDR] Weapon model=%p shader=%p\n", m_pModelCom, m_pShaderCom);
     OutputDebugStringW(wbuf);
 
+    XMStoreFloat4x4(&m_GripLocal, XMMatrixIdentity());
     return S_OK;
 }
 
@@ -48,7 +49,7 @@ void CWeapon::Priority_Update(_float fTimeDelta)
     int a = 10;
 }
 
-void CWeapon::Update(_float fTimeDelta)
+void CWeapon::Update(_float dt)
 {
     const bool aiming =
         (*m_pAttack == ATTACK::ENTER || *m_pAttack == ATTACK::IDLE ||
@@ -56,36 +57,35 @@ void CWeapon::Update(_float fTimeDelta)
             *m_pAttack == ATTACK::LEFT || *m_pAttack == ATTACK::RIGHT ||
             *m_pAttack == ATTACK::GROUND);
 
-    if (aiming != m_lastAiming) {
-        if (aiming)
-        {
-            m_pTransformCom->Rotation(m_eulerAim.x, m_eulerAim.y, m_eulerAim.z);
-            m_pTransformCom->Set_State(STATE::POSITION, XMVectorSet(0.f, 0.3f, -0.5f, 1.f));
-        }
-        else
-        {
-            m_pTransformCom->Rotation(m_eulerEquip.x, m_eulerEquip.y, m_eulerEquip.z);
-            m_pTransformCom->Set_State(STATE::POSITION, XMVectorSet(0.f, -1.f, 0.2f, 1.f));
-        }
-        m_lastAiming = aiming;
-    }
-
-    _matrix BoneMatrix = aiming ? XMLoadFloat4x4(m_pSocketMatrix_Hand)
+    const _matrix socketW = aiming
+        ? XMLoadFloat4x4(m_pSocketMatrix_Hand)
         : XMLoadFloat4x4(m_pSocketMatrix);
 
-    for (int i = 0; i < 3; ++i) BoneMatrix.r[i] = XMVector3Normalize(BoneMatrix.r[i]);
+    const _matrix parentW = XMLoadFloat4x4(m_pParentMatrix);
+    const _matrix gripLocal = XMLoadFloat4x4(&m_GripLocal);
 
-    XMStoreFloat4x4(
-        &m_CombinedWorldMatrix,
-        m_pTransformCom->Get_WorldMatrix() *  
-        BoneMatrix *                          
-        XMLoadFloat4x4(m_pParentMatrix)       
-    );
+    // 1) 모델-손 축 정렬(고정값) : 모델 기본자세에 맞춰 한 번만 세팅
+    const _matrix kAlign =
+        XMMatrixRotationRollPitchYaw(m_alignEuler.x, m_alignEuler.y, m_alignEuler.z);
 
+    // 2) 상태별 미세 보정
+    const XMFLOAT3& eul = aiming ? m_aimEuler : m_equipEuler;
+    const _float3& offs = aiming ? m_aimOffset : m_equipOffset;
 
-    m_pModelCom->Play_Animation(fTimeDelta);
+    const _matrix stateTweak =
+        XMMatrixRotationRollPitchYaw(eul.x, eul.y, eul.z) *
+        XMMatrixTranslation(offs.x, offs.y, offs.z);
 
-    //m_pColliderCom->Update(XMLoadFloat4x4(&m_CombinedWorldMatrix));
+    // 3) 최종 월드 = Grip^-1 * kAlign * stateTweak * socket * parent
+    const _matrix weaponW =
+        XMMatrixInverse(nullptr, gripLocal) *
+        kAlign *
+        stateTweak *
+        socketW *
+        parentW;
+
+    XMStoreFloat4x4(&m_CombinedWorldMatrix, weaponW);
+    m_pModelCom->Play_Animation(dt);
 }
 
 
@@ -94,9 +94,9 @@ void CWeapon::Late_Update(_float fTimeDelta)
     if (FAILED(m_pGameInstance->Add_RenderGroup(RENDERGROUP::NONBLEND, this)))
         return;
 
-//#ifdef _DEBUG
-//    m_pGameInstance->Add_DebugComponent(m_pColliderCom);
-//#endif
+    //#ifdef _DEBUG
+    //    m_pGameInstance->Add_DebugComponent(m_pColliderCom);
+    //#endif
 }
 
 HRESULT CWeapon::Render()
@@ -142,7 +142,7 @@ HRESULT CWeapon::Ready_Components()
 
     if (FAILED(CGameObject::Add_Component(ENUM_CLASS(LEVEL::BOSS), TEXT("Prototype_Component_Model_Spear"),
         TEXT("Com_Model"), reinterpret_cast<CComponent**>(&m_pModelCom), nullptr)))
-        return E_FAIL;    
+        return E_FAIL;
 
     /*CBounding_OBB::BOUNDING_OBB_DESC  OBBDesc{};
     OBBDesc.vAngles = _float3(0.f, 0.f, 0.f);
@@ -168,7 +168,7 @@ HRESULT CWeapon::Bind_ShaderResources()
         return E_FAIL;
 
     if (FAILED(m_pShaderCom->Bind_Matrix("g_ProjMatrix", m_pGameInstance->Get_Transform_Float4x4(D3DTS::PROJ))))
-        return E_FAIL;    
+        return E_FAIL;
 
     return S_OK;
 }
