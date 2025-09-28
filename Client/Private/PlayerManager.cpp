@@ -241,7 +241,39 @@ void CPlayerManager::HealActive(_float amount)
     p->hp = clamp_compat(p->hp + heal, 0.f, p->maxHp);
 }
 
-// ===== 沥府 =====
+void CPlayerManager::SavePersistentHP(_uint heroSlot, float hp, float maxHp)
+{
+    if (maxHp <= 0.f) return;           // 0 历厘 规瘤
+    hp = clamp_compat(hp, 0.f, maxHp);
+    m_persist[heroSlot] = { hp, maxHp };
+
+    wchar_t b[128];
+    swprintf(b, 128, L"[PM] Save slot=%u HP=%.1f / Max=%.1f\n", heroSlot, hp, maxHp);
+    OutputDebugStringW(b);
+}
+
+bool CPlayerManager::ConsumePersistentHP(_uint heroSlot, float& outHP, float& outMaxHP)
+{
+    auto it = m_persist.find(heroSlot);
+    if (it == m_persist.end()) {
+        OutputDebugStringW(L"[PM] Consume: not found\n");
+        return false;
+    }
+    if (it->second.max <= 0.f) {
+        OutputDebugStringW(L"[PM] Consume: invalid (max<=0)\n");
+        return false;
+    }
+    outHP = clamp_compat(it->second.hp, 0.f, it->second.max);
+    outMaxHP = it->second.max;
+
+    wchar_t b[128];
+    swprintf(b, 128, L"[PM] Consume slot=%u HP=%.1f / Max=%.1f\n", heroSlot, outHP, outMaxHP);
+    OutputDebugStringW(b);
+
+    it->second = {}; // 1雀己 家厚
+    return true;
+}
+
 void CPlayerManager::Free()
 {
     m_levels.clear();

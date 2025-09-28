@@ -111,6 +111,14 @@ public:
     void    ApplyDamageActive(_float amount);
     void    HealActive(_float amount);
 
+public:
+    void SavePersistentHP(_uint heroSlot, float hp, float maxHp);
+    bool ConsumePersistentHP(_uint heroSlot, float& outHP, float& outMaxHP);
+
+private:
+    struct Persist { float hp = -1.f; float max = -1.f; };
+    std::unordered_map<_uint, Persist> m_persist;  // heroSlot -> °ª
+
 private:
     CPlayerManager() = default;
     virtual ~CPlayerManager() = default;

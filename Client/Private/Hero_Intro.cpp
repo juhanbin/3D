@@ -7,6 +7,7 @@
 #include "Object_Pool_Manager.h"
 #include "Mushroom.h"
 #include "Weapon_Skeleton_Arrow.h"
+#include "Player.h"
 USING(Client)
 
 CHero_Intro::CHero_Intro(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
@@ -65,6 +66,7 @@ void CHero_Intro::Priority_Update(_float fTimeDelta)
 
 void CHero_Intro::Update(_float fTimeDelta)
 {
+    DebugTickHPKeys();
     // ---- 입력 ----
     const bool w = m_pGameInstance->KeyPressing(DIK_W);
     const bool a = m_pGameInstance->KeyPressing(DIK_A);
@@ -531,6 +533,35 @@ void CHero_Intro::TickHostileHits(float dt)
     }
 }
 
+void CHero_Intro::DebugTickHPKeys()
+{
+    auto* pm = CPlayerManager::GetInstance();
+    if (!pm) return;
+
+    const float maxhp = max(pm->GetMaxHP(ENUM_CLASS(LEVEL::INTRO), 0u), 0.0f);
+
+    // T: 5% 데미지, Y: 5% 회복  (한 번 눌렀을 때 한 번만)
+    if (m_pGameInstance->KeyDown(DIK_T))
+        ApplyDamagePM(0.05f * maxhp);
+
+    if (m_pGameInstance->KeyDown(DIK_Y))
+        HealPM(0.05f * maxhp);
+}
+
+void CHero_Intro::ApplyDamagePM(float amount)
+{
+    if (amount <= 0.f) return;
+    if (auto* pm = CPlayerManager::GetInstance())
+        pm->ApplyDamage(ENUM_CLASS(LEVEL::INTRO), /*playerId=*/0, amount);
+}
+
+void CHero_Intro::HealPM(float amount)
+{
+    if (amount <= 0.f) return;
+    if (auto* pm = CPlayerManager::GetInstance())
+        pm->Heal(ENUM_CLASS(LEVEL::INTRO), /*playerId=*/0, amount);
+}
+
 
 CHero_Intro* CHero_Intro::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 {
@@ -554,8 +585,18 @@ CGameObject* CHero_Intro::Clone(void* pArg)
     return pInstance;
 }
 
-void CHero_Intro::Free()
-{
+void CHero_Intro::Free() {
+    OutputDebugStringW(L"[Intro] Free() called\n");
+    if (auto* pm = CPlayerManager::GetInstance()) {
+        const _uint heroSlot = 0;
+        const float hp = pm->GetHP(ENUM_CLASS(LEVEL::INTRO), 0);
+        const float max = pm->GetMaxHP(ENUM_CLASS(LEVEL::INTRO), 0);
+        wchar_t buf[128]; swprintf(buf, 128, L"[Intro] save HP=%.1f / Max=%.1f\n", hp, max);
+        OutputDebugStringW(buf);
+
+        pm->SavePersistentHP(heroSlot, hp, max);
+    }
+    CPlayerManager::GetInstance()->Unregister(ENUM_CLASS(LEVEL::INTRO), 0);
     __super::Free();
     Safe_Release(m_pColliderCom);
     Safe_Release(m_pNavigationCom);

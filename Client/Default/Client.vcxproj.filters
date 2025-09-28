@@ -175,6 +175,36 @@
     <Filter Include="02.GameObject\Hero_Bridge\Body_Bridge">
       <UniqueIdentifier>{cb7af0a0-fdcf-4c32-a874-6600ce1804b1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02.GameObject\UI">
+      <UniqueIdentifier>{75023342-0a2b-4cb9-a90a-1ca33c8b9444}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObject\UI\Player_HP">
+      <UniqueIdentifier>{42bf9b1f-4b96-4e77-8392-b2d2c2350519}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObject\UI\Player_Hp_Frame">
+      <UniqueIdentifier>{33c35dfc-09e2-4d23-a5dd-e2e892b971a0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObject\UI\Player_Hp_Icon">
+      <UniqueIdentifier>{4a07121e-e522-43e9-ad06-fa04b3d73eb1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObject\UI\Player_Hp_Eye">
+      <UniqueIdentifier>{957aebbc-5bfe-485f-bda7-27ba320838ba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObject\UI\Boss_Fill">
+      <UniqueIdentifier>{062fa16a-920d-4680-b06a-62986e772bc8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObject\UI\Boss_Frame">
+      <UniqueIdentifier>{facb5967-99d7-4d1d-a13e-fc4804925a19}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObject\UI\Boss_Damage_Lag">
+      <UniqueIdentifier>{77c70f24-be7d-4479-8020-9eb3621baa54}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObject\UI\Crosshair_Circle">
+      <UniqueIdentifier>{f496d342-f29e-4c98-a38f-6b49c9c48d2b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObject\UI\Crosshair_Side">
+      <UniqueIdentifier>{de102396-8d8c-4877-9e9b-73d16390b80d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h">
@@ -342,13 +372,34 @@
     <ClInclude Include="..\Public\Boss_Controller.h">
       <Filter>02.GameObject\Boss</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\UI_HPFram.h" />
-    <ClInclude Include="..\Public\UI_HPFill_Boss.h" />
-    <ClInclude Include="..\Public\Levle_Bridge.h">
-      <Filter>01.Levels\Bridge</Filter>
+    <ClInclude Include="..\Public\Levle_Bridge.h" />
+    <ClInclude Include="..\Public\MapObject_Bridge.h" />
+    <ClInclude Include="..\Public\Player_Hp.h">
+      <Filter>02.GameObject\UI\Player_HP</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\MapObject_Bridge.h">
-      <Filter>02.GameObject\MapObject\MapObject_Bridge</Filter>
+    <ClInclude Include="..\Public\Player_Hp_Frame.h">
+      <Filter>02.GameObject\UI\Player_Hp_Frame</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Player_Hp_Icon.h">
+      <Filter>02.GameObject\UI\Player_Hp_Icon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Player_Hp_Eye.h">
+      <Filter>02.GameObject\UI\Player_Hp_Eye</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Boss_Fill.h">
+      <Filter>02.GameObject\UI\Boss_Fill</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Boss_Frame.h">
+      <Filter>02.GameObject\UI\Boss_Frame</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Boss_Damage_Lag.h">
+      <Filter>02.GameObject\UI\Boss_Damage_Lag</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Crosshair_Circle.h">
+      <Filter>02.GameObject\UI\Crosshair_Circle</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Crosshair_Side.h">
+      <Filter>02.GameObject\UI\Crosshair_Side</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -518,13 +569,34 @@
     <ClCompile Include="..\Private\Boss_Controller.cpp">
       <Filter>02.GameObject\Boss</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\UI_HPFram.cpp" />
-    <ClCompile Include="..\Private\UI_HPFill_Boss.cpp" />
-    <ClCompile Include="..\Private\Levle_Bridge.cpp">
-      <Filter>01.Levels\Bridge</Filter>
+    <ClCompile Include="..\Private\Levle_Bridge.cpp" />
+    <ClCompile Include="..\Private\MapObject_Bridge.cpp" />
+    <ClCompile Include="..\Private\Player_Hp.cpp">
+      <Filter>02.GameObject\UI\Player_HP</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\MapObject_Bridge.cpp">
-      <Filter>02.GameObject\MapObject\MapObject_Bridge</Filter>
+    <ClCompile Include="..\Private\Player_Hp_Frame.cpp">
+      <Filter>02.GameObject\UI\Player_Hp_Frame</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Player_Hp_Icon.cpp">
+      <Filter>02.GameObject\UI\Player_Hp_Icon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Player_Hp_Eye.cpp">
+      <Filter>02.GameObject\UI\Player_Hp_Eye</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Boss_Fill.cpp">
+      <Filter>02.GameObject\UI\Boss_Fill</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Boss_Frame.cpp">
+      <Filter>02.GameObject\UI\Boss_Frame</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Boss_Damage_Lag.cpp">
+      <Filter>02.GameObject\UI\Boss_Damage_Lag</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Crosshair_Circle.cpp">
+      <Filter>02.GameObject\UI\Crosshair_Circle</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Crosshair_Side.cpp">
+      <Filter>02.GameObject\UI\Crosshair_Side</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

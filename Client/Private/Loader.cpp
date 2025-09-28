@@ -19,6 +19,7 @@
 #include "Weapon.h"
 #include "Player_Speare.h"
 #include "Navi_Bridge.h"
+#include "Player_Hp_Frame.h"
 
 #include "Body_Monster_Skeleton.h"
 #include "Weapon_Skeleton_Spear.h"
@@ -181,6 +182,10 @@ HRESULT CLoader::Loading_For_Logo_Level()
 	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::LOGO), TEXT("Prototype_GameObject_Fade"),
 		CFade::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
+
+	/*if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::LOGO), TEXT("Prototype_GameObject_Player_Hp_Frame"),
+		CPlayer_Hp_Frame::Create(m_pDevice, m_pContext))))
+		return E_FAIL;*/
 	/*lstrcpy(m_szLoadingText, TEXT("로딩이 완료되었습니다."));*/
 	
 	m_isFinished = true;
@@ -512,6 +517,11 @@ HRESULT CLoader::Loading_For_Intro_Level()
 	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::INTRO), TEXT("Prototype_Component_VIBuffer_Terrain"),
 		CVIBuffer_Terrain::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Terrain/Height1.bmp")))))
 		return E_FAIL;
+
+	/* Prototype_Component_VIBuffer_Terrain */
+	/*if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::INTRO), TEXT("Prototype_Component_VIBuffer_Terrain"),
+		CVIBuffer_Terrain::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Terrain/Height1.png")))))
+		return E_FAIL;*/
 
 	if (FAILED(m_pGameInstance->Add_Prototype(ENUM_CLASS(LEVEL::INTRO),TEXT("Prototype_Component_VIBuffer_Terrain_Flat"),
 		CVIBuffer_Terrain::CreateFlat(m_pDevice, m_pContext, /*nx*/135, /*nz*/135, /*cell*/1.f, /*height*/0.f))))

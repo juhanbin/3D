@@ -123,6 +123,9 @@ HRESULT CLevel_Logo::Ready_Layer_Cursor(const _wstring& strLayerTag)
 		ENUM_CLASS(LEVEL::LOGO), TEXT("Prototype_GameObject_Cursor"))))
 		return E_FAIL;
 
+	
+
+	
 	return S_OK;
 }
 

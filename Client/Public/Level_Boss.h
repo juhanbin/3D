@@ -39,6 +39,8 @@ private:
     HRESULT Ready_Layer_Boss_Controller(const _wstring& strLayerTag); // ★ 선언 꼭 필요
     HRESULT Ready_Layer_MapObjects(const _wstring& strLayerTag);
     HRESULT Ready_Layer_Effect(const _wstring& strLayerTag);
+    HRESULT Ready_Layer_UI(const _wstring& strLayerTag);
+    
 
     // 배치 파일
     std::vector<MapObject> m_SceneObjects;

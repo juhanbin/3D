@@ -34,6 +34,8 @@ HRESULT CLevel_Boss::Initialize()
 
     if (FAILED(Ready_Layer_Player(TEXT("Layer_Player"))))         return E_FAIL;
     if (FAILED(Ready_Layer_MapObjects(TEXT("Layer_MapObject"))))  return E_FAIL;
+    if (FAILED(Ready_Layer_UI(TEXT("Layer_UI"))))
+        return E_FAIL;
 
     // 파츠(포인터 확보: Clone → Add)
     if (FAILED(Ready_Layer_Boss_Hand_L(TEXT("Layer_Boss_Hand_L")))) return E_FAIL;
@@ -401,6 +403,42 @@ HRESULT CLevel_Boss::Ready_Layer_MapObjects(const _wstring& tag)
 HRESULT CLevel_Boss::Ready_Layer_Effect(const _wstring& /*tag*/)
 {
     return S_OK;
+}
+
+HRESULT CLevel_Boss::Ready_Layer_UI(const _wstring& strLayerTag)
+{
+    if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::BOSS), strLayerTag,
+        ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_GameObject_Player_Hp"))))
+        return E_FAIL;
+
+    if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::BOSS), strLayerTag,
+        ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_GameObject_Player_Hp_Frame"))))
+        return E_FAIL;
+
+
+
+    if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::BOSS), strLayerTag,
+        ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_GameObject_Player_Hp_Eye"))))
+        return E_FAIL;
+
+    if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::BOSS), strLayerTag,
+        ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_GameObject_Player_Hp_Icon"))))
+        return E_FAIL;
+
+    
+    if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::BOSS), strLayerTag,
+        ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_GameObject_Boss_Frame"))))
+        return E_FAIL;
+    
+    if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::BOSS), strLayerTag,
+        ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_GameObject_Boss_Damage_Lag"))))
+        return E_FAIL;
+    
+    if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::BOSS), strLayerTag,
+        ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_GameObject_Boss_Fill"))))
+        return E_FAIL;
+
+    
 }
 
 // ===================== Create/Free =====================

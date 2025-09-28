@@ -63,6 +63,9 @@ private:
     // HP 처리(매니저 연동)
     void    ApplyDamage(int amount);
     void TickHostileHits(float dt);
+    void DebugTickHPKeys();
+    void ApplyDamagePM(float amount);
+    void HealPM(float amount);
 
 private:
     Engine::CNavigation* m_pNavigationCom = nullptr;

@@ -53,7 +53,6 @@ HRESULT CHero_Bridge::Initialize(void* pArg)
 
     // PlayerManager 등록 및 활성화
     CPlayerManager::GetInstance()->Register(ENUM_CLASS(LEVEL::BRIDGE), 1, this, -1.f);
-    CPlayerManager::GetInstance()->
     CPlayerManager::GetInstance()->SetActive(ENUM_CLASS(LEVEL::BRIDGE), 1);
 
     return S_OK;
@@ -557,6 +556,7 @@ CGameObject* CHero_Bridge::Clone(void* pArg)
 
 void CHero_Bridge::Free()
 {
+    CPlayerManager::GetInstance()->Unregister(ENUM_CLASS(LEVEL::BRIDGE), 1);
     __super::Free();
     Safe_Release(m_pColliderCom);
     Safe_Release(m_pNavigationCom);

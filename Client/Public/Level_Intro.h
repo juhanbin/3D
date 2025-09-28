@@ -30,6 +30,7 @@ private:
 	HRESULT Ready_Layer_Player(const _wstring& strLayerTag);
 	HRESULT Ready_Layer_MapObjects(const _wstring& strLayerTag);
 	HRESULT Ready_Layer_Effect(const _wstring& strLayerTag);
+	HRESULT Ready_Layer_UI(const _wstring& strLayerTag);
 
 	vector<MapObject> m_SceneObjects;
 	vector<MapObject> LoadSceneObjects(const char* file);

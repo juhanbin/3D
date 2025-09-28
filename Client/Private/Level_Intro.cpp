@@ -11,6 +11,7 @@
 #include <functional>
 #include "Level_Loading.h"
 
+
 // 공용 MapObject 구조체는 헤더에 정의
 //#pragma pack(push,1)
 //struct MapObject
@@ -56,6 +57,10 @@ HRESULT CLevel_Intro::Initialize()
 		return E_FAIL;
 
 	if (FAILED(Ready_Layer_Effect(TEXT("Layer_Effect"))))
+		return E_FAIL;
+
+	
+	if (FAILED(Ready_Layer_UI(TEXT("Layer_UI"))))
 		return E_FAIL;
 
 	Pool_Initialize();
@@ -509,6 +514,43 @@ HRESULT CLevel_Intro::Ready_Layer_Effect(const _wstring& strLayerTag)
 	}*/
 
 	return S_OK;
+}
+
+HRESULT CLevel_Intro::Ready_Layer_UI(const _wstring& strLayerTag)
+{
+	if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::INTRO), strLayerTag,
+		ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_GameObject_Player_Hp"))))
+		return E_FAIL;
+
+	if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::INTRO), strLayerTag,
+		ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_GameObject_Player_Hp_Frame"))))
+		return E_FAIL;
+
+
+
+	if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::INTRO), strLayerTag,
+		ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_GameObject_Player_Hp_Eye"))))
+		return E_FAIL;
+
+	if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::INTRO), strLayerTag,
+		ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_GameObject_Player_Hp_Icon"))))
+		return E_FAIL;
+
+	/*if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::INTRO), strLayerTag,
+		ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_GameObject_Player_Hp_Icon"))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::INTRO), strLayerTag,
+		ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_GameObject_Player_Hp_Icon"))))
+		return E_FAIL;*/
+
+	
+
+	if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::INTRO), strLayerTag,
+		ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_GameObject_Crosshair_Circle"))))
+		return E_FAIL;
+	if (FAILED(m_pGameInstance->Add_GameObject_ToLayer(ENUM_CLASS(LEVEL::INTRO), strLayerTag,
+		ENUM_CLASS(LEVEL::STATIC), TEXT("Prototype_GameObject_Crosshair_Side"))))
+		return E_FAIL;
 }
 
 

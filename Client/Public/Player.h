@@ -84,6 +84,10 @@ private:
     float   m_damageTickGap = 0.25f;  // 데미지 틱 간격(초)
     float   m_damageTickAcc = 0.f;    // 누적
 
+public:
+    static float s_SavedHP;
+    static float s_SavedMaxHP;
+
     struct WorldSnapshot {
         DirectX::XMFLOAT4 right, up, look, pos;
     };

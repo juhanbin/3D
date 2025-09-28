@@ -9,6 +9,9 @@
 #include "Weapon_Skeleton_Arrow.h"
 USING(Client)
 
+float CPlayer::s_SavedHP = -1.f;   // 미저장 표시용
+float CPlayer::s_SavedMaxHP = -1.f;
+
 CPlayer::CPlayer(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
     : CContainerObject{ pDevice, pContext } {
 }
@@ -51,9 +54,23 @@ HRESULT CPlayer::Initialize(void* pArg)
     if (FAILED(Ready_Components()))   return E_FAIL;
     if (FAILED(Ready_PartObjects()))  return E_FAIL;
 
-    // PlayerManager 등록 및 활성화
-    CPlayerManager::GetInstance()->Register(ENUM_CLASS(LEVEL::BOSS), 2, this, -1.f);
-    CPlayerManager::GetInstance()->SetActive(ENUM_CLASS(LEVEL::BOSS), 2);
+    auto* pm = CPlayerManager::GetInstance();
+    const _uint L = ENUM_CLASS(LEVEL::BOSS);
+    const _uint ID = 2;
+    const _uint heroSlot = 0;  // 위와 동일 슬롯
+
+    float savedHP = 0.f, savedMax = 0.f;
+    const bool has = pm->ConsumePersistentHP(heroSlot, savedHP, savedMax);
+
+    // 1) 등록(저장된 Max가 있으면 그걸로, 없으면 -1.f 로 기존 유지)
+    pm->Register(L, ID, this, has ? savedMax : -1.f);
+    pm->SetActive(L, ID);
+
+    // 2) HP 값 덮어쓰기(있을 때만)
+    if (has) {
+        pm->SetHP(L, ID, std::min(savedHP, pm->GetMaxHP(L, ID)));
+    }
+
 
     return S_OK;
 }
@@ -65,6 +82,17 @@ void CPlayer::Priority_Update(_float fTimeDelta)
 
 void CPlayer::Update(_float fTimeDelta)
 {
+    // --- 임시 HP 디버그(T/Y) : 현재 레벨 Active 플레이어에 적용 ---
+    if (auto* pm = CPlayerManager::GetInstance())
+    {
+        const float maxhp = max(pm->GetActiveMaxHP(), 0.0f);
+
+        if (m_pGameInstance->KeyDown(DIK_T))      // 5% 감소
+            pm->ApplyDamageActive(0.05f * maxhp);
+
+        if (m_pGameInstance->KeyDown(DIK_Y))      // 5% 증가
+            pm->HealActive(0.05f * maxhp);
+    }
     // ---- 입력 ----
     const bool w = m_pGameInstance->KeyPressing(DIK_W);
     const bool a = m_pGameInstance->KeyPressing(DIK_A);
@@ -556,6 +584,7 @@ CGameObject* CPlayer::Clone(void* pArg)
 
 void CPlayer::Free()
 {
+    CPlayerManager::GetInstance()->Unregister(ENUM_CLASS(LEVEL::BOSS), 2);
     __super::Free();
     Safe_Release(m_pColliderCom);
     Safe_Release(m_pNavigationCom);
